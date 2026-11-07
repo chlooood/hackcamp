@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GutCheck — Make poop fun.</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #58cc02;
+    --green-dark: #58a700;
+    --green-light: #d7ffb8;
+    --blue: #1cb0f6;
+    --blue-dark: #1899d3;
+    --red: #ff4b4b;
+    --red-dark: #ea2b2b;
+    --gold: #ffc800;
+    --gold-dark: #e0a800;
+    --purple: #a560e8;
+    --brown: #9c6b3f;
+    --brown-light: #d4a574;
+    --bg: #ffffff;
+    --bg-soft: #f7f7f7;
+    --text: #3c3c3c;
+    --text-soft: #777777;
+    --border: #e5e5e5;
+  }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Nunito', system-ui, sans-serif; min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Nunito', system-ui, sans-serif; font-weight: 900; letter-spacing: -0.01em; }
+  .screen-pad { padding-bottom: 110px; }
+
+  /* Duolingo-style 3D button */
+  .duo-btn {
+    background: var(--green);
+    color: white;
+    border: none;
+    border-bottom: 4px solid var(--green-dark);
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-weight: 800;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: filter 0.1s, transform 0.08s, border-bottom-width 0.08s;
+    width: 100%;
+  }
+  .duo-btn:hover { filter: brightness(1.05); }
+  .duo-btn:active { border-bottom-width: 0; transform: translateY(4px); }
+  .duo-btn.secondary { background: white; color: var(--blue); border: 2px solid var(--border); border-bottom-width: 4px; }
+  .duo-btn.ghost { background: white; color: var(--text); border: 2px solid var(--border); border-bottom-width: 4px; }
+  .duo-btn.red { background: var(--red); border-bottom-color: var(--red-dark); }
+  .duo-btn.blue { background: var(--blue); border-bottom-color: var(--blue-dark); }
+  .duo-btn.gold { background: var(--gold); border-bottom-color: var(--gold-dark); color: #3c3c3c; }
+  .duo-btn:disabled { background: #e5e5e5; border-bottom-color: #cccccc; color: #999; cursor: not-allowed; }
+  .duo-btn:disabled:active { border-bottom-width: 4px; transform: none; }
+
+  .card {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    60% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .bounce-in { animation: bounceIn 500ms cubic-bezier(.17,.67,.21,1.19) both; }
+  @keyframes pop {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  .pop { animation: pop 0.6s ease-in-out infinite; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .shake { animation: shake 0.4s ease-in-out; }
+  @keyframes slideUp {
+    0% { transform: translateY(24px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  .slide-up { animation: slideUp 400ms cubic-bezier(.17,.67,.21,1.19) both; }
+  @keyframes rrFillAnim { 0% { width: 0; } 100% { width: var(--rr); } }
+  .rr-fill-anim { animation: rrFillAnim 1200ms cubic-bezier(.17,.67,.21,1.19) forwards; }
+  @keyframes wave {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  .wave { animation: wave 2s ease-in-out infinite; transform-origin: bottom center; }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+    100% { transform: translateY(400px) rotate(720deg); opacity: 0; }
+  }
+  .confetti { animation: confettiFall 2s ease-in forwards; position: absolute; width: 8px; height: 12px; }
+  @keyframes dotsLoad { 0%,20%,100% { opacity: 0.2; } 50% { opacity: 1; } }
+  .dot-1 { animation: dotsLoad 1.4s ease-in-out 0s infinite; }
+  .dot-2 { animation: dotsLoad 1.4s ease-in-out 0.2s infinite; }
+  .dot-3 { animation: dotsLoad 1.4s ease-in-out 0.4s infinite; }
+
+  input[type="file"] { display: none; }
+  input, select, textarea {
+    background: var(--bg-soft);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    width: 100%;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--bg-soft); border: 2px solid var(--border);
+    font-size: 12px; font-weight: 700; color: var(--text);
+    cursor: pointer; transition: all 0.1s;
+  }
+  .chip.on { background: #ddf4ff; border-color: var(--blue); color: var(--blue); }
+  .chip:active { transform: scale(0.96); }
+
+  button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible {
+    outline: 3px solid var(--blue); outline-offset: 2px;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Progress bar */
+  .progress-track {
+    background: var(--bg-soft);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    height: 14px;
+    border: 2px solid var(--border);
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    position: relative;
+    background: linear-gradient(90deg, var(--green), var(--green-dark));
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 3px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 999px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ============================================================
+   TIER SYSTEM — Duolingo-style leagues, 3 divisions per tier
+   Division 1 = highest in tier, 3 = lowest
+   ============================================================ */
+const TIERS = [
+  { name: 'BRONZE',    color: '#cd7f32', dark: '#9c5f24', glow: '#e8a65c', min: 0,    max: 100,  emoji: '🥉' },
+  { name: 'SILVER',    color: '#c0c0c8', dark: '#9fa0a8', glow: '#e8e8f0', min: 100,  max: 250,  emoji: '🥈' },
+  { name: 'GOLD',      color: '#ffc800', dark: '#d4a600', glow: '#ffe066', min: 250,  max: 450,  emoji: '🥇' },
+  { name: 'SAPPHIRE',  color: '#1cb0f6', dark: '#1899d3', glow: '#5cc8ff', min: 450,  max: 700,  emoji: '💙' },
+  { name: 'RUBY',      color: '#ff4b4b', dark: '#d63d3d', glow: '#ff8080', min: 700,  max: 1000, emoji: '❤️' },
+  { name: 'EMERALD',   color: '#58cc02', dark: '#4ca900', glow: '#8aff40', min: 1000, max: 1400, emoji: '💚' },
+  { name: 'AMETHYST',  color: '#a560e8', dark: '#8747c6', glow: '#c48aff', min: 1400, max: 1900, emoji: '💜' },
+  { name: 'PEARL',     color: '#c8dce8', dark: '#9fb5c4', glow: '#ffffff', min: 1900, max: 2600, emoji: '🤍' },
+  { name: 'DIAMOND',   color: '#00d4ff', dark: '#00a8cc', glow: '#7df0ff', min: 2600, max: 99999,emoji: '💎' }
+];
+
+function tierFromRating(r) {
+  for (let i = TIERS.length - 1; i >= 0; i--) {
+    if (r >= TIERS[i].min) {
+      const t = TIERS[i];
+      if (t.name === 'DIAMOND') {
+        return { ...t, division: 1, rr: Math.min(100, r - t.min), rrMax: 100, full: 'DIAMOND', tierIdx: i };
+      }
+      const span = (t.max - t.min) / 3;
+      const divIdx = Math.min(2, Math.floor((r - t.min) / span));
+      const division = 3 - divIdx; // 3 lowest, 1 highest
+      const rr = Math.round(((r - t.min) - divIdx * span) / span * 100);
+      return { ...t, division, rr, rrMax: 100, full: `${t.name} ${division}`, tierIdx: i };
+    }
+  }
+  return { ...TIERS[0], division: 3, rr: 0, rrMax: 100, full: 'BRONZE 3', tierIdx: 0 };
+}
+
+/* ============================================================
+   SCAN SCORING (1-100) + RATING CHANGE
+   ============================================================ */
+const BRISTOL = {
+  1: { label: 'Separate hard lumps', health: 'concerning', color: '#9a6b40', baseScore: 35, note: 'Suggests significant constipation. Hydrate well and add fibre.' },
+  2: { label: 'Lumpy sausage',       health: 'okay',       color: '#a87850', baseScore: 70, note: 'Mild constipation. Fluids and fibre usually help.' },
+  3: { label: 'Cracked sausage',     health: 'ideal',      color: '#b88860', baseScore: 90, note: 'Healthy. You are doing well.' },
+  4: { label: 'Smooth snake',        health: 'ideal',      color: '#8b6f47', baseScore: 100, note: 'Textbook. The gold standard.' },
+  5: { label: 'Soft blobs',          health: 'okay',       color: '#a07058', baseScore: 85, note: 'Slightly loose. Often linked to low fibre.' },
+  6: { label: 'Mushy, ragged',       health: 'okay',       color: '#8a5a42', baseScore: 60, note: 'Trending toward diarrhea. Monitor hydration.' },
+  7: { label: 'Entirely liquid',     health: 'concerning', color: '#6d4830', baseScore: 30, note: 'Diarrhea. Rehydrate with electrolytes.' }
+};
+
+function scoreScan() {
+  // Mock Gemini response. In production: fetch('/api/score', { image })
+  const weights = [1,2,5,6,5,2,1];
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * total;
+  let bristol = 4;
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i];
+    if (r <= 0) { bristol = i + 1; break; }
+  }
+  const b = BRISTOL[bristol];
+  const confidence = 0.75 + Math.random() * 0.2;
+  // Score = base * confidence modifier (range 0.85 to 1.0)
+  const score = Math.max(1, Math.min(100, Math.round(b.baseScore * (0.85 + confidence * 0.15))));
+  return {
+    bristol,
+    score,
+    label: b.label,
+    note: b.note,
+    health: b.health,
+    colour: ['healthy brown', 'light brown', 'warm brown', 'dark brown'][Math.floor(Math.random()*4)],
+    confidence
+  };
+}
+
+function ratingChange(score, competitiveMode) {
+  if (!competitiveMode) {
+    // CASUAL: flat gain, logging is what matters, never goes down
+    return 15; // ~every log earns 15 rating in casual
+  }
+  // COMPETITIVE: score-driven, can go negative
+  // Formula: Math.round(score * 0.5 - 20)
+  // Score 100 → +30, 80 → +20, 60 → +10, 40 → 0, 20 → -10, 0 → -20
+  return Math.round(score * 0.5 - 20);
+}
+
+function daysBetween(a, b) {
+  if (!a || !b) return 0;
+  const MS = 1000*60*60*24;
+  return Math.floor((new Date(b).setHours(0,0,0,0) - new Date(a).setHours(0,0,0,0)) / MS);
+}
+
+/* ============================================================
+   SEED
+   ============================================================ */
+const today = new Date();
+const dayStr = d => d.toLocaleDateString('en-CA');
+const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+
+const seedHistory = [
+  { date: dayStr(new Date(Date.now() - 6*86400000)), bristol: 4, score: 98, ratingChange: 15, note: '' },
+  { date: dayStr(new Date(Date.now() - 5*86400000)), bristol: 3, score: 88, ratingChange: 14, note: '' },
+  { date: dayStr(new Date(Date.now() - 4*86400000)), bristol: 4, score: 95, ratingChange: 15, note: '' },
+  { date: dayStr(new Date(Date.now() - 3*86400000)), bristol: 5, score: 82, ratingChange: 15, note: 'Pizza night' },
+  { date: dayStr(new Date(Date.now() - 2*86400000)), bristol: 4, score: 100, ratingChange: 15, note: '' },
+  { date: dayStr(yesterday), bristol: 3, score: 85, ratingChange: 15, note: '' }
+];
+
+const seedFriends = [
+  { name: 'Priya', rating: 820, streak: 21, tier: tierFromRating(820) },
+  { name: 'Mei',   rating: 480, streak: 12, tier: tierFromRating(480) },
+  { name: 'You',   rating: 520, streak: 6,  tier: tierFromRating(520), isYou: true },
+  { name: 'Theo',  rating: 180, streak: 4,  tier: tierFromRating(180) },
+  { name: 'Jake',  rating: 45,  streak: 2,  tier: tierFromRating(45) }
+];
+
+/* ============================================================
+   MASCOT: SCOOP THE POOP
+   ============================================================ */
+function Scoop({ size = 120, mood = 'happy', waving = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 200 200">
+      <defs>
+        <linearGradient id="scoop-body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#c39060"/>
+          <stop offset="100%" stopColor="#7a5030"/>
+        </linearGradient>
+      </defs>
+      {/* Body — stacked swirls like the poop emoji */}
+      <ellipse cx="100" cy="165" rx="72" ry="25" fill="#5a3820" opacity="0.2"/>
+      <ellipse cx="100" cy="155" rx="70" ry="28" fill="url(#scoop-body)"/>
+      <ellipse cx="100" cy="115" rx="55" ry="25" fill="url(#scoop-body)"/>
+      <ellipse cx="100" cy="80" rx="38" ry="20" fill="url(#scoop-body)"/>
+      <ellipse cx="100" cy="55" rx="20" ry="12" fill="url(#scoop-body)"/>
+      {/* Subtle shine lines */}
+      <path d="M 50 155 Q 100 148 150 155" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none"/>
+      <path d="M 60 115 Q 100 108 140 115" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none"/>
+      {/* Eyes */}
+      <circle cx="82" cy="105" r="10" fill="white"/>
+      <circle cx="118" cy="105" r="10" fill="white"/>
+      <circle cx={mood === 'sad' ? 80 : 84} cy="108" r="5" fill="#3c3c3c"/>
+      <circle cx={mood === 'sad' ? 116 : 120} cy="108" r="5" fill="#3c3c3c"/>
+      <circle cx={mood === 'sad' ? 78 : 86} cy="105" r="2" fill="white"/>
+      <circle cx={mood === 'sad' ? 114 : 122} cy="105" r="2" fill="white"/>
+      {/* Mouth */}
+      {mood === 'happy' && <path d="M 85 128 Q 100 138 115 128" stroke="#3c3c3c" strokeWidth="3" fill="none" strokeLinecap="round"/>}
+      {mood === 'sad'   && <path d="M 85 135 Q 100 125 115 135" stroke="#3c3c3c" strokeWidth="3" fill="none" strokeLinecap="round"/>}
+      {mood === 'wow'   && <ellipse cx="100" cy="132" rx="8" ry="10" fill="#3c3c3c"/>}
+      {/* Little hand wave */}
+      {waving && (
+        <g className="wave" style={{ transformOrigin: '160px 135px' }}>
+          <ellipse cx="160" cy="130" rx="10" ry="12" fill="url(#scoop-body)"/>
+          <circle cx="160" cy="122" r="7" fill="url(#scoop-body)"/>
+        </g>
+      )}
+    </svg>
+  );
+}
+
+/* ============================================================
+   DUOLINGO-STYLE LEAGUE BADGE
+   ============================================================ */
+function LeagueBadge({ tier, size = 120, animated = false }) {
+  const c = tier.color;
+  const d = tier.dark;
+  const g = tier.glow;
+  const uid = `lb-${tier.name}-${size}`;
+  return (
+    <div className={`relative ${animated ? 'bounce-in' : ''}`} style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id={`${uid}-g`} cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stopColor={g}/>
+            <stop offset="60%" stopColor={c}/>
+            <stop offset="100%" stopColor={d}/>
+          </radialGradient>
+          <linearGradient id={`${uid}-s`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={g} stopOpacity="0.9"/>
+            <stop offset="100%" stopColor={c} stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        {/* Shield shape, Duolingo-style rounded */}
+        <path
+          d="M 100 10 L 170 35 L 170 110 Q 170 160 100 185 Q 30 160 30 110 L 30 35 Z"
+          fill={d}
+        />
+        <path
+          d="M 100 18 L 162 40 L 162 108 Q 162 152 100 175 Q 38 152 38 108 L 38 40 Z"
+          fill={`url(#${uid}-g)`}
+        />
+        {/* Top shine */}
+        <path
+          d="M 100 25 L 155 44 L 155 85 Q 100 95 45 85 L 45 44 Z"
+          fill={`url(#${uid}-s)`}
+          opacity="0.8"
+        />
+        {/* Inner emblem — stylized star/gem */}
+        <g transform="translate(100 95)">
+          {/* Star shape */}
+          <polygon
+            points="0,-32 9,-10 32,-10 14,5 20,28 0,15 -20,28 -14,5 -32,-10 -9,-10"
+            fill="#fff"
+            opacity="0.95"
+          />
+          <polygon
+            points="0,-20 6,-6 20,-6 9,3 13,17 0,10 -13,17 -9,3 -20,-6 -6,-6"
+            fill={d}
+            opacity="0.3"
+          />
+        </g>
+        {/* Division number banner */}
+        {tier.name !== 'DIAMOND' && (
+          <g>
+            <rect x="60" y="138" width="80" height="26" rx="13" fill={d}/>
+            <rect x="62" y="140" width="76" height="22" rx="11" fill={c}/>
+            <text
+              x="100" y="157"
+              textAnchor="middle"
+              fontSize="16"
+              fontWeight="900"
+              fill="white"
+              fontFamily="Nunito, sans-serif"
+            >
+              {tier.division === 1 ? 'I' : tier.division === 2 ? 'II' : 'III'}
+            </text>
+          </g>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+function App() {
+  const [tab, setTab] = useState('competitive');
+  const [cameraStage, setCameraStage] = useState('idle');
+
+  const [rating, setRating] = useState(520);
+  const [streak, setStreak] = useState(6);
+  const [lastLogDate, setLastLogDate] = useState(dayStr(yesterday));
+  const [history, setHistory] = useState(seedHistory);
+  const [competitiveMode, setCompetitiveMode] = useState(false); // OFF by default
+  const [competitiveOnboarded, setCompetitiveOnboarded] = useState(false);
+  const [lastResult, setLastResult] = useState(null);
+  const [lastRankChange, setLastRankChange] = useState(null); // { kind, from, to }
+
+  const [profile, setProfile] = useState({
+    name: 'Alex Chen',
+    age: 22,
+    gender: 'Non-binary',
+    conditions: ['IBS-D'],
+    diet: ['Low-FODMAP'],
+    medications: ''
+  });
+
+  const loggedToday = lastLogDate === dayStr(today);
+  const tier = useMemo(() => tierFromRating(rating), [rating]);
+
+  function recordLog() {
+    const result = scoreScan();
+    const prevTier = tierFromRating(rating);
+    const delta = ratingChange(result.score, competitiveMode);
+    const newRating = Math.max(0, rating + delta);
+    const newTier = tierFromRating(newRating);
+
+    setRating(newRating);
+    setStreak(streak + 1);
+    setLastLogDate(dayStr(today));
+    setHistory([...history, { date: dayStr(today), bristol: result.bristol, score: result.score, ratingChange: delta, note: '' }].slice(-14));
+    setLastResult({ ...result, delta });
+
+    let rankChange = null;
+    if (newTier.full !== prevTier.full) {
+      if (newTier.tierIdx > prevTier.tierIdx) rankChange = { kind: 'promo', from: prevTier, to: newTier };
+      else if (newTier.tierIdx < prevTier.tierIdx) rankChange = { kind: 'demo', from: prevTier, to: newTier };
+      else if (newTier.division < prevTier.division) rankChange = { kind: 'div-up', from: prevTier, to: newTier };
+      else if (newTier.division > prevTier.division) rankChange = { kind: 'div-down', from: prevTier, to: newTier };
+    }
+    setLastRankChange(rankChange);
+    setCameraStage('result');
+    if (rankChange && (rankChange.kind === 'promo' || rankChange.kind === 'demo')) {
+      setTimeout(() => setCameraStage('rankchange'), 2400);
+    }
+  }
+
+  function resetDemo() {
+    setRating(520); setStreak(6); setLastLogDate(dayStr(yesterday));
+    setHistory(seedHistory); setCameraStage('idle');
+  }
+
+  function enableCompetitiveWithOnboard(enabled) {
+    if (enabled && !competitiveOnboarded) {
+      setTab('competitive-onboard');
+      return;
+    }
+    setCompetitiveMode(enabled);
+  }
+
+  const screenProps = {
+    tier, rating, streak, history, profile, setProfile,
+    competitiveMode, setCompetitiveMode: enableCompetitiveWithOnboard,
+    competitiveOnboarded, setCompetitiveOnboarded,
+    loggedToday, friends: seedFriends, setTab
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-md mx-auto relative min-h-screen" style={{ background: 'var(--bg)' }}>
+        <main className="screen-pad">
+          {tab === 'profile'              && <ProfileScreen {...screenProps} />}
+          {tab === 'health'               && <HealthScreen {...screenProps} />}
+          {tab === 'camera'               && <CameraScreen {...screenProps} stage={cameraStage} setStage={setCameraStage} onLog={recordLog} result={lastResult} rankChange={lastRankChange} resetDemo={resetDemo} />}
+          {tab === 'competitive'          && <CompetitiveScreen {...screenProps} />}
+          {tab === 'competitive-onboard'  && <CompetitiveOnboard setMode={(v) => { setCompetitiveMode(v); setCompetitiveOnboarded(true); setTab('competitive'); }} onBack={() => setTab('competitive')} />}
+          {tab === 'settings'             && <SettingsScreen {...screenProps} />}
+        </main>
+        <BottomNav current={tab} onNavigate={(t) => { setTab(t); if (t !== 'camera') setCameraStage('idle'); }} />
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   COMPETITIVE SCREEN
+   ============================================================ */
+function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, setCompetitiveMode, setTab, history }) {
+  // When competitive mode is OFF, show an opt-in CTA instead of the ranking screen
+  if (!competitiveMode) {
+    return (
+      <div className="px-5 pt-8 slide-up">
+        <div className="flex items-center gap-3">
+          <div style={{ width: 72, height: 72 }}>
+            <Scoop size={72} waving />
+          </div>
+          <div>
+            <div className="font-display text-3xl">Competitive</div>
+            <div className="text-sm text-neutral-500">Just for fun. Opt-in only.</div>
+          </div>
+        </div>
+
+        <div className="mt-8 card">
+          <div className="text-center">
+            <div className="text-5xl mb-3">🏆</div>
+            <div className="font-display text-2xl">Want to compete?</div>
+            <div className="text-sm text-neutral-600 mt-2 leading-relaxed">
+              Rank up (and down) based on your scan scores. Compete with friends. Climb from Bronze to Diamond.
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 rounded-xl" style={{ background: '#fff5e0', border: '2px solid #ffc800' }}>
+            <div className="flex gap-2 items-start">
+              <div className="text-xl">⚠️</div>
+              <div className="text-xs leading-relaxed text-amber-900">
+                <strong className="block mb-1">Heads up: this is a game.</strong>
+                Your rank does NOT reflect your health. Bad scores happen for lots of reasons that aren't your fault — stress, illness, medication, diet changes. Turn competitive mode off any time in Settings.
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setCompetitiveMode(true)}
+            className="duo-btn mt-6"
+          >
+            Enable Competitive Mode
+          </button>
+          <button
+            onClick={() => setTab('health')}
+            className="duo-btn ghost mt-3"
+          >
+            I just want to track my health
+          </button>
+        </div>
+
+        <div className="mt-6 card">
+          <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Still in casual mode</div>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="text-4xl">🔥</div>
+            <div>
+              <div className="font-display text-2xl">{streak}-day streak</div>
+              <div className="text-xs text-neutral-500">Keep logging daily</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Competitive mode ON — full ranked view
+  return (
+    <div className="px-5 pt-6 slide-up">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Competitive</div>
+          <div className="font-display text-3xl">Your League</div>
+        </div>
+        <div className="chip" style={{ background: '#d7ffb8', borderColor: 'var(--green)', color: 'var(--green-dark)' }}>
+          COMPETING
+        </div>
+      </div>
+
+      {/* Hero badge */}
+      <div className="mt-6 flex flex-col items-center">
+        <LeagueBadge tier={tier} size={180} animated />
+        <div className="mt-4 font-display text-4xl" style={{ color: tier.dark }}>
+          {tier.full}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mt-6">
+        <div className="flex justify-between items-center text-xs text-neutral-500 font-bold mb-2">
+          <span>PROGRESS TO NEXT RANK</span>
+          <span style={{ color: tier.dark }}>{tier.rr} / 100</span>
+        </div>
+        <div className="progress-track">
+          <div
+            className="progress-fill rr-fill-anim"
+            style={{
+              '--rr': `${tier.rr}%`,
+              background: `linear-gradient(90deg, ${tier.color}, ${tier.glow})`
+            }}
+          ></div>
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        <StatBlock icon="🔥" label="Streak" value={streak} />
+        <StatBlock icon="⭐" label="Rating" value={rating} />
+        <StatBlock icon="🎯" label="Avg Score" value={(() => {
+          const last7 = history.slice(-7);
+          return last7.length ? Math.round(last7.reduce((a,h)=>a+h.score,0)/last7.length) : 0;
+        })()} />
+      </div>
+
+      {/* Scoring key */}
+      <div className="mt-6 card">
+        <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3">Scoring Guide</div>
+        <div className="space-y-2 text-sm">
+          <ScoreKeyRow score="90–100" change="+25 to +30" color="#58cc02" />
+          <ScoreKeyRow score="60–89"  change="+10 to +24" color="#1cb0f6" />
+          <ScoreKeyRow score="40–59"  change="0 to +9"    color="#ffc800" />
+          <ScoreKeyRow score="20–39"  change="-10 to -1"  color="#ff8c42" />
+          <ScoreKeyRow score="1–19"   change="-20 to -11" color="#ff4b4b" />
+        </div>
+        <div className="mt-3 text-[11px] text-neutral-500 leading-relaxed">
+          Casual mode gives a flat +15 per log, no penalty. Competitive mode uses the scale above.
+        </div>
+      </div>
+
+      {/* Friends leaderboard */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Friends Leaderboard</div>
+          <button className="text-xs font-bold" style={{ color: 'var(--blue)' }}>See all →</button>
+        </div>
+        <div className="space-y-2">
+          {[...friends].sort((a,b) => b.rating - a.rating).slice(0, 5).map((f, i) => (
+            <div key={f.name} className="card flex items-center gap-3 p-3" style={{ background: f.isYou ? '#ddf4ff' : 'white', borderColor: f.isYou ? 'var(--blue)' : 'var(--border)' }}>
+              <div className="w-8 text-center font-display text-xl" style={{ color: i === 0 ? 'var(--gold)' : i === 1 ? '#9fa0a8' : i === 2 ? '#cd7f32' : '#aaa' }}>
+                {i+1}
+              </div>
+              <div className="shrink-0">
+                <LeagueBadge tier={f.tier} size={48} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold truncate">{f.name}{f.isYou && <span className="text-xs font-normal text-neutral-500 ml-1">(you)</span>}</div>
+                <div className="text-xs text-neutral-500">{f.tier.full} · {f.rating} pts · 🔥 {f.streak}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Turn off anytime reminder */}
+      <div className="mt-6 card" style={{ background: 'var(--bg-soft)' }}>
+        <div className="flex items-start gap-3">
+          <div className="text-xl">🛡️</div>
+          <div className="text-xs text-neutral-600 leading-relaxed">
+            <strong className="block mb-0.5 text-neutral-800">Just for fun.</strong>
+            Your rank does not reflect your health. Toggle off any time in Settings.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScoreKeyRow({ score, change, color }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="font-bold" style={{ color }}>Score {score}</div>
+      <div className="text-neutral-600 font-semibold">{change} pts</div>
+    </div>
+  );
+}
+
+function StatBlock({ icon, label, value }) {
+  return (
+    <div className="card text-center py-3">
+      <div className="text-2xl">{icon}</div>
+      <div className="font-display text-xl mt-1">{value}</div>
+      <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+/* ============================================================
+   COMPETITIVE ONBOARDING — the clear disclaimer screen
+   ============================================================ */
+function CompetitiveOnboard({ setMode, onBack }) {
+  const [agreed, setAgreed] = useState(false);
+  return (
+    <div className="px-5 pt-8 slide-up">
+      <button onClick={onBack} className="text-sm text-neutral-500 font-bold mb-6">← Not now</button>
+
+      <div className="text-center">
+        <div className="mx-auto" style={{ width: 120, height: 120 }}>
+          <Scoop size={120} mood="wow" />
+        </div>
+        <div className="font-display text-3xl mt-4">Before you compete...</div>
+        <div className="text-sm text-neutral-600 mt-2">Please read this. It matters.</div>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        <DisclaimerBullet icon="🎮" title="This is a game.">
+          Competitive mode is for fun. It turns your scan scores into a rating that can go up or down, like a video game ranking system.
+        </DisclaimerBullet>
+        <DisclaimerBullet icon="🧠" title="Your rank does NOT reflect your health.">
+          A low score does not mean you're failing. Bad days happen — stress, illness, medication, travel, the week before your period, a surprise burrito. None of that makes you a worse person or a worse pooper.
+        </DisclaimerBullet>
+        <DisclaimerBullet icon="🏥" title="Especially if you have a condition.">
+          If you have IBS, IBD, Crohn's, celiac, or anything else that affects your gut, competitive mode will unfairly penalize you for symptoms you can't control. We recommend staying in casual mode.
+        </DisclaimerBullet>
+        <DisclaimerBullet icon="🛑" title="You can turn it off any time.">
+          One tap in Settings disables competitive mode. Your streak and health tracking continue uninterrupted.
+        </DisclaimerBullet>
+      </div>
+
+      <div className="mt-6 card" style={{ background: '#fff5e0', borderColor: 'var(--gold)' }}>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            style={{ width: 20, height: 20, marginTop: 2, cursor: 'pointer', accentColor: 'var(--green)' }}
+          />
+          <div className="text-sm leading-relaxed text-amber-900 font-semibold">
+            I understand this is a game, my rank does not reflect my health, and I can turn it off any time.
+          </div>
+        </label>
+      </div>
+
+      <button
+        onClick={() => setMode(true)}
+        disabled={!agreed}
+        className="duo-btn mt-6"
+      >
+        Enable Competitive Mode
+      </button>
+      <button onClick={onBack} className="duo-btn ghost mt-3">
+        Stay in casual mode
+      </button>
+    </div>
+  );
+}
+
+function DisclaimerBullet({ icon, title, children }) {
+  return (
+    <div className="card">
+      <div className="flex items-start gap-3">
+        <div className="text-2xl">{icon}</div>
+        <div>
+          <div className="font-bold text-base">{title}</div>
+          <div className="text-sm text-neutral-600 mt-1 leading-relaxed">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   CAMERA SCREEN
+   ============================================================ */
+function CameraScreen({ loggedToday, stage, setStage, onLog, result, rankChange, resetDemo, competitiveMode }) {
+  const [hasPhoto, setHasPhoto] = useState(false);
+  const fileRef = useRef();
+
+  useEffect(() => {
+    if (stage === 'scanning') {
+      const t = setTimeout(() => onLog(), 2400);
+      return () => clearTimeout(t);
+    }
+  }, [stage]);
+
+  // Locked — already logged today
+  if (loggedToday && stage === 'idle') {
+    const midnight = new Date(); midnight.setHours(24,0,0,0);
+    const diff = midnight - new Date();
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    return (
+      <div className="px-5 pt-8 slide-up">
+        <div className="flex items-center gap-3 mb-6">
+          <div style={{ width: 72, height: 72 }}>
+            <Scoop size={72} waving />
+          </div>
+          <div>
+            <div className="font-display text-3xl">Logged!</div>
+            <div className="text-sm text-neutral-500">Nice work today.</div>
+          </div>
+        </div>
+        <div className="card text-center py-12">
+          <div className="text-6xl mb-4">✅</div>
+          <div className="font-display text-2xl" style={{ color: 'var(--green-dark)' }}>See you tomorrow</div>
+          <div className="text-sm text-neutral-500 mt-2">One log per day keeps things fair.</div>
+          <div className="mt-6 p-4 rounded-xl" style={{ background: 'var(--bg-soft)' }}>
+            <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Next log in</div>
+            <div className="font-display text-3xl mt-1" style={{ color: 'var(--blue)' }}>{h}h {m}m</div>
+          </div>
+        </div>
+        <button onClick={resetDemo} className="mt-4 w-full text-xs text-neutral-400 underline">
+          Demo: reset to yesterday
+        </button>
+      </div>
+    );
+  }
+
+  // Result
+  if (stage === 'result' && result) {
+    const scoreColor = result.score >= 70 ? 'var(--green)' : result.score >= 40 ? 'var(--gold)' : 'var(--red)';
+    const deltaColor = result.delta > 0 ? 'var(--green-dark)' : result.delta < 0 ? 'var(--red-dark)' : 'var(--text-soft)';
+    return (
+      <div className="px-5 pt-6 slide-up">
+        <div className="flex items-center gap-3 mb-6">
+          <div style={{ width: 72, height: 72 }}>
+            <Scoop size={72} mood={result.health === 'ideal' ? 'happy' : result.health === 'okay' ? 'happy' : 'sad'} />
+          </div>
+          <div>
+            <div className="font-display text-3xl">Scan complete</div>
+            <div className="text-sm text-neutral-500">Here's your result</div>
+          </div>
+        </div>
+
+        {/* Big score */}
+        <div className="card text-center py-8 bounce-in">
+          <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Scan Score</div>
+          <div className="font-display text-7xl mt-2" style={{ color: scoreColor }}>
+            {result.score}
+          </div>
+          <div className="text-sm text-neutral-500">out of 100</div>
+
+          <div className="mt-4 h-3 bg-gray-200 rounded-full overflow-hidden mx-6">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${result.score}%`,
+                background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor})`,
+                transition: 'width 0.8s cubic-bezier(.17,.67,.21,1.19)'
+              }}
+            ></div>
+          </div>
+
+          <div className="mt-5 inline-block px-4 py-1.5 rounded-full font-bold text-sm"
+            style={{ background: scoreColor, color: 'white' }}>
+            BRISTOL {result.bristol} · {result.label}
+          </div>
+        </div>
+
+        {/* Rating change */}
+        <div className="mt-4 card flex items-center justify-between">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">
+              {competitiveMode ? 'Competitive Rating' : 'Casual Points'}
+            </div>
+            <div className="font-display text-3xl mt-1" style={{ color: deltaColor }}>
+              {result.delta >= 0 ? '+' : ''}{result.delta}
+            </div>
+          </div>
+          <div className="text-4xl">
+            {result.delta > 15 ? '🚀' : result.delta > 0 ? '⭐' : result.delta === 0 ? '😐' : '📉'}
+          </div>
+        </div>
+
+        {/* Note */}
+        <div className="mt-4 card">
+          <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Advice</div>
+          <div className="text-sm text-neutral-700 mt-2 leading-relaxed">{result.note}</div>
+          <div className="text-[11px] text-neutral-500 mt-3">
+            Colour: {result.colour} · Confidence: {Math.round(result.confidence * 100)}%
+          </div>
+        </div>
+
+        {result.health === 'concerning' && (
+          <div className="mt-4 card" style={{ background: '#fee', borderColor: 'var(--red)' }}>
+            <div className="flex gap-2 items-start">
+              <div className="text-xl">💬</div>
+              <div className="text-xs leading-relaxed text-red-900">
+                <strong className="block mb-1">Worth mentioning to your doctor</strong>
+                If this pattern repeats for several days, chat with your GP or pharmacist. GutCheck doesn't diagnose — it helps you notice.
+              </div>
+            </div>
+          </div>
+        )}
+
+        <button onClick={() => setStage('idle')} className="duo-btn mt-6">
+          Continue
+        </button>
+      </div>
+    );
+  }
+
+  // Rank change
+  if (stage === 'rankchange' && rankChange) {
+    const isPromo = rankChange.kind === 'promo';
+    return (
+      <div className="px-5 pt-10 text-center slide-up">
+        <div className="mx-auto" style={{ width: 120, height: 120 }}>
+          <Scoop size={120} mood={isPromo ? 'happy' : 'sad'} waving={isPromo} />
+        </div>
+        <div className="font-display text-4xl mt-4" style={{ color: isPromo ? 'var(--green-dark)' : 'var(--red-dark)' }}>
+          {isPromo ? 'RANK UP!' : 'RANK DOWN'}
+        </div>
+        <div className="text-sm text-neutral-500 mt-2">
+          {isPromo ? `You've promoted from ${rankChange.from.full}!` : `You've dropped from ${rankChange.from.full}.`}
+        </div>
+
+        <div className="mt-8 bounce-in flex justify-center">
+          <LeagueBadge tier={rankChange.to} size={200} animated />
+        </div>
+
+        <div className="font-display text-4xl mt-6" style={{ color: rankChange.to.dark }}>
+          {rankChange.to.full}
+        </div>
+
+        {!isPromo && (
+          <div className="mt-6 card" style={{ background: 'var(--bg-soft)', textAlign: 'left' }}>
+            <div className="text-xs text-neutral-600 leading-relaxed">
+              <strong className="block mb-1">A rank drop is just a game thing.</strong>
+              It doesn't mean anything about your health. Keep logging — you'll climb back.
+            </div>
+          </div>
+        )}
+
+        <button onClick={() => setStage('idle')} className="duo-btn mt-8" style={{ background: isPromo ? 'var(--green)' : 'var(--blue)', borderBottomColor: isPromo ? 'var(--green-dark)' : 'var(--blue-dark)' }}>
+          {isPromo ? 'Awesome!' : 'Got it'}
+        </button>
+      </div>
+    );
+  }
+
+  // Scanning
+  if (stage === 'scanning') {
+    return (
+      <div className="px-5 pt-16 text-center">
+        <div className="mx-auto pop" style={{ width: 120, height: 120 }}>
+          <Scoop size={120} mood="wow" />
+        </div>
+        <div className="font-display text-3xl mt-6">
+          Scanning<span className="dot-1">.</span><span className="dot-2">.</span><span className="dot-3">.</span>
+        </div>
+        <div className="text-sm text-neutral-500 mt-2">Gemini Vision is analyzing</div>
+        <div className="mt-10 space-y-3 max-w-xs mx-auto text-left">
+          <div className="card py-3 px-4 flex items-center gap-3">
+            <span className="text-green-500 text-xl">✓</span>
+            <span className="text-sm font-semibold">Shape detected</span>
+          </div>
+          <div className="card py-3 px-4 flex items-center gap-3">
+            <span className="text-green-500 text-xl">✓</span>
+            <span className="text-sm font-semibold">Colour analyzed</span>
+          </div>
+          <div className="card py-3 px-4 flex items-center gap-3">
+            <span className="pulse-soft text-xl">⏳</span>
+            <span className="text-sm font-semibold">Bristol score...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Idle — Duolingo-style camera screen
+  return (
+    <div className="px-5 pt-6 slide-up">
+      <div className="flex items-center gap-3 mb-6">
+        <div style={{ width: 80, height: 80 }}>
+          <Scoop size={80} waving mood="happy" />
+        </div>
+        <div>
+          <div className="font-display text-3xl">Daily Log</div>
+          <div className="text-sm text-neutral-500">Scoop is ready to analyze!</div>
+        </div>
+      </div>
+
+      {/* Big friendly capture area */}
+      <div
+        className="rounded-3xl aspect-[3/4] cursor-pointer flex flex-col items-center justify-center transition"
+        onClick={() => fileRef.current?.click()}
+        style={{
+          background: hasPhoto ? 'var(--green-light)' : 'var(--bg-soft)',
+          border: `3px dashed ${hasPhoto ? 'var(--green)' : 'var(--border)'}`
+        }}
+      >
+        {hasPhoto ? (
+          <>
+            <div className="text-7xl">📸</div>
+            <div className="mt-3 font-display text-xl" style={{ color: 'var(--green-dark)' }}>Ready!</div>
+          </>
+        ) : (
+          <>
+            <div className="text-7xl">📷</div>
+            <div className="mt-3 font-display text-xl text-neutral-500">TAP TO CAPTURE</div>
+            <div className="text-xs text-neutral-400 mt-1">or upload from gallery</div>
+          </>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={(e) => { if (e.target.files?.[0]) setHasPhoto(true); }}
+        />
+      </div>
+
+      <div className="mt-4 p-3 rounded-xl text-center text-xs text-neutral-600 leading-relaxed" style={{ background: 'var(--bg-soft)' }}>
+        📱 Photos are analyzed on-device and never leave your phone.
+      </div>
+
+      <button
+        disabled={!hasPhoto}
+        onClick={() => setStage('scanning')}
+        className="duo-btn mt-6"
+      >
+        Analyze Now
+      </button>
+
+      <button
+        onClick={() => { setHasPhoto(true); setStage('scanning'); }}
+        className="mt-3 w-full text-xs text-neutral-400 underline"
+      >
+        Demo mode: skip capture
+      </button>
+    </div>
+  );
+}
+
+/* ============================================================
+   HEALTH SCREEN — Duolingo style
+   ============================================================ */
+function HealthScreen({ history, profile, setTab }) {
+  const last7 = history.slice(-7);
+  const avgBristol = last7.length ? (last7.reduce((a,h) => a + h.bristol, 0) / last7.length) : 0;
+  const avgScore = last7.length ? Math.round(last7.reduce((a,h) => a + (h.score || 0), 0) / last7.length) : 0;
+  const concerning = last7.filter(h => h.bristol === 1 || h.bristol === 7).length;
+  const ideal = last7.filter(h => h.bristol >= 3 && h.bristol <= 5).length;
+  const advice = generateAdvice(last7, profile);
+
+  const headlineColor = concerning >= 3 ? 'var(--red)' : ideal >= 5 ? 'var(--green)' : 'var(--gold)';
+  const headlineText = concerning >= 3 ? 'ROUGH WEEK' : ideal >= 5 ? 'HEALTHY!' : 'MIXED SIGNALS';
+  const headlineEmoji = concerning >= 3 ? '😣' : ideal >= 5 ? '🎉' : '🤔';
+
+  return (
+    <div className="px-5 pt-6 slide-up">
+      <div className="flex items-center gap-3 mb-6">
+        <div style={{ width: 72, height: 72 }}>
+          <Scoop size={72} mood={ideal >= 5 ? 'happy' : 'sad'} />
+        </div>
+        <div>
+          <div className="font-display text-3xl">Your Health</div>
+          <div className="text-sm text-neutral-500">What your gut is telling you</div>
+        </div>
+      </div>
+
+      {/* Headline */}
+      <div className="card text-center py-6" style={{ borderColor: headlineColor, borderWidth: 3 }}>
+        <div className="text-4xl">{headlineEmoji}</div>
+        <div className="font-display text-3xl mt-2" style={{ color: headlineColor }}>
+          {headlineText}
+        </div>
+        <div className="text-sm text-neutral-600 mt-2">
+          Avg Bristol <strong>{avgBristol.toFixed(1)}</strong> · Avg Score <strong>{avgScore}</strong>
+        </div>
+      </div>
+
+      {/* 14-day chart */}
+      <div className="card mt-4">
+        <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3">Last 14 days</div>
+        <div className="flex items-end justify-between h-24 gap-1">
+          {history.slice(-14).map((h, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1" title={`Bristol ${h.bristol}, Score ${h.score}`}>
+              <div className="text-[9px] text-neutral-400">{h.score || '-'}</div>
+              <div
+                className="w-full rounded-t"
+                style={{
+                  height: `${(h.bristol / 7) * 100}%`,
+                  background: BRISTOL[h.bristol].color,
+                  minHeight: '4px',
+                  boxShadow: (h.bristol === 1 || h.bristol === 7) ? '0 0 6px rgba(255,75,75,0.6)' : 'none'
+                }}
+              ></div>
+              <div className="text-[9px] text-neutral-500 font-bold">{h.bristol}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Hydration + fibre */}
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="card text-center">
+          <div className="text-3xl">💧</div>
+          <div className="font-display text-xl mt-1" style={{ color: 'var(--blue)' }}>GOOD</div>
+          <div className="text-xs text-neutral-500 mt-1">Hydration on track</div>
+        </div>
+        <div className="card text-center">
+          <div className="text-3xl">🌾</div>
+          <div className="font-display text-xl mt-1" style={{ color: 'var(--gold-dark)' }}>LOW</div>
+          <div className="text-xs text-neutral-500 mt-1">Need more fibre</div>
+        </div>
+      </div>
+
+      {/* Advice cards */}
+      <div className="mt-6">
+        <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3">For You</div>
+        <div className="space-y-3">
+          {advice.map((a, i) => (
+            <div key={i} className="card">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">{a.icon}</div>
+                <div className="flex-1">
+                  <div className="font-bold">{a.title}</div>
+                  <div className="text-sm text-neutral-600 mt-1 leading-relaxed">{a.body}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Doctor export */}
+      <div className="card mt-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-bold">Export for your doctor</div>
+            <div className="text-xs text-neutral-500 mt-0.5">30-day history as a PDF</div>
+          </div>
+          <button className="duo-btn blue" style={{ width: 'auto', padding: '10px 20px' }}>Export</button>
+        </div>
+      </div>
+
+      <div className="mt-6 text-center text-[11px] text-neutral-500 leading-relaxed">
+        GutCheck is a tracker, not a diagnostic service. For symptoms that worry you, see a doctor.
+      </div>
+    </div>
+  );
+}
+
+function generateAdvice(last7, profile) {
+  const list = [];
+  const avgBristol = last7.length ? last7.reduce((a,h)=>a+h.bristol,0) / last7.length : 4;
+  const concerning = last7.filter(h => h.bristol === 1 || h.bristol === 7).length;
+  const type5 = last7.filter(h => h.bristol === 5).length;
+  const type2 = last7.filter(h => h.bristol === 2).length;
+
+  if (avgBristol < 3) {
+    list.push({ icon: '💧', title: 'Drink more water', body: 'Your pattern suggests dehydration. Aim for 2L daily. A glass of warm water in the morning helps a lot.' });
+    list.push({ icon: '🌾', title: 'Load up on fibre', body: 'Oats, chia, psyllium, ripe bananas. Add one serving daily and give it 3–5 days to kick in.' });
+  }
+  if (avgBristol > 5) {
+    list.push({ icon: '🍚', title: 'Try BRAT foods', body: 'Bananas, rice, applesauce, toast. They firm things up. Skip caffeine and sugar alcohols for a few days.' });
+    list.push({ icon: '🧂', title: 'Replace electrolytes', body: 'Loose stools lose sodium and potassium. Broth, coconut water, or ORS sachets help you rebalance.' });
+  }
+  if (type5 >= 2 && avgBristol <= 5) {
+    list.push({ icon: '🥗', title: 'More insoluble fibre', body: 'Type 5s often mean low roughage. Leafy greens, whole grains, seeds.' });
+  }
+  if (type2 >= 2 && avgBristol >= 3) {
+    list.push({ icon: '🚶', title: 'Take a walk', body: 'A 20-minute walk after meals helps a lot with mild constipation. So does managing stress.' });
+  }
+  if (concerning >= 2) {
+    list.push({ icon: '👨‍⚕️', title: 'Watch this pattern', body: `You've had ${concerning} concerning days. If it continues for 3+ more, consider chatting with your GP or pharmacist.` });
+  }
+  if (list.length < 2) {
+    list.push({ icon: '🌟', title: 'Keep it up!', body: 'Your pattern is healthy. Stay consistent with fluids, fibre, and sleep.' });
+  }
+  if (profile.conditions.includes('IBS-D')) {
+    list.push({ icon: '📓', title: 'IBS-D tip', body: 'Log what you ate alongside your worst days. Common triggers: dairy, FODMAPs, alcohol, large meals.' });
+  }
+  return list.slice(0, 4);
+}
+
+/* ============================================================
+   PROFILE SCREEN
+   ============================================================ */
+function ProfileScreen({ profile, setProfile, rating, streak, history, tier, friends }) {
+  const [editing, setEditing] = useState(false);
+  const CONDITIONS = ['None', 'IBS-C', 'IBS-D', 'IBS-M', "Crohn's", 'Ulcerative colitis', 'Celiac', 'Lactose intolerance', 'GERD'];
+  const DIETS = ['None', 'Vegetarian', 'Vegan', 'Low-FODMAP', 'Gluten-free', 'Dairy-free', 'Keto'];
+
+  function toggleFrom(list, setter, item) {
+    if (list.includes(item)) setter(list.filter(x => x !== item));
+    else setter([...list, item]);
+  }
+
+  return (
+    <div className="px-5 pt-6 slide-up">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div style={{ width: 72, height: 72 }}>
+            <Scoop size={72} waving mood="happy" />
+          </div>
+          <div>
+            <div className="font-display text-3xl">Profile</div>
+            <div className="text-sm text-neutral-500">Hey, {profile.name.split(' ')[0]}!</div>
+          </div>
+        </div>
+        <button onClick={() => setEditing(!editing)} className="duo-btn blue" style={{ width: 'auto', padding: '8px 16px', fontSize: 12 }}>
+          {editing ? 'Done' : 'Edit'}
+        </button>
+      </div>
+
+      {/* Avatar + name */}
+      <div className="card flex items-center gap-4">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center font-display text-3xl shrink-0"
+          style={{ background: 'var(--green)', color: 'white' }}>
+          {profile.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
+        </div>
+        <div className="flex-1 min-w-0">
+          {editing ? (
+            <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} />
+          ) : (
+            <>
+              <div className="font-display text-2xl truncate">{profile.name}</div>
+              <div className="text-xs text-neutral-500 mt-1">Joined Jan 2026 · {friends.length} friends</div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        <StatBlock icon="🏆" label="League" value={tier.name.slice(0,4)} />
+        <StatBlock icon="📊" label="Logs" value={history.length + 20} />
+        <StatBlock icon="🔥" label="Streak" value={streak} />
+      </div>
+
+      {/* Personal */}
+      <Section title="Personal">
+        <Field label="Age" editing={editing}>
+          {editing ? (
+            <input type="number" value={profile.age} onChange={e => setProfile({...profile, age: parseInt(e.target.value) || 0})} />
+          ) : <span className="font-semibold">{profile.age}</span>}
+        </Field>
+        <Field label="Gender" editing={editing}>
+          {editing ? (
+            <select value={profile.gender} onChange={e => setProfile({...profile, gender: e.target.value})}>
+              <option>Prefer not to say</option>
+              <option>Female</option>
+              <option>Male</option>
+              <option>Non-binary</option>
+              <option>Other</option>
+            </select>
+          ) : <span className="font-semibold">{profile.gender}</span>}
+        </Field>
+      </Section>
+
+      {/* Conditions */}
+      <Section title="Health conditions">
+        <div className="flex flex-wrap gap-2">
+          {editing ? CONDITIONS.map(c => (
+            <button key={c} onClick={() => toggleFrom(profile.conditions, (v) => setProfile({...profile, conditions: v}), c)}
+              className={`chip ${profile.conditions.includes(c) ? 'on' : ''}`}>{c}</button>
+          )) : (profile.conditions.length === 0 ? <span className="text-xs text-neutral-500">None listed</span> :
+            profile.conditions.map(c => <span key={c} className="chip on">{c}</span>))}
+        </div>
+        <div className="text-[11px] text-neutral-500 mt-3 leading-relaxed">
+          Used to personalize your health advice. Never shared, never used for your ranking.
+        </div>
+      </Section>
+
+      {/* Diet */}
+      <Section title="Dietary preferences">
+        <div className="flex flex-wrap gap-2">
+          {editing ? DIETS.map(d => (
+            <button key={d} onClick={() => toggleFrom(profile.diet, (v) => setProfile({...profile, diet: v}), d)}
+              className={`chip ${profile.diet.includes(d) ? 'on' : ''}`}>{d}</button>
+          )) : (profile.diet.length === 0 ? <span className="text-xs text-neutral-500">None listed</span> :
+            profile.diet.map(d => <span key={d} className="chip on">{d}</span>))}
+        </div>
+      </Section>
+
+      {/* Medications */}
+      <Section title="Medications">
+        {editing ? (
+          <textarea
+            value={profile.medications}
+            onChange={e => setProfile({...profile, medications: e.target.value})}
+            placeholder="Optional. e.g. 'Loperamide as needed'"
+            rows="3"
+          />
+        ) : (
+          <div className="text-sm font-semibold">{profile.medications || <span className="text-neutral-500 font-normal">None listed</span>}</div>
+        )}
+      </Section>
+
+      {/* Achievements */}
+      <Section title="Achievements">
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { emoji: '🔥', label: 'Week' },
+            { emoji: '💧', label: 'Hydro' },
+            { emoji: '🌾', label: 'Fibre' },
+            { emoji: '📈', label: 'Climb' },
+            { emoji: '🌟', label: '?' },
+            { emoji: '👑', label: '?' },
+            { emoji: '🎯', label: '?' },
+            { emoji: '🏃', label: '?' }
+          ].map((a, i) => (
+            <div key={i} className="aspect-square rounded-xl flex flex-col items-center justify-center text-2xl"
+              style={{
+                background: i < 4 ? 'var(--green-light)' : 'var(--bg-soft)',
+                border: '2px solid ' + (i < 4 ? 'var(--green)' : 'var(--border)'),
+                opacity: i < 4 ? 1 : 0.5
+              }}>
+              <div>{a.emoji}</div>
+              <div className="text-[9px] font-bold mt-0.5 text-neutral-600">{a.label}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <div className="mt-6">
+      <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3">{title}</div>
+      <div className="card space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function Field({ label, children, editing }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="text-xs text-neutral-500 font-bold uppercase tracking-widest min-w-[80px]">{label}</div>
+      <div className="flex-1 max-w-[220px] text-right">{children}</div>
+    </div>
+  );
+}
+
+/* ============================================================
+   SETTINGS SCREEN
+   ============================================================ */
+function SettingsScreen({ competitiveMode, setCompetitiveMode }) {
+  const [shareRank, setShareRank] = useState(true);
+  const [savePhotos, setSavePhotos] = useState(false);
+  const [doctorExport, setDoctorExport] = useState(true);
+  const [reminders, setReminders] = useState(true);
+  const [reminderTime, setReminderTime] = useState('09:00');
+
+  return (
+    <div className="px-5 pt-6 slide-up">
+      <div className="flex items-center gap-3 mb-6">
+        <div style={{ width: 72, height: 72 }}>
+          <Scoop size={72} mood="happy" />
+        </div>
+        <div>
+          <div className="font-display text-3xl">Settings</div>
+          <div className="text-sm text-neutral-500">Make it yours</div>
+        </div>
+      </div>
+
+      {/* Competitive mode — top placement, most important toggle */}
+      <SettingsGroup title="Competitive Mode">
+        <Toggle
+          label="Enable competitive ranking"
+          sub="Scan scores change your rating. Can go up or down. Just for fun — does not reflect your health."
+          value={competitiveMode}
+          onChange={setCompetitiveMode}
+        />
+        {competitiveMode && (
+          <div className="p-3 rounded-xl text-xs text-amber-900 leading-relaxed" style={{ background: '#fff5e0', border: '2px solid #ffc800' }}>
+            <strong className="block mb-1">⚠️ Competitive mode is ON.</strong>
+            Your scan scores affect your rating. Low scores can drop your rank. Toggle off any time.
+          </div>
+        )}
+      </SettingsGroup>
+
+      {/* Notifications */}
+      <SettingsGroup title="Notifications">
+        <Toggle label="Daily log reminder" sub="One gentle nudge per day" value={reminders} onChange={setReminders} />
+        {reminders && (
+          <div className="flex items-center justify-between py-2">
+            <div className="text-sm font-semibold">Reminder time</div>
+            <input type="time" value={reminderTime} onChange={e => setReminderTime(e.target.value)} style={{ width: 'auto' }} />
+          </div>
+        )}
+      </SettingsGroup>
+
+      {/* Privacy */}
+      <SettingsGroup title="Privacy">
+        <Toggle label="Share rank with friends" sub="Your tier is visible. Never your photos or scores." value={shareRank} onChange={setShareRank} />
+        <Toggle label="Save photos locally" sub="Encrypted, on this device only. Never uploaded." value={savePhotos} onChange={setSavePhotos} />
+        <Toggle label="Doctor PDF export" sub="30-day history for appointments." value={doctorExport} onChange={setDoctorExport} />
+      </SettingsGroup>
+
+      {/* Privacy promises */}
+      <div className="mt-4 card" style={{ background: 'var(--green-light)', borderColor: 'var(--green)' }}>
+        <div className="text-xs uppercase tracking-widest font-bold mb-2" style={{ color: 'var(--green-dark)' }}>Our Promises</div>
+        <div className="space-y-1.5 text-sm text-neutral-800 leading-relaxed">
+          <div>✓ Photos never leave your phone.</div>
+          <div>✓ Scores and photos never shared with anyone — including us.</div>
+          <div>✓ We never contact your doctor or insurance automatically.</div>
+          <div>✓ We never sell data. Ever.</div>
+          <div>✓ We're a tracker, not a diagnostic service.</div>
+        </div>
+      </div>
+
+      {/* Account */}
+      <SettingsGroup title="Account">
+        <SettingRow label="Email" value="alex@example.com" />
+        <SettingRow label="Sign out" chevron />
+      </SettingsGroup>
+
+      {/* Legal */}
+      <SettingsGroup title="Legal">
+        <SettingRow label="Terms of Service" chevron />
+        <SettingRow label="Privacy Policy" chevron />
+        <SettingRow label="Open-source licenses" chevron />
+      </SettingsGroup>
+
+      {/* Danger */}
+      <div className="mt-6 space-y-3">
+        <button className="duo-btn ghost">Export all my data</button>
+        <button className="duo-btn red">Delete account and all data</button>
+      </div>
+
+      <div className="mt-8 text-center text-[11px] text-neutral-500">
+        GutCheck v0.1.0 · HackCamp 2026
+      </div>
+    </div>
+  );
+}
+
+function SettingsGroup({ title, children }) {
+  return (
+    <div className="mt-6">
+      <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3">{title}</div>
+      <div className="card space-y-4">{children}</div>
+    </div>
+  );
+}
+
+function Toggle({ label, sub, value, onChange }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-bold">{label}</div>
+        {sub && <div className="text-xs text-neutral-500 mt-0.5 leading-relaxed">{sub}</div>}
+      </div>
+      <button
+        onClick={() => onChange(!value)}
+        className="w-12 h-7 rounded-full relative transition shrink-0"
+        style={{ background: value ? 'var(--green)' : '#e5e5e5' }}
+      >
+        <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all`}
+          style={{ left: value ? '22px' : '2px' }}></span>
+      </button>
+    </div>
+  );
+}
+
+function SettingRow({ label, value, chevron }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="text-sm font-bold">{label}</div>
+      <div className="flex items-center gap-2 text-xs text-neutral-500 font-semibold">
+        {value && <span>{value}</span>}
+        {chevron && <span>›</span>}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   BOTTOM NAV — Duolingo style
+   ============================================================ */
+function BottomNav({ current, onNavigate }) {
+  const items = [
+    { id: 'profile',     icon: '👤', label: 'Profile' },
+    { id: 'health',      icon: '❤️', label: 'Health' },
+    { id: 'camera',      icon: '📷', label: 'Log', center: true },
+    { id: 'competitive', icon: '🏆', label: 'League' },
+    { id: 'settings',    icon: '⚙️', label: 'Settings' }
+  ];
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t-2 px-2 pt-2 pb-5"
+      style={{ borderColor: 'var(--border)' }}>
+      <div className="flex justify-around items-end">
+        {items.map(it => {
+          const active = current === it.id;
+          if (it.center) {
+            return (
+              <button
+                key={it.id}
+                onClick={() => onNavigate(it.id)}
+                className="relative -mt-7 w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+                style={{
+                  background: 'var(--green)',
+                  borderBottom: '4px solid var(--green-dark)',
+                  color: 'white',
+                  boxShadow: '0 6px 20px rgba(88,204,2,0.35)'
+                }}
+              >
+                {it.icon}
+              </button>
+            );
+          }
+          return (
+            <button
+              key={it.id}
+              onClick={() => onNavigate(it.id)}
+              className="flex flex-col items-center gap-0.5 px-3 py-2 transition"
+              style={{ color: active ? 'var(--blue)' : '#999' }}
+            >
+              <span className="text-xl">{it.icon}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{it.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
