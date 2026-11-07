@@ -3,52 +3,47 @@
 Keep this current. Update it when the design changes.
 
 ## One-line pitch
-When the forecast turns dangerous, a named neighbour knows to knock, and the person at risk decides who that is.
+Wave to your people every day. When the power goes out, the same circle knows who to check on.
 
-## Product: heat-wave buddy network
-- The person at risk signs up themselves, sets their own heat threshold, names their own buddy, picks one alert channel, and can revoke in one tap.
-- Hard rule: nobody can enrol a person at risk. Others may share an invitation. Only the person accepts it, from their own login. A buddy is added only by the person's choice and with the buddy's acceptance.
-- When the forecast crosses the person's threshold, their buddy is alerted. The buddy checks in with one tap. The person can tap "I'm okay".
-- No automatic contact with strangers or agencies.
-- Not an emergency or safety service. Say so in the app and the pitch.
+## Product: Daily Wave plus outage layer
+- **The wave:** open the app and one large target sits under the thumb. One tap, done. A shared postcard grows as the reward. No feed, no tour, no settings before the first wave.
+- **Circle and reciprocity:** everyone waves and is waved at. Roles (person, buddy) appear only during an outage, and only because the person chose them.
+- **Person controls everything:** they pick buddies, the trigger (long outage in their area) and quiet hours. Pausing or leaving a circle needs no explanation and sends only a neutral "paused". Nobody can enrol a person at risk.
+- **Outage alert:** the buddy sees one screen with three choices: "I've got this", "Call them instead", "Can't, pass it on". Pass-on notifies the rest of the circle. No guilt copy.
+- **Quiet-nudge:** gentle prompt when someone goes quiet. Cuttable.
+- **Accessibility:** large targets, high contrast, screen-reader labels, no colour-only state, reduced-motion option for the postcard.
+- Collect equipment categories only (breathing equipment, refrigerated medication, mobility equipment), never specific conditions or medications.
 
-## Accessibility requirements (person-at-risk side)
-- Very large text, high contrast, big tap targets.
-- One-tap or spoken "I'm okay". Plain-language alert wording, more than one language if time allows.
-- Passwordless login. No passwords for an older user to forget.
+## Outage source
+BC Hydro regional and municipal RSS feed (15 minute cadence, area level). Parse fixture-first inside a 2-hour box. A clearly labelled simulate switch drives the demo. Show last-checked time. The undocumented map JSON is not relied on.
 
-## Scope order (cut from the bottom)
-1. One role (person at risk) with Auth0 login, threshold, and buddy.
-2. Live Environment Canada forecast for one station, one threshold.
-3. Threshold fires, buddy is alerted, one-tap check-in. This loop is the demo.
-4. Second role (buddy) with its own login.
-5. Labelled replay mode using the 2021 heat dome forecast.
-6. Escalation, extra polish. Likely cut.
+## Honesty rules (say aloud and show on screen)
+- Research is desk-based from public sources.
+- The circle in the demo is seeded and labelled as such.
+- The feed is unofficial and may be delayed.
+- Slide: this supplements emergency services and the person's own backup power plan.
 
 ## Stack
 - Frontend: TODO
 - Backend: TODO
-- Database / auth: Auth0 (passwordless login, role-based access for person vs buddy)
-- Hosting: TODO
-- Data / APIs: Environment Canada forecast data. Gemini only as a tool for plain-language alert wording, not an opt-in.
+- Auth: Auth0 (passwordless login, invitations)
+- Hosting: TODO. Must be a public URL so two real phones can open it.
+- Live updates: in-app live updates or polling. Avoid native push in 24 hours.
+- Gemini: optional tool only, not an opt-in
 
 ## Diagram
 
 ```mermaid
 flowchart LR
-    Person[Person at risk] -->|own login, threshold, buddy| App
-    Buddy -->|accepts invite, own login| App
-    EC[Environment Canada forecast] --> App
-    App -->|threshold crossed| Alert[Alert to named buddy]
-    Alert --> Buddy
-    Buddy -->|one-tap check-in| App
-    Replay[Labelled replay mode] -.demo only.-> App
+    Person -->|daily wave| Circle
+    Circle -->|wave back| Person
+    RSS[BC Hydro RSS or simulate switch] --> App
+    App -->|long outage in person's area| Buddy
+    Buddy -->|got this / call them / pass it on| Circle
 ```
 
-## Hour-8 gate (both must be yes)
-1. At least three real conversations done, and one finding changed the consent flow. Consent flow checked with a real person.
-2. A threshold fires from LIVE data, reaches a named buddy, and is confirmed with one tap, with Auth0 login working for one role.
-If not, switch to the fallback: flood watch from public river-gauge data with Tiger Data.
+## Demo order
+Quiet Tuesday (waves, postcard fills) -> person sets buddies, trigger, quiet hours, including pause -> outage turns the postcard urgent -> buddy alert, one-tap confirm, show pass-on -> roadmap slide (heat, chains) -> honest limits.
 
 ## Who owns what
-- Name: hardware is out. Assign: backend and data / frontend and Auth0 / research and pitch.
+- Assign: backend and data / frontend and design / research and pitch.

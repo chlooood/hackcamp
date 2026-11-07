@@ -31,7 +31,7 @@ Identify a problem facing a community and build a solution that makes a meaningf
 - Best Domain Name from GoDaddy Registry (digital gift card)
 
 ## Our pick
-TODO: choose ONE superlative to opt in to. Log the choice in decisions.md.
+Auth0 (decided 2026-11-07, see decisions.md). Confirm with organizers when the single opt-in must be declared.
 
 ## Submission checklist
 - [ ] Public repo
