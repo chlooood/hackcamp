@@ -67,5 +67,8 @@ Entire can send checkpoints to a SEPARATE private repo instead of the public one
 
 Not yet tested by us: how a teammate reads someone else's session. The documented commands are `entire session resume <branch>` and `entire checkpoint explain`. Try it with one small commit before relying on it. The `context/` files already cover day-to-day updates either way.
 
+## Entire promo (optional, per person)
+HackCamp gives each hacker an Entire promo: $10 of credit for 12 months, no card needed, code expires 2027-03-31. Claim yours at https://mlh.link/entire-signup and enter the code on the Entire billing screen. Codes are per person, so each teammate claims their own. Never paste a promo code into the repo or a prompt. The local CLI works without any of this. The credit only pays for Entire's hosted agents, and usage is billed to the account that owns the repo.
+
 ## Gemini key
 Get a free key at Google AI Studio. Save it in a local `.env` file as `GEMINI_API_KEY=...`. Never commit it.
