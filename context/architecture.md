@@ -16,7 +16,7 @@ This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo sca
 - **Gamification:** an original mascot of our own (not borrowed from any brand) that reacts to logging and grows through three stages. Streaks with a freeze. Small daily and weekly quests. Badges. Rule: reward logging, never outcomes. No ranking or points for any Bristol type, no shame copy for any type, a missed day is never punished.
 - **Social, "buddies" (never cut, activity only):** invite by link, accept to join, a circle of about five. By default a buddy sees only: logged today, streak, mascot level, emoji cheers (three fixed). Photos, Bristol type, colour, blood flag and cycle data are never shared unless the user turns on a specific field for a specific buddy. Remove or leave takes effect immediately. Nobody is added without accepting.
 - **Doctor summary (after the gate):** one page for the last 30 days: frequency, Bristol distribution, "possible blood" entries with dates, notes, a timeline. On-screen first, PDF is cuttable. Not a diagnosis.
-- **Cycle layer (optional, off by default, after the gate, cut first):** a cycle-day field on the log and a chart overlaying bowel pattern, bloating and pain by cycle day. Not gendered: it is a toggle for anyone with a cycle. Never shared with buddies, deletable, minimum stored. Copy says patterns to discuss with a doctor, no claims.
+- **Context chips (after the core loop):** one-tap, user-defined tags (travel, new food, stress, sleep, medication, cycle day) that show on the doctor summary as plain side-by-side lists. Cycle day is one chip among many, off by default, never shared with buddies, with no opt-in for sharing. The app computes no correlation and implies no cause. A quick comfort/bloating scale with neutral labels sits beside the chips for everyone. The cycle-overlay chart is a roadmap slide, not built. Not gendered.
 - **Accessibility:** large targets, high contrast, no colour-only state, text for every illustration, a "plain words" setting that swaps cute names for clinical ones, reduced motion, full use without the camera.
 - **Privacy:** delete-my-data button, no third-party analytics. Check the Gemini API data terms for the tier we use before the demo and say what we found.
 
@@ -54,6 +54,21 @@ flowchart LR
     DB -->|30-day summary| Doctor[Doctor summary]
 ```
 
+## Added scope (Senate run 9, size S, unratified; hours are the Senate's guesses, re-estimate)
+Build order: core loop (quick log, scan with confirm, streak with freeze, buddy activity), doctor summary on screen, demo-safe mode and scan-failure states, context chips, privacy ledger.
+- **Demo-safe mode and scan-failure states (about 4h):** blurry, not-a-sample and low-confidence photos return plain "cannot tell from a photo" states. A one-tap cached result is labelled on screen as a recording. Rehearse on venue wifi. The blood wording stays exact.
+- **Privacy ledger, minimal (about 3 to 4h):** a read-only "what buddies see" screen with per-field state, revoke, and delete-everything that really deletes the account and stored results. Declining an invite and removing a buddy are silent. Test delete and silent decline on two phones. If it slips, ship the read-only screen with revoke.
+- **Context chips (about 3h):** see Product. Never shown to buddies.
+- **Pause, streak-off and freeze (about 1.5h):** pause is invisible to buddies by default (a generic "away" label is opt-in). The streak can be turned off and the mascot still works. Test the leave paths in the demo build.
+- **PWA manifest and install prompt (about 0.5h).** Push stays on the roadmap.
+- **Accessibility pass (about 2h):** text labels beside every colour and Bristol type, large tap targets, reduced-motion toggle, screen-reader labels.
+- **Nothing to report (about 1h):** a one-tap entry that counts as logging, with neutral copy.
+- **Doctor-summary notes (about 1.5h):** a free-text "questions I want to ask" field, local to the user, no auto-suggestions.
+- **Mascot mood follows logging only:** happier when you check in, calm when you pause, no reaction to type or colour.
+- **Do not build:** a trend, insight or correlation engine; leaderboards, points or rank by type; photo storage or image history; an AI chat that explains results; public feeds or default health sharing; wearables.
+- **Demo moments:** (1) a live Play-Doh scan with a deliberate blurry failure, then a good shot and confirm, showing that only the structured record is stored; (2) a two-phone privacy proof: invite and accept, the buddy sees only "logged today" and the streak, silently decline a second invite, open the ledger, delete everything and show it gone.
+- **Medical-claim flag:** no signposting copy (phone numbers, "call 8-1-1") near the possible-blood flag until a clinician reviews it. Copy stays "see a doctor".
+
 ## Hour-8 gate (two real phones)
 Login works. A buddy invite is accepted. A photo of a Play-Doh sample goes to Gemini and returns a type, the user confirms, the entry saves and the streak ticks. The buddy's phone shows "logged today". Quick log without a photo works. The scan failure path ("Not sure, you pick") works. If the scan fails the gate, the manual picker becomes the main path and the scan is a bonus.
 
@@ -61,8 +76,9 @@ Login works. A buddy invite is accepted. A photo of a Play-Doh sample goes to Ge
 Run Gemini vision on five test images (Play-Doh, illustrations). Check refusals, latency and JSON validity before building around it.
 
 ## Cut order, first to last
-Cycle layer, group quests, mascot stages beyond three, doctor summary PDF (keep on-screen), emoji reactions beyond three, doctor summary on-screen.
-Never cut: quick log, scan with confirm and failure path, streak with freeze, login, buddy invite and accept with activity-only sharing, photos not stored, the blood wording.
+Not built, roadmap slide only unless everything else is done: cycle-overlay chart, weekly recap card, mascot cosmetics, group quests, push reminders.
+Among built items, cut first to last: doctor-summary notes, context chips, mascot stages beyond three, doctor summary PDF (keep on-screen), emoji reactions beyond three, nothing-to-report log, privacy-ledger polish (keep the read-only view, revoke and a true delete), doctor summary on-screen.
+Never cut: quick log, scan with confirm and failure path, streak with freeze, pause and streak-off (invisible to buddies by default), login, buddy invite and accept with activity-only sharing, photos not stored, the blood wording, the labelled cached demo, the PWA manifest, text labels beside colour.
 
 ## Rubric map
 - Problem Research: IBS prevalence, cycle-linked symptoms, diagnosis delay in young adults, the stigma of talking about it. Desk-based, see research.md.

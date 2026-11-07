@@ -18,13 +18,16 @@ Update this at the end of every session, whichever agent or person you are. Over
 5. Buddy invite and accept, activity-only feed ("logged today", streak, cheers).
 6. Mascot and design pass (the user leads).
 7. Hour-8 gate on two real phones (see architecture.md).
-8. After the gate, in this order if time allows: doctor summary on screen, quests, cycle layer.
+8. After the gate, in this order if time allows (Senate run 9): doctor summary on screen, demo-safe mode and scan-failure states, context chips (cycle day is one chip), privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
 9. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
 - Idea settled: the team lead confirmed C (Gut Check) over Senate run 8. Run 8 mitigations for C are in decisions.md and architecture.md.
 - Do a 30-minute competitor search for Gut Check. Say plainly that we have not verified whether any app combines cycle and bowel logging.
 - Make a cached known-good demo run behind a live/cached switch before hour 8.
+- Check Gemini latency, quota, accuracy and data-retention terms, and PIPEDA and BC privacy rules for health-adjacent data, before the pitch. Senate run 9 could not verify these.
+- No signposting copy (phone numbers) near the possible-blood flag until a clinician reviews it.
+- Senate run 9 hours are guesses and the result was unratified. The builder re-estimates before committing to the added scope.
 - Prize opt-in is open: Gemini (recommended) or Auth0. Decide by about hour 3. Ask organizers when the single opt-in must be declared.
 - Check the Gemini API data terms for the tier we use. Say what we found in the pitch.
 - Confirm all three teammates are comfortable pitching this to judges.
