@@ -22,6 +22,7 @@ Update this at the end of every session, whichever agent or person you are. Over
 9. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
+- DECISION PENDING (team lead): Senate run 8 says GO B (Spot the Difference) gated by a kill check, with A as fallback and C last. The user chose C earlier, and these context files still describe C. Nothing has been switched. If B is taken, follow the binding terms in decisions.md (written agreement first, one 90-minute budget, no relitigating). The competitor half of the kill check is done and found direct competitors for B (see decisions.md), so the Senate's Innovation score for B was too high.
 - Prize opt-in is open: Gemini (recommended) or Auth0. Decide by about hour 3. Ask organizers when the single opt-in must be declared.
 - Check the Gemini API data terms for the tier we use. Say what we found in the pitch.
 - Confirm all three teammates are comfortable pitching this to judges.
