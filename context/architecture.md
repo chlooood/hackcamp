@@ -6,7 +6,7 @@ Keep this current. Update it when the design changes.
 Log your poop in five seconds, let an AI read the photo, keep a streak with a few friends, and walk into the doctor's office with a record.
 
 ## Where this came from
-This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo scan, gamification and social tracking already exist in app stores (Dieta, PoopCheck, PoopMates, Unchikun). We chose to build anyway. Our edge is fun and polish, a privacy-first design (photos never stored, friends see activity and not health data), and an optional cycle layer. The pitch must not claim "first".
+This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo scan, gamification and social tracking already exist in app stores (Dieta, PoopCheck, PoopMates, Unchikun). We chose to build anyway. This is a hackathon judged on best idea, not a startup contest, so we stop researching competitors and build on their good ideas instead (multi-trait scan result, quests and levels, buddies, doctor-friendly summaries). Our edge is fun and polish, a privacy-first design (photos never stored, friends see activity and not health data), and a cycle-aware UI that works for women without being pink or gendered. We still do not say "first": it is a free Q and A trap.
 
 ## Product
 - **Core loop (never cut):** open the app, one big Log button, camera or "skip photo", the scan returns a Bristol type (1 to 7), colour, confidence and a "possible blood" flag, the user confirms or edits on one screen, the entry saves, the streak ticks, the mascot reacts. Target: five seconds.
@@ -16,7 +16,9 @@ This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo sca
 - **Gamification:** an original mascot of our own (not borrowed from any brand) that reacts to logging and grows through three stages. Streaks with a freeze. Small daily and weekly quests. Badges. Rule: reward logging, never outcomes. No ranking or points for any Bristol type, no shame copy for any type, a missed day is never punished.
 - **Social, "buddies" (never cut, activity only):** invite by link, accept to join, a circle of about five. By default a buddy sees only: logged today, streak, mascot level, emoji cheers (three fixed). Photos, Bristol type, colour, blood flag and cycle data are never shared unless the user turns on a specific field for a specific buddy. Remove or leave takes effect immediately. Nobody is added without accepting.
 - **Doctor summary (after the gate):** one page for the last 30 days: frequency, Bristol distribution, "possible blood" entries with dates, notes, a timeline. On-screen first, PDF is cuttable. Not a diagnosis.
-- **Context chips (after the core loop):** one-tap, user-defined tags (travel, new food, stress, sleep, medication, cycle day) that show on the doctor summary as plain side-by-side lists. Cycle day is one chip among many, off by default, never shared with buddies, with no opt-in for sharing. The app computes no correlation and implies no cause. A quick comfort/bloating scale with neutral labels sits beside the chips for everyone. The cycle-overlay chart is a roadmap slide, not built. Not gendered.
+- **Context chips (after the core loop):** one-tap, user-defined tags (travel, new food, stress, sleep, medication, cramps, bloating, period, cycle day) that show on the doctor summary as plain side-by-side lists. The app computes no correlation and implies no cause. A quick comfort/bloating scale with neutral labels sits beside the chips for everyone.
+- **Cycle support, first-class but opt-in (female-accessible UI):** onboarding asks one neutral question, "Do you track a cycle? (optional, skip any time)". No gender question. If yes: a quick cycle-day chip on the log screen, a thin cycle ribbon under the history timeline and on the doctor summary that only labels days (period, cycle day N) and never links them to results, and cycle data is never shown to buddies and has no sharing switch. If no: none of it appears. The cycle-overlay correlation chart stays a roadmap slide.
+- **Female-accessible UI (design lead owns):** warm neutral palette and a mascot that is not pink-coded or gendered, with 3 colourways the user picks; soft, non-gross illustrations (no photos in the UI outside the scan); validating copy for pain and bloating ("that sounds uncomfortable, want to note it?"), never "normal" or "abnormal"; a discreet mode (neutral home-screen name and icon in the PWA manifest, one-tap hide of entry details, nothing health-specific on a lock screen because we send no push); doctor summary framed as "bring a record to your appointment" with cycle labels side by side and a plain-text questions-to-ask field. Test the wording with at least two teammates or classmates who track a cycle, and say in the pitch that we asked a few people, not that we validated it.
 - **Accessibility:** large targets, high contrast, no colour-only state, text for every illustration, a "plain words" setting that swaps cute names for clinical ones, reduced motion, full use without the camera.
 - **Privacy:** delete-my-data button, no third-party analytics. Check the Gemini API data terms for the tier we use before the demo and say what we found.
 
@@ -84,7 +86,7 @@ Never cut: quick log, scan with confirm and failure path, streak with freeze, pa
 - Problem Research: IBS prevalence, cycle-linked symptoms, diagnosis delay in young adults, the stigma of talking about it. Desk-based, see research.md.
 - Technical: Gemini vision with structured output, auth and invitations, privacy-by-design data flow.
 - Design: five-second log, mascot, plain-words mode, accessibility.
-- Innovation: privacy-first social and the optional cycle layer. Not first, and we say so.
+- Innovation: privacy-first social plus cycle-aware, discreet, non-gendered design. Built on ideas that already work elsewhere. We do not say first.
 - Pitch: a memorable hook, an honest limits slide, a clear privacy answer.
 
 ## Pitch and demo safety (Senate run 8)
@@ -93,7 +95,7 @@ Never cut: quick log, scan with confirm and failure path, streak with freeze, pa
 - User confirm-or-edit is the real product. Gemini only pre-fills. Keep the manual path.
 - A cached known-good demo run sits behind a live/cached switch, so a stage network failure cannot stall the pitch. Pre-cache a good run before hour 8.
 - Illustrated or Play-Doh samples only. Never cite the smart-toilet 82 and 75 percent figures as ours.
-- The cycle layer is a roadmap slide unless everything else is done. Cite only the sourced facts (IBS about 12 percent in women vs 8.6 percent in men, endometriosis OR 3.26).
+- Cycle support is part of the demo (the ribbon on the doctor summary), but the overlay chart is a roadmap slide. Cite only the sourced facts (IBS about 12 percent in women vs 8.6 percent in men, pain and diarrhea rising pre-menses per IFFGD, endometriosis OR 3.26). Claim no link between a user's cycle and their results.
 
 ## Demo order
 Open, tap Log, scan a Play-Doh sample, show the confidence and confirm, mascot reacts and streak ticks, the buddy's phone shows "Sam logged today" and a cheer, the privacy screen showing what buddies can and cannot see, the doctor summary, optionally the cycle overlay, then the honest limits slide.

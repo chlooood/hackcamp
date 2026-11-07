@@ -21,19 +21,20 @@ Update this at the end of every session, whichever agent or person you are. Over
 6. Buddy invite and accept, activity-only feed ("logged today", streak, cheers).
 7. Mascot and design pass (the user leads).
 8. Hour-8 gate on two real phones (see architecture.md).
-9. After the gate, in this order if time allows (Senate run 9): doctor summary on screen, demo-safe mode and scan-failure states, context chips (cycle day is one chip), privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
+9. After the gate, in this order if time allows (Senate run 9, plus the cycle ribbon): doctor summary on screen, demo-safe mode and scan-failure states, context chips and the opt-in cycle ribbon with discreet mode, privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
 10. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
 - Ask organizers: how many superlative prizes can a team opt into (rules.md says one, the user was told several may be allowed, no source found), is judging by peers or a panel, and when must the opt-in be declared. Then update rules.md.
 - Prize opt-in is open: Gemini (recommended) or Auth0. Entire (a projector) is a third option only if the team wants to build a measured token-savings story, which is not planned. Decide by about hour 3.
 - Entire: decide whether session transcripts get pushed to the public repo. Default is no. Read a transcript for emails, keys or personal details before ever pushing.
-- Do a 30-minute competitor search for Gut Check. Say plainly that we have not verified whether any app combines cycle and bowel logging.
 - Make a cached known-good demo run behind a live/cached switch before hour 8.
 - Check Gemini latency, quota, accuracy and data-retention terms, and PIPEDA and BC privacy rules for health-adjacent data, before the pitch.
 - No signposting copy (phone numbers) near the possible-blood flag until a clinician reviews it.
 - Senate run 9 hours are guesses and the result was unratified. The builder re-estimates before committing to the added scope.
 - Confirm all three teammates are comfortable pitching this to judges.
+- Competitor research is stopped (hackathon, best idea). The pitch just never says "first".
+- Female-accessible UI: design lead sketches the cycle onboarding question, cycle ribbon, 3 mascot colourways and discreet mode early. Ask at least two people who track a cycle to read the wording.
 - Someone on the team must open each link in context/research.md and confirm the numbers before they go on a slide.
 
 ## How to run it
