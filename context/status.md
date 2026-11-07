@@ -10,10 +10,10 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 ## In progress
 - Nothing built yet. Stack not confirmed.
-- Entire is NOT installed anywhere yet. The agent sandbox could not install the CLI (blocked as an external-code install), so each teammate installs it on their own laptop. Steps are in sponsors.md.
+- Entire is installed and enabled on the user's laptop (v0.13.1, Claude Code hooks, push_sessions false, settings committed in 3b03f2a). The agent sandbox could not install it, so each teammate installs it on their own laptop. Steps are in sponsors.md.
 
 ## Next (in order)
-1. Each teammate installs Entire (Scoop on Windows) and runs `entire enable --agent claude-code --skip-push-sessions` in their clone, then `entire status`. Commit `.entire/settings.json` once, from one person, after checking it.
+1. Teammates: `git pull`, install Entire (Scoop `entire/entire` on Windows), run `entire enable --agent claude-code --skip-push-sessions`, then `entire status`. The user's laptop is done.
 2. Confirm stack and hosting (public URL, works on two phones).
 3. Hour-1 Gemini spike: five test images (Play-Doh, illustrations). Check refusals, latency, JSON validity. Pass: usable type on at least 4 of 5, a sensible low-confidence answer on a bad photo, a reply in about 3 seconds. Fail: the manual picker is the main path and the scan is a bonus.
 4. Login working on one phone.
