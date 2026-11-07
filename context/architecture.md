@@ -12,6 +12,11 @@ When the forecast turns dangerous, a named neighbour knows to knock, and the per
 - No automatic contact with strangers or agencies.
 - Not an emergency or safety service. Say so in the app and the pitch.
 
+## Accessibility requirements (person-at-risk side)
+- Very large text, high contrast, big tap targets.
+- One-tap or spoken "I'm okay". Plain-language alert wording, more than one language if time allows.
+- Passwordless login. No passwords for an older user to forget.
+
 ## Scope order (cut from the bottom)
 1. One role (person at risk) with Auth0 login, threshold, and buddy.
 2. Live Environment Canada forecast for one station, one threshold.
