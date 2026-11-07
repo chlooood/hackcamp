@@ -9,7 +9,8 @@ Update this at the end of every session, whichever agent or person you are. Over
 - context/sponsors.md now has an Entire section (what it is, install steps, what `entire enable` changes, the public-repo transcript warning).
 
 ## In progress
-- Nothing built yet. Stack not confirmed.
+- A teammate (Zan Tian) uploaded a front-end only prototype: `GutCheck — working prototype.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
+- Prototype conflicts with logged decisions, to resolve with the team: competitive rating goes up and down with scan score (effort-only is logged); privacy copy says photos are analysed on-device (we send them to Gemini and discard); health advice cards and fixed hydration/fibre readouts (do-not-build); gender, age, conditions and medications profile fields; one log per day lock; no quick log, confirm/edit or failure path; friends rank sharing defaults on; no streak freeze, buddy invite, gentle day, habits or cycle chip.
 - Entire is installed and enabled on the user's laptop (v0.13.1, Claude Code hooks, push_sessions false, settings committed in 3b03f2a). The agent sandbox could not install it, so each teammate installs it on their own laptop. Steps are in sponsors.md.
 
 ## Next (in order)
