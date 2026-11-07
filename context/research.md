@@ -25,3 +25,29 @@ We did not interview anyone. Say so in the pitch. Every line below is from a pub
 
 ## Outage data
 - BC Hydro publishes RSS feeds by region and municipality (about every 15 minutes, with time off, estimated restoration, customers affected, approximate area). An undocumented outage-map JSON exists and may change without notice. Not relied on. Found in an earlier session, re-check the feed page before building.
+
+## Gut health (Gut Check, added 2026-11-07; the Wave sections above are shelved)
+Desk research only. No interviews. Re-open each link before quoting a number on stage. Secondary sources are marked.
+
+### Why track
+- IBS prevalence is about 12 percent in women and 8.6 percent in men (secondary, Healthline): https://www.healthline.com/health/ibs-symptoms-in-females
+- Pain and diarrhea tend to rise in the late luteal, pre-menses phase, and a diary that tracks cycle days alongside symptoms helps women see patterns (IFFGD): https://iffgd.org/wp-content/uploads/123_Gynecological-Aspects-and-IBS-1.pdf
+- Women with endometriosis have a higher risk of IBS, pooled OR 3.26 (meta-analysis): https://pubmed.ncbi.nlm.nih.gov/32949284/
+- Time from symptoms to early-onset colorectal cancer diagnosis was often 4 to 6 months (JAMA Network Open 2024, via HealthDay, secondary): https://drugs.com/news/colon-cancers-rising-among-young-know-warning-signs-119416.html
+- In a 173-patient study, more than half had rectal bleeding and about 294 days passed from first bleeding to diagnosis (ASCO 2019, small and old): https://ecancer.org/en/news/16094-asco-2019-delays-lead-to-late-stage-diagnosis-of-young-people-with-colorectal-cancer
+- Canada screening for average-risk adults was still recommended from age 50 in a 2023 article (secondary, re-check before use): https://malaysia.news.yahoo.com/colon-cancer-rising-young-adults-canada-202508309.html
+- Do not pitch this as cancer detection. Colorectal cancer is rare in this age group. The point is a dated record that helps people be taken seriously.
+
+### Accuracy and privacy limits
+- Duke smart toilet: 81.66 percent balanced accuracy on stool form and 74.64 percent on gross blood: https://scholars.duke.edu/publication/1590038
+- Stanford smart toilet survey: 30 percent of 300 people felt uncomfortable, mostly privacy: https://server-nexa.polito.it/hyperkitty/list/nexa@server-nexa.polito.it/thread/ORK2UPFQSADJR3EEY2CIRWLBJDF5EOXX/ (mailing-list quote, find the Guardian original)
+- Auggi's 100 percent accuracy was on Play-Doh fakes: https://www.audacy.com/kywnewsradio/articles/cnn/how-your-poop-can-help-train-ai
+
+### What already exists (do not claim "first")
+- Dieta (free, photo recognition of 5 stool traits plus Bristol): https://dietahealth.squarespace.com/blog/stool-ai-live
+- PoopCheck (AI stool scan, Bristol, AI chat): https://apps.apple.com/us/app/id6737857695
+- Poop Tracker: Stool Diary (optional AI photo logging, doctor-friendly summaries): https://mwm.ai/apps/poop-tracker-stool-diary/6767535786
+- PoopMates (tracking, friends, image-analysis chat): https://www.producthunt.com/posts/970749
+- Unchikun (gamified, quests, levels, buddies): https://hunted.space/product/unchikun-poop-tracker
+- Precedent: Auggi won the MIT Ideas^2 Prize at MIT Grand Hack with stool-image algorithms, but it had clinical collaborators and pre-built tech: https://tech.cornell.edu/news/jacobs-institute-students-win-top-prize-at-mit-grand-hack
+- We did not check whether any of these combine cycle and bowel logging. Verify before saying we are the only one.

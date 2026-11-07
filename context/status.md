@@ -4,27 +4,30 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 ## Done
 - Repo set up with CLAUDE.md, AGENTS.md, and the context/ folder.
-- Idea is final: Daily Wave plus power-out check-in layer (Wave V2). Prize: Auth0. Senate run 7 confirmed it against five rivals. The webcam eye-tracking Alzheimer's idea was rejected. See decisions.md. Do not re-open the idea.
-- Cut order, terms screen, provenance text and pitch statements are logged in decisions.md and architecture.md.
+- Idea changed on 2026-11-07 (the user's call): Gut Check, a gamified, social gut diary with Gemini photo scan. It reverses the earlier "FINAL: stay on Wave V2". Wave V2 and Paper Trail are shelved, not deleted. See decisions.md.
+- Architecture, cut order, hour-8 gate, honesty rules and a gut-health research section are written.
 
 ## In progress
-- Nothing built yet. Stack not chosen.
+- Nothing built yet. Stack not confirmed.
 
 ## Next (in order)
-1. Pick stack and hosting (public URL, works on two phones).
-2. Auth0 passwordless login working on one phone.
-3. The wave: one tap, sent and received on two phones. Fix this before anything else.
-4. Circle invite and accept, postcard grows (image or grid plus counter).
-5. Simulated outage alert behind one trigger interface, with the three buddy choices, static provenance text, and buddies limited to accepted invites.
-6. Circle terms screen with revoke and leave.
-7. Hour-8 gate on two real phones: login, invite accepted, wave sent and received, postcard grows, simulated alert confirmed in one tap with decline present.
-8. Lock the demo script by hour 10. After the gate, in this order if time allows: quiet-nudge, offline wave queue, plain activity list, looks-wrong flag. Live RSS only as an optional 2-hour box.
-9. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
+1. Confirm stack and hosting (public URL, works on two phones).
+2. Hour-1 Gemini spike: five test images (Play-Doh, illustrations). Check refusals, latency, JSON validity.
+3. Login working on one phone.
+4. The log loop: quick log first, then photo scan, confirm, entry saved, streak ticks.
+5. Buddy invite and accept, activity-only feed ("logged today", streak, cheers).
+6. Mascot and design pass (the user leads).
+7. Hour-8 gate on two real phones (see architecture.md).
+8. After the gate, in this order if time allows: doctor summary on screen, quests, cycle layer.
+9. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
-- Desk research is in context/research.md. Someone on the team must open each link and confirm the numbers before they go on a slide.
-- Ask organizers when the single prize opt-in must be declared.
-- Entire is used as a tool only for now. Revisit the opt-in by about hour 3 after booth answers. Current pick stays Auth0.
+- Prize opt-in is open: Gemini (recommended) or Auth0. Decide by about hour 3. Ask organizers when the single opt-in must be declared.
+- Check the Gemini API data terms for the tier we use. Say what we found in the pitch.
+- Confirm all three teammates are comfortable pitching this to judges.
+- Someone on the team must open each link in context/research.md and confirm the numbers before they go on a slide.
+- Not checked: whether any existing app combines cycle and bowel logging. Do not say "only" until someone checks.
+- Entire is a tool only. It is not an opt-in.
 
 ## How to run it
 - TODO once code exists.
