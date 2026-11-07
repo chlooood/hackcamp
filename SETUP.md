@@ -1,5 +1,7 @@
 # Setup (2 minutes)
 
+Teammates: read TEAMMATES.md for the Windows setup, the per-session routine, and how Entire fits in.
+
 1. Copy `CLAUDE.md` and the `context/` folder into the root of your hackathon repo.
    If the repo already has a `CLAUDE.md`, paste this one's contents at the top instead of overwriting.
 2. Commit and push. Teammates pull.
