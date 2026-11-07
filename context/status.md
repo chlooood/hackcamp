@@ -22,7 +22,7 @@ Update this at the end of every session, whichever agent or person you are. Over
 9. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
-- Desk research sources not yet gathered (needed for Problem Research score). Offered: context/research.md with 3 to 5 public sources.
+- Desk research is in context/research.md. Someone on the team must open each link and confirm the numbers before they go on a slide.
 - Ask organizers when the single prize opt-in must be declared.
 - Entire is used as a tool only for now. Revisit the opt-in by about hour 3 after booth answers. Current pick stays Auth0.
 
