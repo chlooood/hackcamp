@@ -46,14 +46,26 @@ Send this to the team. Setup takes about 10 minutes on Windows.
 - Do not paste personal health details, emails or keys into prompts while Entire is recording.
 
 ## Sharing sessions between teammates (optional, one person sets it up)
-Entire can send checkpoints to a SEPARATE private repo instead of the public one:
-1. Make a private repo, for example `chlooood/hackcamp-sessions`, and add the teammates as collaborators.
-2. In the project folder: `entire configure --checkpoint-remote github:chlooood/hackcamp-sessions`
-3. Commit the settings change and push. Teammates `git pull`.
-4. Read the transcript before the first push: `entire checkpoint explain`. Secret redaction is best effort.
-5. Check with `entire status` that checkpoints are going to the private repo and not `origin`.
+Entire can send checkpoints to a SEPARATE private repo instead of the public one. Facts below are from docs.entire.io; the reading step is untested.
+1. Create an EMPTY private repo under the SAME GitHub account as the code repo, for example `chlooood/hackcamp-sessions`. Add the teammates as collaborators. A different owner does not work: Entire skips the private repo and falls back to the pusher's own origin.
+2. Run `entire configure --checkpoint-remote github:chlooood/hackcamp-sessions`.
+3. Open `.entire/settings.json` and change `"push_sessions": false` to `true`. While it is false, Entire pushes nothing to any remote, including the private repo. It should end up like this:
+   ```json
+   {
+     "enabled": true,
+     "strategy_options": {
+       "push_sessions": true,
+       "checkpoint_remote": { "provider": "github", "repo": "chlooood/hackcamp-sessions" }
+     },
+     "checkpoints": { "primary": { "type": "git-refs" } }
+   }
+   ```
+4. BEFORE the first push, read what is stored: `entire checkpoint explain`. Secret redaction is best effort. The first push sends all earlier checkpoints.
+5. Commit and push `.entire/settings.json`. Teammates `git pull`.
+6. Everyone pushes straight to `chlooood/hackcamp` as a collaborator. Never push from a fork.
+7. Check on GitHub: the private repo has an `entire/checkpoints/v1` branch and the public repo does not. If a teammate wants their sessions kept private, they put `"push_sessions": false` in `.entire/settings.local.json` (gitignored).
 
-Not yet tested by us: whether this also needs `push_sessions` turned on, and how teammates read each other's sessions (`entire session resume <branch>` and `entire checkpoint` are the documented commands). Try it with one small commit before relying on it. The `context/` files already cover day-to-day updates either way.
+Not yet tested by us: how a teammate reads someone else's session. The documented commands are `entire session resume <branch>` and `entire checkpoint explain`. Try it with one small commit before relying on it. The `context/` files already cover day-to-day updates either way.
 
 ## Gemini key
 Get a free key at Google AI Studio. Save it in a local `.env` file as `GEMINI_API_KEY=...`. Never commit it.
