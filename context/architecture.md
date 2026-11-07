@@ -29,7 +29,7 @@ This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo sca
 - The buddies in the demo are seeded and labelled.
 
 ## Prize
-Open. Gemini is now core (the scan). Auth0 is login and invites. The rules allow one opt-in. Recommendation: Gemini. Decide by about hour 3 and confirm timing with organizers. Until decided, rules.md still says Auth0.
+Open. Gemini is now core (the scan). Auth0 is login and invites. The rules allow one opt-in. Recommendation: Gemini (Senate run 8 agrees). Decide by about hour 3 and confirm timing with organizers. Until decided, rules.md still says Auth0.
 
 ## Stack (proposed, not confirmed)
 - Frontend and backend: Next.js with TypeScript on Vercel (public URL so two phones can open it)
@@ -70,6 +70,14 @@ Never cut: quick log, scan with confirm and failure path, streak with freeze, lo
 - Design: five-second log, mascot, plain-words mode, accessibility.
 - Innovation: privacy-first social and the optional cycle layer. Not first, and we say so.
 - Pitch: a memorable hook, an honest limits slide, a clear privacy answer.
+
+## Pitch and demo safety (Senate run 8)
+- Lead the pitch with the doctor summary and the privacy design (photo discarded, buddies see activity only, never "no blood"), not the stool.
+- Scripted Q and A answer: "We log, we never diagnose. The possible-blood flag only prompts a doctor visit." Do not pitch cancer detection.
+- User confirm-or-edit is the real product. Gemini only pre-fills. Keep the manual path.
+- A cached known-good demo run sits behind a live/cached switch, so a stage network failure cannot stall the pitch. Pre-cache a good run before hour 8.
+- Illustrated or Play-Doh samples only. Never cite the smart-toilet 82 and 75 percent figures as ours.
+- The cycle layer is a roadmap slide unless everything else is done. Cite only the sourced facts (IBS about 12 percent in women vs 8.6 percent in men, endometriosis OR 3.26).
 
 ## Demo order
 Open, tap Log, scan a Play-Doh sample, show the confidence and confirm, mascot reacts and streak ticks, the buddy's phone shows "Sam logged today" and a cheer, the privacy screen showing what buddies can and cannot see, the doctor summary, optionally the cycle overlay, then the honest limits slide.
