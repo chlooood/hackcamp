@@ -21,10 +21,11 @@ Update this at the end of every session, whichever agent or person you are. Over
 6. Buddy invite and accept, activity-only feed ("logged today", streak, cheers).
 7. Mascot and design pass (the user leads).
 8. Hour-8 gate on two real phones (see architecture.md).
-9. After the gate, in this order if time allows (Senate run 9, plus the cycle ribbon): doctor summary on screen, demo-safe mode and scan-failure states, context chips and the opt-in cycle ribbon with discreet mode, privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
+9. After the gate, add points and habit check-ins, the friends league and gentle day, then in this order if time allows (Senate run 9, plus the cycle ribbon): doctor summary on screen, demo-safe mode and scan-failure states, context chips and the opt-in cycle ribbon with discreet mode, privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
 10. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
+- Points, friends league, global leaderboard and gentle day were decided on 2026-11-07 (see architecture.md and decisions.md). Starter habits need a source link each, and ideally a clinician's read, before the demo. The habit-photo bonus on food photos carries a nudge-to-food-logging risk; mitigations are in decisions.md.
 - Ask organizers: how many superlative prizes can a team opt into (rules.md says one, the user was told several may be allowed, no source found), is judging by peers or a panel, and when must the opt-in be declared. Then update rules.md.
 - Prize opt-in is open: Gemini (recommended) or Auth0. Entire (a projector) is a third option only if the team wants to build a measured token-savings story, which is not planned. Decide by about hour 3.
 - Entire: decide whether session transcripts get pushed to the public repo. Default is no. Read a transcript for emails, keys or personal details before ever pushing.

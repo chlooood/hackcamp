@@ -13,7 +13,7 @@ This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo sca
 - **Photo scan (never cut, with confirm and failure path):** Gemini vision with structured JSON output, called server-side. The photo is analysed in memory and discarded. Only the structured result is stored. Low confidence, a refusal or an error shows "Not sure, you pick" with the manual picker.
 - **Blood wording (never cut):** the scan never says "no blood". It says "possible blood" or "can't tell from a photo". The user can set the flag by hand. Copy says this is not a diagnosis and to see a doctor about blood.
 - **Quick log without photo (never cut):** an illustrated Bristol picker. The whole app works with no camera.
-- **Gamification:** an original mascot of our own (not borrowed from any brand) that reacts to logging and grows through three stages. Streaks with a freeze. Small daily and weekly quests. Badges. Rule: reward logging, never outcomes. No ranking or points for any Bristol type, no shame copy for any type, a missed day is never punished.
+- **Gamification:** an original mascot of our own (not borrowed from any brand) that reacts to logging and grows through three stages. Streaks with a freeze. Badges. Rule: reward effort, never outcomes. No points, rank or bonus for any Bristol type, colour, blood flag, comfort score or cycle data, no shame copy for any type, a missed day is never punished. See "Points, leagues and gentle day" below.
 - **Social, "buddies" (never cut, activity only):** invite by link, accept to join, a circle of about five. By default a buddy sees only: logged today, streak, mascot level, emoji cheers (three fixed). Photos, Bristol type, colour, blood flag and cycle data are never shared unless the user turns on a specific field for a specific buddy. Remove or leave takes effect immediately. Nobody is added without accepting.
 - **Doctor summary (after the gate):** one page for the last 30 days: frequency, Bristol distribution, "possible blood" entries with dates, notes, a timeline. On-screen first, PDF is cuttable. Not a diagnosis.
 - **Context chips (after the core loop):** one-tap, user-defined tags (travel, new food, stress, sleep, medication, cramps, bloating, period, cycle day) that show on the doctor summary as plain side-by-side lists. The app computes no correlation and implies no cause. A quick comfort/bloating scale with neutral labels sits beside the chips for everyone.
@@ -27,6 +27,7 @@ This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo sca
 - Scan accuracy on real stool is untested. For scale, a research smart toilet reached about 82 percent balanced accuracy on form and about 75 percent on blood. We claim no number of our own.
 - The demo uses Play-Doh or illustrated samples, never real stool, and we say so.
 - Similar apps exist. We do not say first.
+- Rank shows effort, not health. This line is on every league screen. Points follow the user's own plan, and the starter habits are ideas from public guidance with a source link, not medical advice.
 - Research is desk-based from public sources, not interviews.
 - The buddies in the demo are seeded and labelled.
 
@@ -67,9 +68,22 @@ Build order: core loop (quick log, scan with confirm, streak with freeze, buddy 
 - **Nothing to report (about 1h):** a one-tap entry that counts as logging, with neutral copy.
 - **Doctor-summary notes (about 1.5h):** a free-text "questions I want to ask" field, local to the user, no auto-suggestions.
 - **Mascot mood follows logging only:** happier when you check in, calm when you pause, no reaction to type or colour.
-- **Do not build:** a trend, insight or correlation engine; leaderboards, points or rank by type; photo storage or image history; an AI chat that explains results; public feeds or default health sharing; wearables.
+- **Do not build:** a trend, insight or correlation engine; points, ranks or bonuses based on results (Bristol type, colour, blood flag, comfort score, cycle); showing, storing or sharing any photo; quantity targets (litres of water, steps, grams of fibre); calorie, weight, fasting or diet-restriction habits; an AI chat that explains results; public feeds or default health sharing; wearables.
 - **Demo moments:** (1) a live Play-Doh scan with a deliberate blurry failure, then a good shot and confirm, showing that only the structured record is stored; (2) a two-phone privacy proof: invite and accept, the buddy sees only "logged today" and the streak, silently decline a second invite, open the ledger, delete everything and show it gone.
 - **Medical-claim flag:** no signposting copy (phone numbers, "call 8-1-1") near the possible-blood flag until a clinician reviews it. Copy stays "see a doctor".
+
+## Points, leagues and gentle day (decided 2026-11-07; numbers are placeholders to tune)
+Everything below scores effort. Nothing reads or rewards what a log says.
+- **Daily points:** log anything (including "nothing to report") 100, once a day. Scan photo on a log +50. Habit check-in 50 each, up to 3 habits from the user's own plan. Habit photo +25 each, up to 3. Daily maximum 375. Big numbers, level-ups and weekly tier crowns are the "high stakes": status and cosmetics, never loss. No points are ever removed, no demotion copy, no wagers, no real money.
+- **Habits:** binary check-ins ("did it today"), no quantity targets. The app ships a starter plan from public guidance, each habit with a source link. No source, no habit. Users can add their own (for example something a doctor advised). Points follow the user's plan, not the app's opinion of the best plan. Never calorie, weight, fasting or diet-restriction habits. Copy says "ideas, not medical advice, ask your doctor if you have a condition".
+- **Photos:** scan photos and habit photos earn bonus points. Every photo is processed in memory and discarded. No photo is stored, and none is ever shown to anyone, food included. The bonus is a reward for engaging, and the app does not verify habit photos. A "photo-free" setting removes the bonus and the prompts; scoring stays fair because rank uses the percentage of your own possible points.
+- **Friends league (opt-in, weekly):** join each week or sit out. Sitting out shows nothing to friends. The app is fully usable with no league. Members see each other's weekly percentage and rank only. Rank is the percentage of your own possible points, ties share a rank, and the week resets so nobody sits in last place for good.
+- **Global leaderboard (opt-in, separate switch, build last):** pseudonymous handle generated from a word list plus a number (no free text, no photo, no real name), shows the weekly percentage and your own position. No messages, no profiles, no health fields.
+- **Cooperative circle quest (optional, cut early):** if everyone in the circle logs 5 days this week, the shared mascot garden grows.
+- **Gentle day:** one tap, any reason (period, illness, travel, stress). The day's goal drops to just logging, the streak is safe, friends and leagues see nothing. For people who opted into cycle tracking, the app can privately offer gentle days during their period. Never automatic, never visible. The cycle never earns points, ranks, quests or photos.
+- **Mascot cosmetics:** unlocked by total days logged and weekly tiers (both effort), never by results.
+- **Rough cost (guesses):** points and habit check-ins about 3h, friends league about 2h, gentle day about 1h, cosmetics about 3h, global board about 1.5h, circle quest about 2h. Build order: core loop, doctor summary, points and habits, friends league, gentle day, then the rest in cut order reversed.
+- **Open:** starter habits need sources and ideally a clinician's read before the demo. Habit-photo bonus on food photos is the team lead's call; the risk (it nudges food logging) was raised once and the mitigations are photo-free mode, no storage, no quantity or diet habits.
 
 ## Hour-8 gate (two real phones)
 Login works. A buddy invite is accepted. A photo of a Play-Doh sample goes to Gemini and returns a type, the user confirms, the entry saves and the streak ticks. The buddy's phone shows "logged today". Quick log without a photo works. The scan failure path ("Not sure, you pick") works. If the scan fails the gate, the manual picker becomes the main path and the scan is a bonus.
@@ -78,9 +92,9 @@ Login works. A buddy invite is accepted. A photo of a Play-Doh sample goes to Ge
 Run Gemini vision on five test images (Play-Doh, illustrations). Check refusals, latency and JSON validity before building around it.
 
 ## Cut order, first to last
-Not built, roadmap slide only unless everything else is done: cycle-overlay chart, weekly recap card, mascot cosmetics, group quests, push reminders.
-Among built items, cut first to last: doctor-summary notes, context chips, mascot stages beyond three, doctor summary PDF (keep on-screen), emoji reactions beyond three, nothing-to-report log, privacy-ledger polish (keep the read-only view, revoke and a true delete), doctor summary on-screen.
-Never cut: quick log, scan with confirm and failure path, streak with freeze, pause and streak-off (invisible to buddies by default), login, buddy invite and accept with activity-only sharing, photos not stored, the blood wording, the labelled cached demo, the PWA manifest, text labels beside colour.
+Not built, roadmap slide only unless everything else is done: cycle-overlay chart, weekly recap card, push reminders.
+Among built items, cut first to last: global leaderboard, cooperative circle quest, habit-photo bonus, mascot cosmetics, doctor-summary notes, context chips, mascot stages beyond three, doctor summary PDF (keep on-screen), emoji reactions beyond three, nothing-to-report log, privacy-ledger polish (keep the read-only view, revoke and a true delete), doctor summary on-screen.
+Never cut: gentle day (if points ship), the "rank shows effort, not health" line (if any league ships), no photo ever shown or stored, quick log, scan with confirm and failure path, streak with freeze, pause and streak-off (invisible to buddies by default), login, buddy invite and accept with activity-only sharing, photos not stored, the blood wording, the labelled cached demo, the PWA manifest, text labels beside colour.
 
 ## Rubric map
 - Problem Research: IBS prevalence, cycle-linked symptoms, diagnosis delay in young adults, the stigma of talking about it. Desk-based, see research.md.
