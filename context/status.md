@@ -4,36 +4,37 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 ## Done
 - Repo set up with CLAUDE.md, AGENTS.md, and the context/ folder.
-- Idea changed on 2026-11-07 (the user's call): Gut Check, a gamified, social gut diary with Gemini photo scan. It reverses the earlier "FINAL: stay on Wave V2". Wave V2 and Paper Trail are shelved, not deleted. See decisions.md.
+- Idea: Gut Check, a gamified, social gut diary with Gemini photo scan (the user's call, 2026-11-07). Final. Reaffirmed after Senate run 10 and a competitor check of its alternatives: every alternative has shipped competitors too. Wave V2, Paper Trail and the run 10 ideas are shelved, not deleted. See decisions.md and research.md.
 - Architecture, cut order, hour-8 gate, honesty rules and a gut-health research section are written.
+- context/sponsors.md now has an Entire section (what it is, install steps, what `entire enable` changes, the public-repo transcript warning).
 
 ## In progress
 - Nothing built yet. Stack not confirmed.
+- Entire is NOT installed anywhere yet. The agent sandbox could not install the CLI (blocked as an external-code install), so each teammate installs it on their own laptop. Steps are in sponsors.md.
 
 ## Next (in order)
-1. Confirm stack and hosting (public URL, works on two phones).
-2. Hour-1 Gemini spike: five test images (Play-Doh, illustrations). Check refusals, latency, JSON validity.
-3. Login working on one phone.
-4. The log loop: quick log first, then photo scan, confirm, entry saved, streak ticks.
-5. Buddy invite and accept, activity-only feed ("logged today", streak, cheers).
-6. Mascot and design pass (the user leads).
-7. Hour-8 gate on two real phones (see architecture.md).
-8. After the gate, in this order if time allows (Senate run 9): doctor summary on screen, demo-safe mode and scan-failure states, context chips (cycle day is one chip), privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
-9. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
+1. Each teammate installs Entire (Scoop on Windows) and runs `entire enable --agent claude-code --skip-push-sessions` in their clone, then `entire status`. Commit `.entire/settings.json` once, from one person, after checking it.
+2. Confirm stack and hosting (public URL, works on two phones).
+3. Hour-1 Gemini spike: five test images (Play-Doh, illustrations). Check refusals, latency, JSON validity. Pass: usable type on at least 4 of 5, a sensible low-confidence answer on a bad photo, a reply in about 3 seconds. Fail: the manual picker is the main path and the scan is a bonus.
+4. Login working on one phone.
+5. The log loop: quick log first, then photo scan, confirm, entry saved, streak ticks.
+6. Buddy invite and accept, activity-only feed ("logged today", streak, cheers).
+7. Mascot and design pass (the user leads).
+8. Hour-8 gate on two real phones (see architecture.md).
+9. After the gate, in this order if time allows (Senate run 9): doctor summary on screen, demo-safe mode and scan-failure states, context chips (cycle day is one chip), privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
+10. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
-- Idea settled: the team lead confirmed C (Gut Check) over Senate run 8. Run 8 mitigations for C are in decisions.md and architecture.md.
+- Ask organizers: how many superlative prizes can a team opt into (rules.md says one, the user was told several may be allowed, no source found), is judging by peers or a panel, and when must the opt-in be declared. Then update rules.md.
+- Prize opt-in is open: Gemini (recommended) or Auth0. Entire (a projector) is a third option only if the team wants to build a measured token-savings story, which is not planned. Decide by about hour 3.
+- Entire: decide whether session transcripts get pushed to the public repo. Default is no. Read a transcript for emails, keys or personal details before ever pushing.
 - Do a 30-minute competitor search for Gut Check. Say plainly that we have not verified whether any app combines cycle and bowel logging.
 - Make a cached known-good demo run behind a live/cached switch before hour 8.
-- Check Gemini latency, quota, accuracy and data-retention terms, and PIPEDA and BC privacy rules for health-adjacent data, before the pitch. Senate run 9 could not verify these.
+- Check Gemini latency, quota, accuracy and data-retention terms, and PIPEDA and BC privacy rules for health-adjacent data, before the pitch.
 - No signposting copy (phone numbers) near the possible-blood flag until a clinician reviews it.
 - Senate run 9 hours are guesses and the result was unratified. The builder re-estimates before committing to the added scope.
-- Prize opt-in is open: Gemini (recommended) or Auth0. Decide by about hour 3. Ask organizers when the single opt-in must be declared.
-- Check the Gemini API data terms for the tier we use. Say what we found in the pitch.
 - Confirm all three teammates are comfortable pitching this to judges.
 - Someone on the team must open each link in context/research.md and confirm the numbers before they go on a slide.
-- Not checked: whether any existing app combines cycle and bowel logging. Do not say "only" until someone checks.
-- Entire is a tool only. It is not an opt-in.
 
 ## How to run it
 - TODO once code exists.
