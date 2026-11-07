@@ -8,3 +8,4 @@ Rules for working in this repo:
 - When the architecture changes, update `context/architecture.md`.
 - Prefer the simplest thing that demos well. We have limited time. Cut scope before adding features.
 - Flag anything that conflicts with `context/rules.md` (judging criteria, required sponsor tech, deadlines).
+- At the end of every session, update `context/status.md` (done, in progress, next, blockers) and commit, so a different agent or teammate can continue without losing context.
