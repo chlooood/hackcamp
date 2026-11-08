@@ -3,217 +3,824 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f5efe6">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <title>Plop</title>
 <style>
-  :root { --bg:#f5efe6; --card:#fffaf2; --ink:#2a2420; --soft:#6b6055; --line:#d9ccba; --accent:#2f6b5a; --accent-ink:#fff; --warn:#8a4b0f; }
+  :root {
+    --teal:#0D9488; --teal-dark:#0B6E64; --teal-soft:#E6F7F5; --teal-tile:#D5F5F0; --teal-pale:#CCF5EF;
+    --ink:#3C3C3C; --muted:#6F6F6F; --faint:#9AA5A5; --line:#EDEFEF; --track:#E3E8E8; --card:#F4F6F6;
+    --indigo:#4F46E5; --indigo-soft:#E8E7FF; --orange:#F97316; --orange-soft:#FFEDD5;
+    --gold:#F2B705; --gold-pale:#FFF3C4; --night:#141C30; --red:#C0312B;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width:480px; margin:0 auto; padding:20px 18px 48px; }
-  h1 { font-size:28px; margin:0; }
-  h2 { font-size:20px; margin:0 0 8px; }
-  .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-  .streak { font-weight:700; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:14px 0; }
-  .small { font-size:14px; color:var(--soft); }
-  button { font:inherit; min-height:52px; border-radius:14px; border:1px solid var(--line); background:var(--card); color:var(--ink); padding:12px 16px; width:100%; cursor:pointer; }
-  button.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:700; font-size:20px; min-height:64px; }
-  button + button { margin-top:10px; }
-  :focus-visible { outline:3px solid #1a4fd6; outline-offset:2px; }
-  .chip { display:inline-block; font-size:13px; font-weight:700; border:1px solid var(--line); border-radius:999px; padding:3px 10px; background:#fff; }
-  fieldset { border:0; padding:0; margin:0; }
-  legend { font-weight:700; margin-bottom:8px; }
-  label.opt { display:flex; gap:12px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:12px; margin:8px 0; background:#fff; min-height:52px; }
-  label.opt input { width:22px; height:22px; accent-color:var(--accent); }
-  label.opt:has(input:checked) { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent); }
-  .num { font-weight:700; width:1.4em; }
-  .note { background:#fff4e0; border:1px solid #e8c98a; color:var(--warn); border-radius:12px; padding:10px 12px; font-size:15px; }
-  img.preview { width:100%; max-height:220px; object-fit:cover; border-radius:12px; margin-bottom:10px; }
-  .hidden { display:none !important; }
-  details summary { cursor:pointer; min-height:44px; display:flex; align-items:center; }
-  .row { display:flex; gap:10px; } .row > * { flex:1; }
-  @media (prefers-reduced-motion: no-preference) { .pop { animation: pop .35s ease-out; } @keyframes pop { from { transform:scale(.96); opacity:.4 } to { transform:none; opacity:1 } } }
+  html, body { margin: 0; background: #FFFFFF; color: var(--ink); font-family: 'Nunito', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body.dark { background: #191D20; }
+  body.night { background: #171E33; }
+  body.slip { background: #252B3B; }
+  button { font-family: inherit; color: inherit; cursor: pointer; }
+  a { color: var(--teal); }
+  :focus-visible { outline: 3px solid #1747E6; outline-offset: 2px; border-radius: 8px; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; position: relative; }
+  .screen { padding: max(44px, env(safe-area-inset-top)) 20px 32px; display: flex; flex-direction: column; gap: 18px; }
+  .screen.with-nav { padding-bottom: 120px; }
+  .hidden { display: none !important; }
+  h1 { margin: 0; font-size: 26px; font-weight: 900; line-height: 1.15; }
+  h2 { margin: 0; font-size: 17px; font-weight: 900; }
+  .row { display: flex; align-items: center; gap: 12px; }
+  .between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .col { display: flex; flex-direction: column; }
+  .sub { font-size: 13px; font-weight: 700; color: var(--muted); line-height: 1.4; }
+  .hr { height: 1px; background: var(--line); }
+  .link { background: none; border: 0; padding: 0; font-size: 13px; font-weight: 800; color: var(--teal); text-decoration: underline; min-height: 32px; }
+  .icon-btn { width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 999px; }
+  .btn { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; width: 100%; border: 0; border-radius: 16px; font-size: 18px; font-weight: 900; text-decoration: none; }
+  .btn-teal { background: var(--teal); color: #FFFFFF; box-shadow: 0 8px 18px rgba(13,148,136,0.28); }
+  .btn-teal:disabled { background: #9FCFCB; box-shadow: none; cursor: default; }
+  .btn-yellow { background: #F8C840; color: #3C3C3C; }
+  .btn-outline { background: #FFFFFF; color: var(--teal-dark); border: 2px solid var(--teal); }
+  .pill { font-size: 13px; font-weight: 900; padding: 3px 10px; border-radius: 999px; }
+  .card { background: var(--card); border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .seg { display: flex; background: var(--card); border-radius: 999px; padding: 4px; }
+  .seg button { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; font-size: 14px; font-weight: 800; background: transparent; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: #FFFFFF; color: var(--ink); box-shadow: 0 1px 4px rgba(16,24,40,0.12); }
+  .seg.small button { min-height: 32px; padding: 0 10px; font-size: 12px; }
+  .toggle { width: 52px; height: 32px; border-radius: 999px; border: 0; padding: 3px; display: flex; flex-shrink: 0; background: #D3D9D9; justify-content: flex-start; transition: background .15s; }
+  .toggle span { width: 26px; height: 26px; border-radius: 999px; background: #FFFFFF; display: block; }
+  .toggle[aria-pressed="true"] { background: var(--teal); justify-content: flex-end; }
+  .toggle.indigo[aria-pressed="true"] { background: var(--indigo); }
+  .toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); background: #1E1E1E; color: #FFFFFF; font-size: 14px; font-weight: 800; padding: 10px 16px; border-radius: 14px; z-index: 50; max-width: calc(100% - 40px); text-align: center; }
+
+  /* bottom nav */
+  nav.main { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(16px, env(safe-area-inset-bottom)); width: calc(min(480px, 100%) - 28px); height: 66px; background: #FFFFFF; border-radius: 24px; box-shadow: 0 8px 24px rgba(16,24,40,0.16); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 6px; z-index: 20; }
+  nav.main a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 11px; font-weight: 800; color: var(--muted); text-decoration: none; border-radius: 18px; }
+  nav.main a[aria-current="page"] { font-weight: 900; }
+  nav.main a.cam span { width: 58px; height: 58px; margin-top: -30px; border-radius: 999px; background: var(--teal); border: 4px solid #FFFFFF; box-shadow: 0 6px 14px rgba(13,148,136,0.45); display: flex; align-items: center; justify-content: center; }
+
+  /* home */
+  .chip-bar { display: flex; align-items: center; gap: 10px; background: var(--card); border-radius: 999px; padding: 7px 12px; font-size: 15px; font-weight: 900; }
+  .hero { background: var(--teal-soft); border-radius: 24px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: end; height: 92px; }
+  .week > div { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 92px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .tiles > div { border-radius: 16px; padding: 10px; display: flex; flex-direction: column; }
+  .tiles b { font-size: 22px; font-weight: 900; line-height: 1.1; }
+  .tiles span { font-size: 12px; font-weight: 800; }
+  .quest { display: flex; align-items: center; gap: 12px; min-height: 36px; }
+  .qbox { width: 26px; height: 26px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; font-weight: 900; color: #FFFFFF; }
+
+  /* scan */
+  .scan { background: #191D20; color: #FFFFFF; min-height: 100vh; min-height: 100dvh; }
+  .scan .screen { align-items: stretch; }
+  .viewfinder { position: relative; aspect-ratio: 350 / 480; width: 100%; background: #262B2E; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; color: #A8B2B2; font-weight: 800; font-size: 15px; }
+  .viewfinder video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .corner { position: absolute; width: 44px; height: 44px; border: 4px solid #5EEAD4; z-index: 2; }
+  .corner.tl { top: 32px; left: 32px; border-right: 0; border-bottom: 0; border-top-left-radius: 14px; }
+  .corner.tr { top: 32px; right: 32px; border-left: 0; border-bottom: 0; border-top-right-radius: 14px; }
+  .corner.bl { bottom: 32px; left: 32px; border-right: 0; border-top: 0; border-bottom-left-radius: 14px; }
+  .corner.br { bottom: 32px; right: 32px; border-left: 0; border-top: 0; border-bottom-right-radius: 14px; }
+  .shutter { width: 84px; height: 84px; border-radius: 999px; border: 6px solid #FFFFFF; background: transparent; padding: 6px; align-self: center; }
+  .shutter span { display: block; width: 100%; height: 100%; border-radius: 999px; background: #FFFFFF; }
+  .shutter:disabled { opacity: .5; }
+  .reading { position: absolute; inset: 0; background: rgba(25,29,32,0.82); display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; z-index: 3; color: #FFFFFF; font-size: 18px; font-weight: 900; }
+  @media (prefers-reduced-motion: no-preference) {
+    .bob { animation: bob 1s ease-in-out infinite alternate; }
+    @keyframes bob { from { transform: translateY(0) } to { transform: translateY(-8px) } }
+    .pop { animation: pop .35s ease-out; }
+    @keyframes pop { from { transform: scale(.92); opacity: .3 } to { transform: none; opacity: 1 } }
+  }
+
+  /* result */
+  .score-card { position: relative; background: var(--teal); border-radius: 28px; padding: 20px 18px 18px; color: #FFFFFF; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+  .score-card .blob { position: absolute; right: -40px; top: -40px; width: 190px; height: 190px; border-radius: 999px; background: #14A396; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { min-height: 38px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 800; }
+  .comfort { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .comfort button { min-height: 46px; padding: 0 4px; border-radius: 14px; font-size: 14px; font-weight: 800; background: #FFFFFF; border: 2px solid var(--track); }
+
+  /* pick */
+  .types button { display: flex; align-items: center; gap: 14px; min-height: 54px; padding: 4px 12px; margin: 0 -12px; border-radius: 14px; border: 0; text-align: left; background: transparent; width: calc(100% + 24px); }
+  .types button[aria-pressed="true"] { background: var(--teal-soft); box-shadow: inset 0 0 0 2px var(--teal); }
+  .banner { background: #FEF6D3; border-radius: 18px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 800; color: #5C4500; }
+  .banner button { background: none; border: 0; color: #5C4500; font-weight: 900; text-decoration: underline; font-size: 15px; min-height: 40px; }
+  .sticky-bottom { position: sticky; bottom: 0; padding: 16px 0 max(16px, env(safe-area-inset-bottom)); background: linear-gradient(rgba(255,255,255,0), #FFFFFF 30%); }
+
+  /* checked in */
+  .tip { display: flex; align-items: center; gap: 12px; }
+  .tip .ic { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tip button { min-height: 40px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 800; flex-shrink: 0; background: #FFFFFF; color: var(--teal-dark); border: 2px solid var(--teal-pale); }
+  .tip button[aria-pressed="true"] { background: var(--teal); color: #FFFFFF; border-color: var(--teal); }
+
+  /* tiers / lists */
+  .list-row { display: flex; align-items: center; gap: 12px; min-height: 64px; border-bottom: 1px solid var(--line); }
+  .list-row:last-child { border-bottom: 0; }
+  .avatar { width: 44px; height: 44px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 17px; color: #FFFFFF; flex-shrink: 0; }
+  .setting { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 62px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 800; width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; padding: 0; }
+
+  /* record */
+  .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+  .cal > div { position: relative; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; font-weight: 800; color: var(--muted); }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  textarea { border: 2px solid var(--track); border-radius: 14px; padding: 12px; font-family: inherit; font-size: 16px; font-weight: 600; background: #FFFFFF; resize: vertical; color: var(--ink); }
+  details.demo { border: 2px dashed var(--track); border-radius: 18px; padding: 4px 14px; }
+  details.demo summary { min-height: 44px; display: flex; align-items: center; font-weight: 900; cursor: pointer; }
+  details.demo label { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; font-size: 15px; }
+  details.demo input { width: 20px; height: 20px; accent-color: var(--teal); }
+  .demo-btn { min-height: 44px; border-radius: 12px; border: 2px solid var(--track); background: #FFFFFF; font-size: 14px; font-weight: 800; width: 100%; margin: 4px 0; }
+
+  @media print {
+    nav.main, .no-print, details.demo { display: none !important; }
+    .screen.with-nav { padding-bottom: 0; }
+  }
 </style>
 </head>
 <body>
-<main>
-  <div class="top">
-    <h1>Plop</h1>
-    <div class="streak" id="streak" aria-live="polite"></div>
-  </div>
-
-  <div id="status" class="small" role="status" aria-live="polite"></div>
-
-  <!-- HOME -->
-  <section id="home">
-    <button class="primary" id="btn-photo">Plop (add a photo)</button>
-    <input id="file" type="file" accept="image/*" capture="environment" class="hidden">
-    <div class="row" style="margin-top:10px">
-      <button id="btn-quick">Quick log</button>
-      <button id="btn-nothing">Nothing to report</button>
-    </div>
-
-    <div class="card">
-      <h2>Your circle</h2>
-      <div><strong>Sam</strong> logged today · 12-day streak</div>
-      <div class="small">Demo buddy, scripted. Friends only ever see that you logged, your streak and cheers. Never what you logged.</div>
-    </div>
-
-    <div class="card small">
-      Your photo is sent to Google's Gemini to be read, then dropped. We never store it or show it to anyone. Plop is not a medical tool.
-    </div>
-
-    <details class="card">
-      <summary>Demo settings</summary>
-      <fieldset>
-        <legend>Scan mode</legend>
-        <label class="opt"><input type="radio" name="mode" value="live"> Live scan (Gemini)</label>
-        <label class="opt"><input type="radio" name="mode" value="cached"> Cached demo run (no network)</label>
-      </fieldset>
-      <label class="opt"><input type="checkbox" id="force-unclear"> Make the next scan unclear (shows the "you pick" path)</label>
-      <button id="btn-seed">Seed a 6-day demo streak</button>
-      <button id="btn-reset">Reset demo data</button>
-    </details>
-  </section>
-
-  <!-- SCANNING -->
-  <section id="scanning" class="hidden card" aria-live="polite">
-    <h2>Reading the photo...</h2>
-    <div class="small">Takes a few seconds.</div>
-  </section>
-
-  <!-- CONFIRM / PICK -->
-  <section id="confirm" class="hidden">
-    <div class="card pop">
-      <img id="preview" class="preview hidden" alt="Your photo, shown only to you">
-      <div><span class="chip" id="source-chip"></span></div>
-      <h2 id="confirm-title" style="margin-top:10px"></h2>
-      <div class="small" id="confirm-sub"></div>
-      <div id="blood" class="note hidden" style="margin-top:10px"></div>
-    </div>
-    <div class="card">
-      <fieldset id="bristol-set">
-        <legend>Which one is closest? You decide.</legend>
-      </fieldset>
-    </div>
-    <button class="primary" id="btn-save" disabled>Save</button>
-    <button id="btn-cancel">Cancel</button>
-    <p class="small" id="disclaimer"></p>
-  </section>
-
-  <!-- SAVED -->
-  <section id="saved" class="hidden card pop">
-    <h2 id="saved-title">Logged</h2>
-    <div id="saved-sub"></div>
-    <div class="note" style="margin-top:10px; background:#eaf4ef; border-color:#b9d8cb; color:#1f4a3d" id="cheer"></div>
-    <button class="primary" id="btn-done" style="margin-top:14px">Done</button>
-  </section>
-</main>
+<div class="app" id="app"></div>
+<nav class="main hidden" id="nav" aria-label="Main"></nav>
+<input id="file" type="file" accept="image/*" capture="environment" class="hidden" aria-hidden="true" tabindex="-1">
 
 <script>
 (function () {
   'use strict';
-  var BRISTOL = [
-    [1, 'Separate hard lumps'], [2, 'Lumpy sausage'], [3, 'Sausage with cracks'],
-    [4, 'Smooth sausage'], [5, 'Soft blobs'], [6, 'Mushy, ragged'], [7, 'Liquid']
-  ];
-  var CACHED = [
-    { usable: true, bristol: 4, colour: 'brown', confidence: 0.88, possibleBlood: false, bloodNote: "Can't tell from a photo.", disclaimer: 'Not a medical tool. It logs, it does not diagnose.' },
-    { usable: true, bristol: 5, colour: 'light brown', confidence: 0.81, possibleBlood: false, bloodNote: "Can't tell from a photo.", disclaimer: 'Not a medical tool. It logs, it does not diagnose.' }
-  ];
-  var DISCLAIMER = 'Not a medical tool. It logs, it does not diagnose.';
-  var KEY = 'plop-demo-v1';
 
-  function $(id) { return document.getElementById(id); }
-  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || { entries: [], mode: 'live', cacheIdx: 0 }; } catch (e) { return { entries: [], mode: 'live', cacheIdx: 0 }; } }
+  // ---------- constants ----------
+  var KEY = 'plop-front-v2';
+  var DISCLAIMER = 'Not a medical tool. It logs, it does not diagnose.';
+  var TIERS = [
+    { name: 'Iron', c2: '#8A939E', c3: '#D5DAE0' },
+    { name: 'Bronze', c2: '#C07A3D', c3: '#F3D2B1' },
+    { name: 'Silver', c2: '#A9BBCC', c3: '#EEF3F8' },
+    { name: 'Gold', c2: '#F2B705', c3: '#FFF3C4' },
+    { name: 'Platinum', c2: '#3CC3BB', c3: '#D3FFFB' },
+    { name: 'Diamond', c2: '#7C98FF', c3: '#E3E9FF' },
+    { name: 'Mythic', c2: '#B866EA', c3: '#F2DFFF' }
+  ];
+  var ROYAL = { name: 'Royal Flush', c2: '#FF5A4F', c3: '#FFE0A3' };
+  var RULES = [['Photo check-in', 15], ['Snap a tip', 4], ['Score 85+', 6], ['Score 60–84', 3], ['Score under 40', -4], ['Skip a tip you took', -3], ['Miss a day', -20], ['Lose your streak', -10]];
+  var CHIPS = {
+    'Stress': ['#6366F1', '#E8E7FF', '#4338CA'], 'New food': ['#F97316', '#FFEDD5', '#9A3412'], 'Travel': ['#0EA5E9', '#E0F2FE', '#075985'],
+    'Bad sleep': ['#8B5CF6', '#EDE9FE', '#5B21B6'], 'Meds': ['#14B8A6', '#D5F5F0', '#0B6E64'], 'Bloated': ['#F59E0B', '#FEF3C7', '#92400E'],
+    'Cramps': ['#EF4444', '#FEE2E2', '#991B1B'], 'On my period': ['#EC4899', '#FCE7F3', '#9D174D']
+  };
+  var COMFORT = ['Fine', 'Meh', 'Uncomfy', 'Ouch'];
+  var COMFORT_C = [['#14B8A6', '#D5F5F0'], ['#F59E0B', '#FEF3C7'], ['#F97316', '#FFEDD5'], ['#EF4444', '#FEE2E2']];
+  var TYPE_PATHS = [
+    'M4 10a3 3 0 1 0 6 0a3 3 0 1 0-6 0M11 8a3 3 0 1 0 6 0a3 3 0 1 0-6 0M18 11a3 3 0 1 0 6 0a3 3 0 1 0-6 0',
+    'M3 10c0-3 3-4 5-3 1-2 4-2 5 0 1-2 4-2 5 0 2-1 5 0 5 3s-3 4-5 3c-1 2-4 2-5 0-1 2-4 2-5 0-2 1-5 0-5-3z',
+    'M7 6h4l1 2 1-2h3l1 2 1-2h3a4 4 0 0 1 0 8h-4l-1-2-1 2H7a4 4 0 0 1 0-8z',
+    'M7 6h14a4 4 0 0 1 0 8H7a4 4 0 0 1 0-8z',
+    'M3 11a3.5 3 0 1 0 7 0a3.5 3 0 1 0-7 0M11 9a3.5 3 0 1 0 7 0a3.5 3 0 1 0-7 0M17 12a3.5 3 0 1 0 7 0a3.5 3 0 1 0-7 0',
+    'M3 12c2-4 5-1 7-4s5 1 7-1 6 1 7 4c-2 2-5 1-7 2s-6 1-8 0-5 1-6-1z',
+    'M2 13c3-2 5 2 8 0s5 2 8 0 5 2 8 0v2H2z'
+  ];
+  var FRIENDLY = ['Little pebbles', 'Lumpy log', 'Cracked log', 'Smooth log', 'Soft blobs', 'Mushy', 'All liquid'];
+  var CLINICAL = ['Separate hard lumps', 'Lumpy sausage', 'Sausage with cracks', 'Smooth, soft sausage', 'Soft blobs', 'Mushy pieces', 'Watery, no solids'];
+  var TIPS = [
+    { title: 'Water with every meal', source: 'Source: [NHS link]', icon: 'M7 3h10l-1.5 17a2 2 0 0 1-2 1.8h-3a2 2 0 0 1-2-1.8zM7.5 9h9', bg: '#E8E7FF', ink: '#4F46E5' },
+    { title: '10-minute walk after dinner', source: 'Source: [link]', icon: 'M13 4a1.5 1.5 0 1 0 0 .01M10 21l2-6 3 3v3M9 12l3-4 3 2 2 3M12 8l-1 5', bg: '#E6F7F5', ink: '#0B6E64' }
+  ];
+  var BUDDIES = [
+    { name: 'Zan', time: '8:12', streak: 23, color: '#14B8A6', soft: '#D5F5F0', ink: '#0B6E64', rank: [4, 1] },
+    { name: 'Chloe', time: '10:40', streak: 6, color: '#6366F1', soft: '#E8E7FF', ink: '#4338CA', rank: [3, 3] },
+    { name: 'Mo', time: null, streak: 4, color: '#F97316', soft: '#FFEDD5', ink: '#9A3412', rank: [2, 1] }
+  ];
+  // Placeholder scoring, tune with the team. Shape 40 + colour 30 + texture 30.
+  var SHAPE = { 1: 14, 2: 24, 3: 33, 4: 37, 5: 30, 6: 20, 7: 10 };
+  var TEXTURE = { 1: 12, 2: 18, 3: 23, 4: 26, 5: 22, 6: 14, 7: 8 };
+  var COLOUR = { 'brown': 28, 'light brown': 26, 'dark brown': 25, 'yellow': 18, 'green': 18, 'pale': 12, 'reddish': 10, 'black': 8, 'unclear': 20 };
+  var SHAPE_WHY = {
+    1: 'Small separate pieces, quite firm.', 2: 'Log shape, but lumpy all the way.', 3: 'One log with cracks on the surface.',
+    4: 'One solid log, held together. A little lumpy at one end.', 5: 'Soft pieces with clear edges.', 6: 'Fluffy, ragged pieces.', 7: 'No solid pieces.'
+  };
+  var TEXTURE_WHY = {
+    1: 'Hard and dry looking.', 2: 'Rough and bumpy.', 3: 'Fairly smooth, cracks along the top.',
+    4: 'Mostly smooth, a few small cracks along the top.', 5: 'Soft and smooth.', 6: 'Very soft, no clear form.', 7: 'Watery.'
+  };
+  var COLOUR_WHY = {
+    'brown': 'Medium brown the whole way.', 'light brown': 'Light brown, even colour.', 'dark brown': 'Dark brown, even colour.',
+    'yellow': 'Yellowish.', 'green': 'Greenish.', 'pale': 'Pale, lighter than usual.', 'reddish': 'Some reddish colouring.',
+    'black': 'Very dark colouring.', 'unclear': "Couldn't read the colour well."
+  };
+  var CACHED = [
+    { usable: true, bristol: 4, colour: 'brown', confidence: 0.78, possibleBlood: false },
+    { usable: true, bristol: 3, colour: 'light brown', confidence: 0.72, possibleBlood: false }
+  ];
+
+  // ---------- svg helpers ----------
+  var MASCOT_BODY = 'M6 88C2 69 14 54 35 46.5C44.5 32 55.5 21 68 17.5C80 15 87 23 82 28.5C78.5 31.5 74 29 75 25C73 31 71 36 70.5 41C97 45.5 116 60 113 80C111 96 96 99 64 100C28 101 9 99 6 88Z';
+  var FACES = {
+    hello: '<circle cx="46" cy="62" r="10" fill="#FFF"/><circle cx="74" cy="62" r="10" fill="#FFF"/><circle cx="48" cy="63" r="5.5" fill="#1E1E1E"/><circle cx="76" cy="63" r="5.5" fill="#1E1E1E"/><path d="M52 78c4 4 12 4 16 0" stroke="#1E1E1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>',
+    cheer: '<path d="M37 64c3-6 11-6 14 0M69 64c3-6 11-6 14 0" stroke="#1E1E1E" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M52 75h16c0 8-3.5 12-8 12s-8-4-8-12z" fill="#1E1E1E"/>',
+    curious: '<circle cx="46" cy="62" r="10" fill="#FFF"/><circle cx="74" cy="62" r="10" fill="#FFF"/><circle cx="50" cy="57" r="5.5" fill="#1E1E1E"/><circle cx="78" cy="57" r="5.5" fill="#1E1E1E"/><path d="M57 81c2 2 5 2 7 0" stroke="#1E1E1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>',
+    proud: '<circle cx="46" cy="62" r="10" fill="#FFF"/><circle cx="74" cy="62" r="10" fill="#FFF"/><circle cx="50" cy="59" r="5.5" fill="#1E1E1E"/><circle cx="78" cy="59" r="5.5" fill="#1E1E1E"/><path d="M50 77c5 6 15 6 20 0" stroke="#1E1E1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>',
+    gotthis: '<circle cx="46" cy="62" r="10" fill="#FFF"/><circle cx="74" cy="62" r="10" fill="#FFF"/><circle cx="49" cy="62" r="5.5" fill="#1E1E1E"/><circle cx="77" cy="62" r="5.5" fill="#1E1E1E"/><path d="M50 77c5 6 15 6 20 0" stroke="#1E1E1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
+  };
+  var FACE_LABEL = { hello: 'Ploopy saying hello', cheer: 'Ploopy cheering', curious: 'Ploopy looking curious', proud: 'Ploopy looking proud', gotthis: 'Ploopy saying you got this' };
+  function mascot(face, w, extra) {
+    var h = Math.round(w * 106 / 120);
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 106" role="img" aria-label="' + FACE_LABEL[face] + '" ' + (extra || '') + '><path d="' + MASCOT_BODY + '" fill="' + state.mascot + '"/>' + FACES[face] + '</svg>';
+  }
+  function shield(t, size) {
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4l24 10v18c0 14-10 24-24 28C18 56 8 46 8 32V14z" fill="' + t.c2 + '"/><path d="M32 18l10 11-10 15-10-15z" fill="' + t.c3 + '"/></svg>';
+  }
+  function bigShield(size, label, faded) {
+    var a = faded ? ['#8C6A1A', '#B8901E', '#E6D9A8'] : ['#B98500', '#F2B705', '#FFF3C4'];
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 64 64" role="img" aria-label="' + label + '"><path d="M32 4l24 10v18c0 14-10 24-24 28C18 56 8 46 8 32V14z" fill="' + a[0] + '"/><path d="M32 10l19 8v14c0 11-8 19-19 22-11-3-19-11-19-22V18z" fill="' + a[1] + '"/><path d="M32 18l10 11-10 15-10-15z" fill="' + a[2] + '"/></svg>';
+  }
+  var ICON = {
+    camera: function (s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'; },
+    close: function (c) { return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + c + '" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'; },
+    back: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3C3C3C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    flame: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1.2 4.6 6 6 6 12a6 6 0 0 1-12 0c0-2.6 1.3-4.4 2.6-5.5.1 2.3 1.2 3.5 2.4 3.5 0-3.6-1.2-6 1-10z" fill="#FF9600"/></svg>',
+    globe: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
+    chev: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    down: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>'
+  };
+  var NAV_ICONS = {
+    home: function (on) { return '<svg width="22" height="22" viewBox="0 0 24 24" fill="' + (on ? '#0D9488' : '#6F6F6F') + '" aria-hidden="true"><path d="M3 11l9-7 9 7v9.5h-6v-6H9v6H3z"/></svg>'; },
+    ranked: function () { return '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3.2v6c0 5-3.4 8.6-8 9.8-4.6-1.2-8-4.8-8-9.8v-6z" fill="#F2B705"/><path d="M12 8l3 3.5-3 4.5-3-4.5z" fill="#FFF3C4"/></svg>'; },
+    buddies: function () { return '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4" fill="#6366F1"/><path d="M1.5 21c.6-4.5 3.6-7 7.5-7s6.9 2.5 7.5 7z" fill="#6366F1"/><circle cx="17.5" cy="9" r="3" fill="#A5A1FF"/><path d="M15 14.2c4 .1 6.8 2.4 7.4 6.8H18c-.3-2.8-1.3-5-3-6.8z" fill="#A5A1FF"/></svg>'; },
+    record: function () { return '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="#FB7185"/><path d="M9 9h6v2H9zm0 4h4v2H9z" fill="#FFF"/></svg>'; }
+  };
+
+  // ---------- dates ----------
+  function dayStr(d) { var x = new Date(d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
+  function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function today() { return dayStr(new Date()); }
+  function fmt(d) { return new Date(typeof d === 'string' && d.length === 10 ? d + 'T12:00' : d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+  var DOW = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  // ---------- state ----------
+  function seed() {
+    var scores = [82, 76, null, 88, 90, null, 71, 85, 64, 79, 92, null, 58, 83, 87, 47, 66, 74, 88, 93, 81, 69, 86, 90, 88, 74, 91, 63, 86];
+    var types = [4, 4, 0, 4, 4, 0, 3, 4, 5, 4, 4, 0, 6, 4, 4, 2, 5, 4, 4, 4, 4, 3, 4, 4, 4, 5, 4, 3, 4];
+    var comfort = [0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 2, 1, 2, 3, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0];
+    var chipDays = { 5: ['Stress'], 6: ['Stress'], 13: ['On my period'], 14: ['On my period', 'Cramps'], 15: ['On my period', 'Cramps'], 16: ['On my period'], 17: ['On my period'], 21: ['Stress'], 23: ['Travel'], 24: ['Travel'], 25: ['Travel'] };
+    var entries = [];
+    var n = scores.length;
+    for (var i = 0; i < n; i++) {
+      if (scores[i] === null) continue;
+      entries.push({ date: dayStr(addDays(new Date(), i - n)), kind: 'scan', score: scores[i], type: types[i], comfort: comfort[i], chips: chipDays[i] || [], blood: i === 15 });
+    }
+    var changes = [11, 25, 19, -24, 17, 25, 21, 0, 25, -30, 15, 22, 25, 21];
+    var gpLog = {};
+    changes.forEach(function (c, i) { gpLog[dayStr(addDays(new Date(), i - changes.length))] = c; });
+    return {
+      v: 2, entries: entries, gpLog: gpLog, tier: 3, div: 2, gp: 78, shields: 2,
+      pendingTips: [{ label: "Yesterday's walk", gp: 4 }], tipsDone: {}, cheered: {},
+      mode: 'ranked', scanMode: 'live', cacheIdx: 0, forceUnclear: false, plain: false,
+      privacy: { checkin: true, streak: true, rank: true, discreet: false }, paused: false,
+      globalOn: true, notes: '', mascot: '#B5764A', removed: {}, lastSlip: { day: 'Saturday', miss: 20, streak: 10, from: [3, 2], to: [3, 3] },
+      name: 'Riley'
+    };
+  }
+  function emptyState() {
+    var s = seed();
+    s.entries = []; s.gpLog = {}; s.tier = 0; s.div = 3; s.gp = 0; s.pendingTips = []; s.lastSlip = null; s.name = '';
+    return s;
+  }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {} return seed(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   var state = load();
-  var pending = null; // { source, guess, previewUrl }
-
   var qs = new URLSearchParams(location.search);
-  if (qs.get('mode') === 'cached' || qs.get('mode') === 'live') { state.mode = qs.get('mode'); save(); }
+  if (qs.get('mode') === 'cached' || qs.get('mode') === 'live') { state.scanMode = qs.get('mode'); save(); }
 
-  function dayStr(d) { return d.toLocaleDateString('en-CA'); }
-  function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
-  function loggedDays() { var s = {}; state.entries.forEach(function (e) { s[e.date] = true; }); return s; }
+  // transient (never stored): current scan / draft entry
+  var draft = null;     // { source: 'scan'|'pick'|'failed', guess, type, chips, comfort, blood }
+  var lastCheckin = null; // { gpLines, total, promoted }
+  var stream = null;
+
+  // ---------- derived ----------
+  function byDate() { var m = {}; state.entries.forEach(function (e) { m[e.date] = e; }); return m; }
+  function loggedToday() { return !!byDate()[today()]; }
   function streak() {
-    var days = loggedDays(), d = new Date(), n = 0;
-    if (!days[dayStr(d)]) d = addDays(d, -1);
-    while (days[dayStr(d)]) { n++; d = addDays(d, -1); }
+    var m = byDate(), d = new Date(), n = 0;
+    if (!m[dayStr(d)]) d = addDays(d, -1);
+    while (m[dayStr(d)]) { n++; d = addDays(d, -1); }
     return n;
   }
-  function loggedToday() { return !!loggedDays()[dayStr(new Date())]; }
+  function dayNumber() { return loggedToday() ? streak() : streak() + 1; }
+  function rankName(t, d) { return TIERS[t].name + ' ' + d; }
+  function curRank() { return rankName(state.tier, state.div); }
+  function scoreColor(s) { return s >= 85 ? '#14B8A6' : (s >= 60 ? '#FBBF24' : (s >= 40 ? '#FB923C' : '#F87171')); }
+  function scoreBonus(s) { return s >= 85 ? 6 : (s >= 60 ? 3 : (s < 40 ? -4 : 0)); }
+  function headline(s) { return s >= 85 ? 'Great one.' : (s >= 60 ? 'Pretty good.' : (s >= 40 ? 'Off day.' : 'Rough one. Hang in there.')); }
+  function sureWord(c) { return c >= 0.85 ? 'very sure' : (c >= 0.65 ? 'pretty sure' : 'not totally sure'); }
+  function scoreParts(g) {
+    var col = COLOUR[g.colour] != null ? g.colour : 'unclear';
+    return [
+      { label: 'Shape', c: '#0D9488', got: SHAPE[g.bristol], max: 40, why: SHAPE_WHY[g.bristol] },
+      { label: 'Colour', c: '#EA580C', got: COLOUR[col], max: 30, why: COLOUR_WHY[col] },
+      { label: 'Texture', c: '#4F46E5', got: TEXTURE[g.bristol], max: 30, why: TEXTURE_WHY[g.bristol] }
+    ];
+  }
+  function lastNDays(n) { var out = []; for (var i = n - 1; i >= 0; i--) out.push(dayStr(addDays(new Date(), -i))); return out; }
+  function avg(a) { return a.length ? Math.round(a.reduce(function (x, y) { return x + y; }, 0) / a.length) : null; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
-  function show(id) {
-    ['home', 'scanning', 'confirm', 'saved'].forEach(function (s) { $(s).classList.toggle('hidden', s !== id); });
+  // ---------- router ----------
+  var NAV_SCREENS = { home: 1, ranked: 1, buddies: 1, record: 1, global: 1 };
+  var BODY_CLASS = { scan: 'dark', promoted: 'night', deranked: 'slip' };
+  function go(name) { if (location.hash !== '#' + name) location.hash = name; else render(); }
+  function current() { return (location.hash || '#home').slice(1).split('?')[0]; }
+  window.addEventListener('hashchange', render);
+
+  function render() {
+    var name = current();
+    if (!SCREENS[name]) name = 'home';
+    if ((name === 'result' || name === 'checked') && !draft && !lastCheckin) name = 'home';
+    if (name !== 'scan') stopCamera();
+    document.body.className = BODY_CLASS[name] || '';
+    document.title = state.privacy.discreet ? 'Daily' : 'Plop';
+    var app = document.getElementById('app');
+    app.innerHTML = SCREENS[name]();
+    renderNav(name);
     window.scrollTo(0, 0);
+    if (AFTER[name]) AFTER[name]();
   }
-  function renderHome() {
-    var n = streak();
-    $('streak').textContent = n ? n + '-day streak' : 'Start a streak';
-    $('status').textContent = loggedToday() ? 'You plopped today.' : '';
-    document.querySelectorAll('input[name=mode]').forEach(function (r) { r.checked = (r.value === state.mode); });
-    show('home');
+  function renderNav(name) {
+    var nav = document.getElementById('nav');
+    if (!NAV_SCREENS[name]) { nav.classList.add('hidden'); return; }
+    nav.classList.remove('hidden');
+    var tab = name === 'global' ? 'ranked' : name;
+    var items = [
+      ['home', 'Home', '#0D9488', '#E6F7F5'], ['ranked', 'Ranked', '#B98500', '#FFF4CC'], null,
+      ['buddies', 'Buddies', '#4338CA', '#E8E7FF'], ['record', 'Record', '#E11D48', '#FFE4E6']
+    ];
+    nav.innerHTML = items.map(function (it) {
+      if (!it) return '<a href="#scan" class="cam" aria-label="Take photo"><span>' + ICON.camera(26) + '</span></a>';
+      var on = it[0] === tab;
+      return '<a href="#' + it[0] + '"' + (on ? ' aria-current="page" style="color:' + it[2] + ';background:' + it[3] + '"' : '') + '>' + NAV_ICONS[it[0]](on) + it[1] + '</a>';
+    }).join('');
   }
-
-  function buildPicker(selected) {
-    var set = $('bristol-set');
-    Array.prototype.slice.call(set.querySelectorAll('label')).forEach(function (l) { l.remove(); });
-    BRISTOL.forEach(function (b) {
-      var l = document.createElement('label'); l.className = 'opt';
-      var i = document.createElement('input'); i.type = 'radio'; i.name = 'bristol'; i.value = b[0];
-      if (selected === b[0]) i.checked = true;
-      i.addEventListener('change', function () { $('btn-save').disabled = false; });
-      var num = document.createElement('span'); num.className = 'num'; num.textContent = b[0];
-      var t = document.createElement('span'); t.textContent = b[1];
-      l.appendChild(i); l.appendChild(num); l.appendChild(t); set.appendChild(l);
-    });
-    $('btn-save').disabled = !selected;
+  function toast(msg) {
+    var t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+    document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2600);
   }
 
-  function openConfirm(opts) {
-    pending = opts;
-    var chip = { scan: state.mode === 'cached' ? 'Cached demo run' : 'Live scan', quick: 'You pick', failed: 'You pick' }[opts.source];
-    $('source-chip').textContent = chip;
-    var pv = $('preview');
-    if (opts.previewUrl) { pv.src = opts.previewUrl; pv.classList.remove('hidden'); } else { pv.removeAttribute('src'); pv.classList.add('hidden'); }
-    var blood = $('blood');
-    if (opts.source === 'scan') {
-      $('confirm-title').textContent = 'Looks like a ' + opts.guess.bristol + ' (' + Math.round(opts.guess.confidence * 100) + '% sure)';
-      $('confirm-sub').textContent = 'Colour: ' + opts.guess.colour + '. Check it and change it if it is wrong.';
-      blood.textContent = opts.guess.bloodNote; blood.classList.remove('hidden');
-      $('disclaimer').textContent = opts.guess.disclaimer || DISCLAIMER;
-    } else if (opts.source === 'failed') {
-      $('confirm-title').textContent = 'Not sure, you pick';
-      $('confirm-sub').textContent = opts.reason;
-      blood.classList.add('hidden'); $('disclaimer').textContent = DISCLAIMER;
-    } else {
-      $('confirm-title').textContent = 'Quick log';
-      $('confirm-sub').textContent = 'No photo needed.';
-      blood.classList.add('hidden'); $('disclaimer').textContent = '';
+  // ---------- screens ----------
+  var SCREENS = {};
+  var AFTER = {};
+
+  SCREENS.home = function () {
+    var m = byDate();
+    var monday = addDays(new Date(), -((new Date().getDay() + 6) % 7));
+    var week = [], wkScores = [], wkComfy = 0, wkLogged = 0, typeCount = {};
+    for (var i = 0; i < 7; i++) {
+      var d = dayStr(addDays(monday, i)), e = m[d], isToday = d === today(), future = d > today();
+      if (e) { wkLogged++; if (e.score != null) wkScores.push(e.score); if (e.comfort <= 1) wkComfy++; if (e.type) typeCount[e.type] = (typeCount[e.type] || 0) + 1; }
+      var bar, val = '';
+      if (e && e.score != null) { bar = 'width:100%;height:' + Math.round(e.score * 0.6) + 'px;border-radius:8px;background:' + scoreColor(e.score); val = e.score; }
+      else if (e) { bar = 'width:100%;height:10px;border-radius:8px;background:#C9D2D2'; val = 'logged'; }
+      else if (isToday) { bar = 'width:100%;height:20px;border-radius:8px;border:2px dashed #14B8A6'; val = 'today'; }
+      else { bar = 'width:100%;height:6px;border-radius:8px;background:#E3E8E8'; }
+      week.push('<div><span style="font-size:11px;font-weight:900;color:var(--muted)">' + val + '</span><div style="' + bar + '"></div><span style="font-size:12px;font-weight:800;color:' + (isToday ? '#0D9488' : 'var(--muted)') + '">' + DOW[addDays(monday, i).getDay()] + '</span></div>');
+      if (future) continue;
     }
-    buildPicker(opts.source === 'scan' ? opts.guess.bristol : null);
-    show('confirm');
+    var topType = Object.keys(typeCount).sort(function (a, b) { return typeCount[b] - typeCount[a]; })[0];
+    var aria = 'Scores this week: ' + wkScores.join(', ') + (loggedToday() ? '.' : '. Today not logged yet.');
+    var done = loggedToday();
+    var tipsDone = TIPS.filter(function (t, i) { return state.tipsDone[today() + i]; }).length;
+    var cheeredToday = Object.keys(state.cheered).some(function (k) { return k.indexOf(today()) === 0; });
+    var quests = [
+      { label: 'Today’s photo', done: done, gp: '+15', c: '#0D9488', soft: '#D5F5F0' },
+      { label: 'Snap 2 tips', done: tipsDone >= 2, gp: tipsDone + ' of 2', c: '#6366F1', soft: '#E8E7FF' },
+      { label: 'Cheer someone on', done: cheeredToday, gp: '+2', c: '#F97316', soft: '#FFEDD5' }
+    ];
+    var n = dayNumber();
+    var sub = done ? 'Done for today. Ploopy approves.' : (state.entries.length ? "Ploopy's been waiting since breakfast." : 'Day one. Ploopy is ready when you are.');
+    return '<main class="screen with-nav">' +
+      '<div class="between"><h1>' + (state.name ? 'Hi ' + esc(state.name) : 'Hi there') + '</h1>' +
+        '<div class="chip-bar"><span class="row" style="gap:3px;color:#F97316" aria-label="' + streak() + ' day streak">' + ICON.flame + streak() + '</span>' +
+        '<a href="#ranked" class="row" style="gap:3px;color:#D49A00;text-decoration:none" aria-label="Rank ' + curRank() + '">' + shield(TIERS[state.tier], 18) + curRank() + '</a></div></div>' +
+      '<section class="hero"><div class="row" style="gap:8px"><div class="col" style="flex:1;gap:4px">' +
+        '<span style="font-size:40px;font-weight:900;line-height:1;color:#0B6E64">Day ' + n + '</span>' +
+        '<span style="font-size:15px;font-weight:700;color:#3F5F5B;line-height:1.35">' + sub + '</span></div>' +
+        mascot(done ? 'cheer' : 'hello', 104, 'style="flex-shrink:0"') + '</div>' +
+        (done ? '<a href="#record" class="btn btn-outline" style="min-height:54px">See your record</a>'
+              : '<a href="#scan" class="btn btn-teal">' + ICON.camera(22) + '<span>Take photo</span></a>') +
+      '</section>' +
+      '<section class="card"><div class="between" style="align-items:baseline"><h2>Your gut this week</h2><a href="#record" style="font-size:13px;font-weight:800">Full record</a></div>' +
+        '<div class="week" role="img" aria-label="' + aria + '">' + week.join('') + '</div>' +
+        '<div class="tiles">' +
+          '<div style="background:#D5F5F0;color:#0B6E64"><b>' + (avg(wkScores) != null ? avg(wkScores) : '–') + '</b><span>avg score</span></div>' +
+          '<div style="background:#E8E7FF;color:#4338CA"><b>' + wkComfy + ' of ' + wkLogged + '</b><span>comfy days</span></div>' +
+          '<div style="background:#FFEDD5;color:#9A3412"><b>' + (topType ? 'Type ' + topType : '–') + '</b><span>most often</span></div>' +
+        '</div></section>' +
+      '<section class="col" style="gap:10px"><h2>Today</h2>' + quests.map(function (q) {
+        return '<div class="quest"><span class="qbox" style="' + (q.done ? 'background:' + q.c : 'border:2.5px solid ' + q.c) + '">' + (q.done ? '✓' : '') + '</span>' +
+          '<span style="flex:1;font-size:15px;font-weight:800">' + q.label + '</span><span class="pill" style="background:' + q.soft + ';color:' + q.c + '">' + q.gp + '</span></div>';
+      }).join('') + '</section>' +
+    '</main>';
+  };
+
+  SCREENS.scan = function () {
+    var cached = state.scanMode === 'cached';
+    return '<div class="scan"><main class="screen" style="gap:20px">' +
+      '<div class="between"><button class="icon-btn" data-go="home" aria-label="Close" style="background:#2E3437;margin-left:0">' + ICON.close('#FFF') + '</button>' +
+        '<span class="pill" style="background:#2E3437;color:#FFF;font-size:14px;padding:6px 14px">' + (cached ? 'Cached demo run' : 'Live') + '</span><span style="width:44px"></span></div>' +
+      '<div class="viewfinder" id="vf"><video id="video" playsinline muted autoplay class="hidden"></video>' +
+        '<span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>' +
+        '<span id="vf-msg" style="position:relative;z-index:1">Camera preview<br>(demo: Play-Doh only)</span>' +
+        '<div class="reading hidden" id="reading">' + mascot('curious', 96, 'class="bob"') + '<span>Reading it…</span><span style="font-size:13px;font-weight:700;color:#B5C0C0">Takes a few seconds.</span></div>' +
+      '</div>' +
+      '<p style="margin:0;text-align:center;font-size:15px;font-weight:700;color:#D0D6D6;line-height:1.45">Your photo gets scored, then deleted.<br>Nobody ever sees it. Not even us.</p>' +
+      '<button class="shutter" id="shutter" aria-label="Take the photo"><span></span></button>' +
+      '<button class="link" data-act="skip" style="color:#FFF;font-size:16px;align-self:center;min-height:44px">Skip the photo</button>' +
+    '</main></div>';
+  };
+  AFTER.scan = function () { startCamera(); };
+
+  SCREENS.result = function () {
+    var g = draft.guess;
+    var parts = scoreParts(g);
+    var score = parts.reduce(function (s, p) { return s + p.got; }, 0);
+    draft.score = score;
+    var bloodTitle = draft.blood ? (draft.bloodByUser ? 'You saw blood. Noted.' : 'Possible blood') : 'Blood: can’t tell';
+    var bloodSub = draft.blood && !draft.bloodByUser
+      ? "A photo can't confirm this. If you're worried, mention it to a doctor."
+      : "Photos can't rule out blood. If you see some, tell a doctor.";
+    return '<main class="screen" style="gap:22px">' +
+      '<button class="icon-btn" data-act="cancel" aria-label="Close">' + ICON.close('#9AA5A5') + '</button>' +
+      (state.scanMode === 'cached' ? '<span class="pill" style="align-self:flex-start;background:#FEF3C7;color:#5C3D00;margin-top:-12px">Cached demo run</span>' : '') +
+      '<section class="score-card pop"><div class="blob"></div>' +
+        '<div class="between" style="position:relative;align-items:flex-end"><div class="col" style="gap:2px">' +
+          '<span style="font-size:72px;font-weight:900;line-height:0.9">' + score + '<span style="font-size:22px;font-weight:800;color:#CCF5EF">/100</span></span>' +
+          '<span style="font-size:22px;font-weight:900;margin-top:4px">' + headline(score) + '</span>' +
+          '<span style="font-size:14px;font-weight:700;color:#CCF5EF">Type ' + g.bristol + ', ' + sureWord(g.confidence) + ' (' + Math.round(g.confidence * 100) + '%)</span></div>' +
+          mascot(score >= 60 ? 'cheer' : 'gotthis', 116, 'style="flex-shrink:0;margin-bottom:4px"') + '</div>' +
+        '<div class="col" style="position:relative;gap:6px"><div style="height:14px;background:#0B7D73;border-radius:999px;overflow:hidden"><div style="height:100%;background:#FFF;border-radius:999px;width:' + score + '%"></div></div>' +
+          '<div style="position:relative;height:14px;font-size:11px;font-weight:800;color:#CCF5EF"><span style="position:absolute;left:0">0</span><span style="position:absolute;left:40%;transform:translateX(-50%)">40</span><span style="position:absolute;left:60%;transform:translateX(-50%)">60</span><span style="position:absolute;left:85%;transform:translateX(-50%)">85</span><span style="position:absolute;right:0">100</span></div></div>' +
+      '</section>' +
+      '<section class="col" style="gap:16px">' + parts.map(function (p) {
+        return '<div class="row" style="align-items:flex-start;gap:14px"><span style="font-size:22px;font-weight:900;color:' + p.c + ';width:44px;flex-shrink:0;line-height:1.1">' + p.got + '<span style="font-size:12px;font-weight:800;color:#9AA5A5">/' + p.max + '</span></span>' +
+          '<div class="col" style="gap:2px"><span style="font-size:15px;font-weight:900">' + p.label + '</span><span style="font-size:14px;font-weight:600;color:#5A5A5A;line-height:1.4">' + p.why + '</span></div></div>';
+      }).join('') + '</section>' +
+      '<div class="hr"></div>' +
+      '<section class="between"><div class="col" style="gap:2px"><span style="font-size:15px;font-weight:900">' + bloodTitle + '</span><span style="font-size:13px;font-weight:600;color:var(--muted);line-height:1.4">' + bloodSub + '</span></div>' +
+        '<button data-act="blood" aria-pressed="' + !!draft.blood + '" style="min-height:44px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:800;flex-shrink:0;' + (draft.blood ? 'background:#C0312B;color:#FFF;border:2px solid #C0312B' : 'background:#FFF;border:2px solid #E3E8E8') + '">' + (draft.blood ? 'Undo' : 'I saw some') + '</button></section>' +
+      '<div class="hr"></div>' +
+      chipsAndComfort() +
+      '<p class="sub" style="margin:0">' + DISCLAIMER + '</p>' +
+      '<div class="col" style="gap:4px"><button class="btn btn-teal" data-act="checkin" style="min-height:58px;font-size:19px">Check in</button>' +
+        '<button class="link" data-go="scan" style="font-size:14px;text-decoration:none;min-height:44px;align-self:center">Blurry? Retake it</button></div>' +
+    '</main>';
+  };
+  function chipsAndComfort() {
+    return '<section class="col" style="gap:10px"><h2 style="font-size:16px">Anything going on?</h2><div class="chips">' +
+      Object.keys(CHIPS).map(function (label) {
+        var c = CHIPS[label], on = draft.chips.indexOf(label) >= 0;
+        return '<button data-chip="' + label + '" aria-pressed="' + on + '" style="' + (on ? 'background:' + c[0] + ';color:#FFF;border:2px solid ' + c[0] : 'background:' + c[1] + ';color:' + c[2] + ';border:2px solid ' + c[1]) + '">' + label + '</button>';
+      }).join('') + '</div></section>' +
+      '<section class="col" style="gap:10px"><h2 style="font-size:16px">How\'s your tummy?</h2><div class="comfort">' +
+      COMFORT.map(function (label, i) {
+        var sel = draft.comfort === i;
+        return '<button data-comfort="' + i + '" aria-pressed="' + sel + '" style="' + (sel ? 'background:' + COMFORT_C[i][1] + ';border-color:' + COMFORT_C[i][0] : '') + '">' + label + '</button>';
+      }).join('') + '</div></section>';
   }
 
-  function clearPending() {
-    if (pending && pending.previewUrl) { try { URL.revokeObjectURL(pending.previewUrl); } catch (e) {} }
-    pending = null; $('preview').removeAttribute('src');
+  SCREENS.pick = function () {
+    if (!draft) draft = { source: 'pick', chips: [], comfort: 0, type: 0 };
+    var failed = draft.source === 'failed';
+    var names = state.plain ? CLINICAL : FRIENDLY;
+    return '<main class="screen" style="gap:16px;padding-bottom:0">' +
+      '<div class="between"><button class="icon-btn" data-act="cancel" aria-label="Close">' + ICON.close('#9AA5A5') + '</button>' +
+        '<button data-act="plain" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:800;border:2px solid #E3E8E8;background:#FFF">' + (state.plain ? 'Cute names' : 'Plain names') + '</button></div>' +
+      (failed ? '<div class="banner" role="status"><span>' + esc(draft.reason || "Couldn't make that one out.") + '</span><button data-go="scan">Try again</button></div>' : '') +
+      '<div class="between" style="align-items:flex-end"><div class="col" style="gap:4px"><h1>Which one\'s<br>closest?</h1><span class="sub" style="font-size:14px">Keeps your streak. Doesn\'t count for rank.</span></div>' + mascot('curious', 72, 'style="flex-shrink:0"') + '</div>' +
+      '<div class="types col" role="radiogroup" aria-label="Bristol type">' + TYPE_PATHS.map(function (d, i) {
+        var n = i + 1, sel = draft.type === n;
+        return '<button role="radio" data-type="' + n + '" aria-pressed="' + sel + '" aria-checked="' + sel + '"><svg width="40" height="28" viewBox="0 0 28 20" aria-hidden="true"><path d="' + d + '" fill="#8A5A3B"/></svg>' +
+          '<span style="flex:1;font-size:16px;font-weight:800">' + names[i] + '</span><span style="font-size:14px;font-weight:900;color:#9AA5A5">' + n + '</span></button>';
+      }).join('') + '</div>' +
+      '<div class="sticky-bottom"><button class="btn btn-teal" data-act="logpick" ' + (draft.type ? '' : 'disabled') + ' style="min-height:56px;font-size:19px">Log it</button></div>' +
+    '</main>';
+  };
+
+  SCREENS.checked = function () {
+    var c = lastCheckin;
+    var t = TIERS[c.tierAfter[0]];
+    var pct = Math.max(0, Math.min(100, c.barPct));
+    return '<main class="screen" style="gap:16px;align-items:stretch">' +
+      '<div class="col pop" style="align-items:center;gap:4px;margin-top:12px">' + mascot('cheer', 150) +
+        '<span style="font-size:56px;font-weight:900;color:#0B6E64;line-height:1.1">' + (c.total >= 0 ? '+' : '−') + Math.abs(c.total) + ' GP</span>' +
+        '<span style="font-size:17px;font-weight:800;color:var(--muted)">Day ' + streak() + ' done. Ploopy approves.</span></div>' +
+      (c.lines.length ? '<section class="col" style="gap:8px;font-size:16px;font-weight:800">' + c.lines.map(function (l) {
+        return '<div class="between"><span>' + l[0] + '</span><span style="font-weight:900">' + (l[1] >= 0 ? '+' : '−') + Math.abs(l[1]) + '</span></div>';
+      }).join('') + '</section>' : '<p class="sub" style="margin:0;text-align:center;font-size:15px">No-photo days keep your streak but don\'t touch GP.</p>') +
+      '<div class="row" style="gap:10px">' + shield(TIERS[c.tierBefore[0]], 26) +
+        '<div style="flex:1;height:10px;background:var(--teal);border-radius:999px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:#E8BC3D;border-radius:999px"></div></div>' +
+        '<span style="font-size:14px;font-weight:900;color:#0B6E64">' + (c.promoted ? rankName(c.tierAfter[0], c.tierAfter[1]) + '!' : (100 - state.gp) + ' to go') + '</span></div>' +
+      '<div class="hr"></div>' +
+      '<section class="col" style="gap:12px"><div class="col" style="gap:2px"><h2 style="font-size:20px">Two things for today</h2><span class="sub">Snap a pic when you\'ve done one. +4 GP each.</span></div>' +
+        TIPS.map(function (tip, i) {
+          var on = !!state.tipsDone[today() + i];
+          return '<div class="tip"><span class="ic" style="background:' + tip.bg + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + tip.ink + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + tip.icon + '"/></svg></span>' +
+            '<div class="col" style="flex:1"><span style="font-size:16px;font-weight:800">' + tip.title + '</span><span style="font-size:12px;font-weight:700;color:var(--muted);text-decoration:underline">' + tip.source + '</span></div>' +
+            '<button data-tip="' + i + '" aria-pressed="' + on + '">' + (on ? 'Done' : 'Snap') + '</button></div>';
+        }).join('') +
+        '<span style="font-size:12px;font-weight:700;color:#9AA5A5">General ideas, not medical advice.</span></section>' +
+      '<button class="btn btn-teal" data-act="continue" style="margin-top:4px">Continue</button>' +
+    '</main>';
+  };
+
+  SCREENS.promoted = function () {
+    var r = rankName(state.tier, state.div);
+    return '<main class="screen" style="color:#FFF;align-items:center;min-height:100dvh;position:relative;overflow:hidden">' +
+      '<svg width="390" height="420" viewBox="0 0 390 420" aria-hidden="true" style="position:absolute;left:50%;transform:translateX(-50%);top:40px"><circle cx="195" cy="210" r="170" fill="#F2B705" opacity="0.07"/><circle cx="195" cy="210" r="115" fill="#F2B705" opacity="0.09"/><rect x="62" y="96" width="9" height="15" rx="2" fill="#2DD4BF" transform="rotate(25 66 103)"/><rect x="312" y="120" width="9" height="15" rx="2" fill="#6366F1" transform="rotate(-30 316 127)"/><rect x="90" y="300" width="8" height="13" rx="2" fill="#FFC800" transform="rotate(-20 94 306)"/></svg>' +
+      '<div class="col pop" style="align-items:center;gap:6px;position:relative;margin-top:40px">' + mascot('proud', 96) +
+        '<span style="font-size:17px;font-weight:800;color:#C9D4EC">You made it to</span>' + bigShield(200, r + ' emblem') +
+        '<span style="font-size:52px;font-weight:900;color:#FFD84D;line-height:1.1">' + r + '</span>' +
+        '<span style="font-size:16px;font-weight:700;color:#C9D4EC">Zan\'s still ahead. Just saying.</span></div>' +
+      '<div style="flex:1"></div>' +
+      '<div class="col" style="gap:8px;width:100%;position:relative"><button class="btn btn-yellow" data-go="home">Nice</button>' +
+        '<button class="link" data-act="share" style="color:#C9D4EC;text-decoration:none;font-size:15px;min-height:44px;align-self:center">Share my rank</button></div>' +
+    '</main>';
+  };
+
+  SCREENS.deranked = function () {
+    var s = state.lastSlip || { day: 'Saturday', miss: 20, streak: 10, to: [state.tier, state.div] };
+    var r = rankName(s.to[0], s.to[1]);
+    return '<main class="screen" style="color:#FFF;align-items:center;text-align:center;min-height:100dvh">' +
+      '<span style="font-size:17px;font-weight:800;color:#C9D4EC;margin-top:40px">' + (s.dropped === false ? 'You held on to' : 'You slipped to') + '</span>' +
+      '<div style="position:relative">' + bigShield(180, r + ' emblem', true) +
+        '<span style="position:absolute;right:-8px;bottom:22px;width:56px;height:56px;border-radius:999px;background:#EF5350;border:4px solid #252B3B;display:flex;align-items:center;justify-content:center">' + ICON.down + '</span></div>' +
+      '<span style="font-size:52px;font-weight:900;color:#E8C766;line-height:1.1">' + r + '</span>' +
+      '<span style="font-size:17px;font-weight:800;color:#DDE3F0;line-height:1.4">Missed ' + s.day + ' (−' + s.miss + ')' + (s.streak ? ' and lost the streak (−' + s.streak + ')' : '') + '.<br>' + (s.dropped === false ? 'Still in ' + r + '. A good day tomorrow makes it up.' : 'Three good days gets it back.') + '</span>' +
+      mascot('gotthis', 90, 'style="margin-top:12px"') +
+      '<div style="flex:1"></div>' +
+      '<div class="col" style="gap:8px;width:100%"><button class="btn btn-yellow" data-go="home">Let\'s go</button>' +
+        '<span style="font-size:13px;font-weight:700;color:#AEB8D0">Sick or away? A shield stops this. You have ' + state.shields + '.</span></div>' +
+    '</main>';
+  };
+
+  SCREENS.ranked = function () {
+    var ranked = state.mode === 'ranked';
+    var head = '<div class="between"><h1>Ranked</h1><div class="seg" role="group" aria-label="Mode">' +
+      '<button data-mode="casual" aria-pressed="' + !ranked + '">Casual</button><button data-mode="ranked" aria-pressed="' + ranked + '">Ranked</button></div></div>';
+    if (!ranked) {
+      return '<main class="screen with-nav" style="gap:22px">' + head +
+        '<p style="margin:0;font-size:16px;font-weight:700;color:#5A5A5A;line-height:1.5">No rank, no ladder. Streaks and Ploopy still work. Jump in whenever, it starts next act.</p>' +
+        '<div style="align-self:center;margin-top:20px">' + mascot('hello', 140) + '</div></main>';
+    }
+    var days = lastNDays(14), maxAbs = 30, scale = 55 / maxAbs, total = 0;
+    var bars = days.map(function (d) {
+      var c = state.gpLog[d]; if (c == null) c = null; if (c) total += c;
+      var up = c > 0 ? '<div style="width:100%;height:' + Math.min(64, Math.round(c * scale)) + 'px;background:#2DD4BF;border-radius:5px 5px 2px 2px"></div>'
+        : (c === 0 ? '<div style="width:12px;height:12px;border-radius:999px;background:#6366F1;margin-bottom:-6px;position:relative;z-index:1"></div>' : '');
+      var down = c < 0 ? '<div style="width:100%;height:' + Math.min(52, Math.round(-c * scale)) + 'px;background:#FF6B6B;border-radius:2px 2px 5px 5px"></div><span style="font-size:10px;font-weight:800;line-height:14px;color:#B3261E">' + c + '</span>' : '';
+      return '<div class="col" style="height:140px"><div class="col" style="height:70px;justify-content:flex-end;align-items:center">' + up + '</div><div class="col" style="height:70px;align-items:center">' + down + '</div></div>';
+    }).join('');
+    var dayLabels = days.map(function (d) { return '<span>' + DOW[new Date(d + 'T12:00').getDay()] + '</span>'; }).join('');
+    var ladder = BUDDIES.filter(function (b) { return !state.removed[b.name]; }).map(function (b) { return { name: b.name, t: b.rank[0], d: b.rank[1], you: false }; });
+    ladder.push({ name: 'You', t: state.tier, d: state.div, you: true });
+    ladder.sort(function (a, b) { return (b.t * 10 - b.d) - (a.t * 10 - a.d); });
+    return '<main class="screen with-nav" style="gap:22px">' + head +
+      '<div style="background:var(--night);border-radius:24px;padding:18px;display:flex;align-items:center;gap:14px;color:#FFF">' + bigShield(96, curRank() + ' emblem') +
+        '<div class="col" style="flex:1;gap:6px"><span style="font-size:34px;font-weight:900;line-height:1;color:#FFD84D">' + curRank() + '</span>' +
+        '<div style="height:10px;background:#34405E;border-radius:999px;overflow:hidden"><div style="width:' + state.gp + '%;height:100%;background:#FFC800;border-radius:999px"></div></div>' +
+        '<span style="font-size:13px;font-weight:700;color:#C9D4EC">' + state.gp + ' / 100 · act ends Dec 1</span></div></div>' +
+      '<section class="col" style="gap:10px"><div class="between" style="align-items:baseline"><h2>Last two weeks</h2><span style="font-size:14px;font-weight:900;color:#0B6E64">' + (total >= 0 ? '+' : '') + total + '</span></div>' +
+        '<div role="img" aria-label="Daily GP change for the last 14 days" style="position:relative;height:140px;display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:5px"><div style="position:absolute;left:0;right:0;top:69px;border-top:2px solid #E3E8E8"></div>' + bars + '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:5px;font-size:11px;font-weight:700;color:#9AA5A5;text-align:center">' + dayLabels + '</div>' +
+        '<span style="font-size:13px;font-weight:700;color:var(--muted)">Blue dot = shield day. ' + (state.lastSlip ? '<a href="#deranked" style="font-weight:800">See the ' + state.lastSlip.day + ' slip</a>' : '') + '</span></section>' +
+      '<div class="hr"></div>' +
+      '<section class="col" style="gap:8px"><h2 style="margin-bottom:4px">How it works</h2>' + RULES.map(function (r) {
+        var up = r[1] > 0;
+        return '<div class="between" style="font-size:15px;font-weight:700"><span>' + r[0] + '</span><span style="font-weight:900;min-width:40px;text-align:center;padding:1px 10px;border-radius:999px;' + (up ? 'background:#D5F5F0;color:#0B6E64' : 'background:#FFE4E6;color:#BE123C') + '">' + (up ? '+' : '−') + Math.abs(r[1]) + '</span></div>';
+      }).join('') +
+        '<span style="font-size:13px;font-weight:600;color:var(--muted);line-height:1.45;margin-top:4px">No-photo days keep your streak but don\'t touch GP. 2 shields a week block losses on sick or travel days.</span></section>' +
+      '<div class="hr"></div>' +
+      '<section class="col"><div class="between"><h2>Friends</h2><a href="#tiers" style="font-size:14px;font-weight:800;min-height:44px;display:flex;align-items:center">All ranks</a></div>' +
+        ladder.map(function (p, i) {
+          return '<div class="row" style="gap:10px;min-height:50px;padding:0 10px;margin:0 -10px;border-radius:14px;' + (p.you ? 'background:#E6F7F5' : '') + '"><span style="width:18px;font-size:15px;font-weight:900;color:#9AA5A5">' + (i + 1) + '</span>' + shield(TIERS[p.t], 30) +
+            '<span style="flex:1;font-size:15px;font-weight:800">' + p.name + '</span><span style="font-size:14px;font-weight:700;color:var(--muted)">' + (TIERS[p.t].name === 'Platinum' ? 'Plat' : TIERS[p.t].name) + ' ' + p.d + '</span></div>';
+        }).join('') +
+        '<a href="#global" style="margin-top:12px;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;background:var(--indigo);color:#FFF;text-decoration:none">' + ICON.globe +
+          '<span class="col" style="flex:1"><span style="font-size:16px;font-weight:900">Global top 100</span><span style="font-size:13px;font-weight:700;color:#E0DEFF">' + (state.globalOn ? "You're #4,812 · top 8%" : 'You\'re hidden from the board') + '</span></span>' + ICON.chev + '</a></section>' +
+    '</main>';
+  };
+
+  SCREENS.tiers = function () {
+    var list = [ROYAL].concat(TIERS.slice().reverse());
+    return '<main class="screen" style="gap:16px">' +
+      '<button class="icon-btn" data-back="ranked" aria-label="Back">' + ICON.back + '</button>' +
+      '<div class="col" style="gap:4px"><h1>All ranks</h1><span class="sub" style="font-size:14px">100 GP per division. Everyone drops a tier when a new act starts.</span></div>' +
+      '<div class="col">' + list.map(function (t) {
+        var you = t.name === TIERS[state.tier].name;
+        var sub = t === ROYAL ? 'top 100' : (you ? 'you’re here' : (t.name === 'Iron' ? 'start here' : '1–3'));
+        return '<div class="row" style="gap:14px;min-height:64px;padding:0 12px;margin:0 -12px;border-radius:16px;' + (you ? 'background:#E6F7F5' : '') + '">' + shield(t, 44) +
+          '<span style="flex:1;font-size:17px;font-weight:900">' + t.name + '</span><span style="font-size:13px;font-weight:800;color:var(--muted)">' + sub + '</span></div>';
+      }).join('') + '</div></main>';
+  };
+
+  SCREENS.global = function () {
+    var pod = [{ pos: 2, name: 'BraveBean9', gp: '2,388', c: '#94A3B8', h: 84, bg: '#EEF2F6' }, { pos: 1, name: 'CosmicFig88', gp: '2,451', c: '#F2B705', h: 112, bg: '#FEF3C7' }, { pos: 3, name: 'SunnyKiwi12', gp: '2,340', c: '#D97706', h: 66, bg: '#FFEDD5' }];
+    var names = ['SwiftPlum3', 'HappyYam5', 'BoldPear71', 'CalmMango4', 'LuckyOat60', 'ZenBeet23', 'MightyLeek8', 'TinyTaro41', 'NeatBasil2'];
+    var gps = [2309, 2297, 2280, 2266, 2251, 2249, 2230, 2214, 2209];
+    var dots = ['#14B8A6', '#6366F1', '#F97316', '#EC4899', '#0EA5E9', '#8B5CF6', '#F59E0B', '#10B981', '#EF4444'];
+    var near = [['#4,811', 'PlumpPea17', '1,486'], ['#4,812', 'QuietOtter42 (you)', '1,484'], ['#4,813', 'GentleRye30', '1,483']];
+    return '<main class="screen with-nav" style="gap:20px">' +
+      '<div class="row" style="align-items:flex-start;gap:8px"><button class="icon-btn" data-back="ranked" aria-label="Back">' + ICON.back + '</button>' +
+        '<div class="col"><h1>Global top 100</h1><span class="sub">Act 1 · resets Dec 1 · 61,230 players</span></div></div>' +
+      (state.globalOn
+        ? '<section style="background:var(--indigo);border-radius:24px;padding:18px;color:#FFF;display:flex;flex-direction:column;gap:10px">' +
+            '<div class="between" style="align-items:flex-start"><div class="col"><span style="font-size:14px;font-weight:800;color:#C7C4FF">You\'re placed</span><span style="font-size:48px;font-weight:900;line-height:1.05">#4,812</span><span style="font-size:15px;font-weight:800;color:#E0DEFF">as QuietOtter42 · ' + curRank() + '</span></div>' +
+            '<span class="pill" style="background:#FBBF24;color:#3C2A00;font-size:15px;padding:6px 14px">Top 8%</span></div>' +
+            '<div class="col" style="gap:6px"><div style="position:relative;height:12px;background:#6D66F0;border-radius:999px"><div style="width:92%;height:100%;background:#FFF;border-radius:999px"></div><div style="position:absolute;left:92%;top:-5px;width:22px;height:22px;margin-left:-11px;border-radius:999px;background:#FBBF24;border:3px solid #4F46E5"></div></div>' +
+            '<div class="between" style="font-size:11px;font-weight:800;color:#C7C4FF"><span>everyone</span><span>top 100</span></div></div>' +
+            '<span style="font-size:14px;font-weight:700;color:#E0DEFF">12 more GP passes about 300 people.</span></section>'
+        : '<section class="card"><h2>You\'re hidden</h2><span class="sub">Turn the switch on below to get a made-up name and a place on the board.</span></section>') +
+      '<section aria-label="Top three" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end">' + pod.map(function (p) {
+        return '<div class="col" style="align-items:center;gap:6px"><span style="width:34px;height:34px;border-radius:999px;background:' + p.c + ';color:#FFF;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900">' + p.pos + '</span>' +
+          '<span style="font-size:13px;font-weight:900;text-align:center;line-height:1.2">' + p.name + '</span><div style="width:100%;height:' + p.h + 'px;border-radius:16px 16px 6px 6px;background:' + p.bg + ';display:flex;justify-content:center;padding-top:10px;font-size:13px;font-weight:900">' + p.gp + '</div></div>';
+      }).join('') + '</section>' +
+      '<section class="col">' + names.map(function (n, i) {
+        return '<div class="row" style="min-height:48px;border-bottom:1px solid var(--line)"><span style="width:26px;font-size:14px;font-weight:900;color:#9AA5A5">' + (i + 4) + '</span><span style="width:10px;height:10px;border-radius:999px;background:' + dots[i] + ';flex-shrink:0"></span>' +
+          '<span style="flex:1;font-size:15px;font-weight:800">' + n + '</span><span style="font-size:14px;font-weight:800;color:var(--muted)">' + gps[i].toLocaleString('en-US') + ' GP</span></div>';
+      }).join('') + '<button data-act="showall" style="min-height:48px;background:none;border:0;font-size:14px;font-weight:800;color:var(--teal)">Show all 100</button></section>' +
+      (state.globalOn ? '<section style="background:#EEF2FF;border-radius:20px;padding:4px 16px;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:900;color:#4338CA;padding:10px 0 2px">Around you</span>' + near.map(function (r, i) {
+        return '<div class="row" style="gap:10px;min-height:46px;' + (i === 1 ? 'margin:0 -10px;padding:0 10px;border-radius:12px;background:#FFF;color:#4338CA' : '') + '"><span style="width:52px;font-size:13px;font-weight:900;color:var(--muted)">' + r[0] + '</span><span style="flex:1;font-size:15px;font-weight:800">' + r[1] + '</span><span style="font-size:14px;font-weight:800;color:var(--muted)">' + r[2] + ' GP</span></div>';
+      }).join('') + '</section>' : '') +
+      '<section class="between"><span class="col"><span style="font-size:15px;font-weight:900">Show me on the global board</span><span style="font-size:13px;font-weight:600;color:var(--muted)">Only your made-up name and GP. No photo, no real name.</span></span>' +
+        '<button class="toggle indigo" data-act="global" aria-pressed="' + state.globalOn + '" aria-label="Show me on the global board"><span></span></button></section>' +
+      '<p class="sub" style="margin:0">Other players are demo data.</p>' +
+    '</main>';
+  };
+
+  SCREENS.buddies = function () {
+    var list = BUDDIES.filter(function (b) { return !state.removed[b.name]; });
+    return '<main class="screen with-nav" style="gap:8px">' +
+      '<div class="between" style="margin-bottom:8px"><h1>Buddies</h1><button data-act="invite" style="min-height:44px;padding:0 18px;border-radius:999px;border:0;background:var(--indigo);color:#FFF;font-size:16px;font-weight:900">Invite</button></div>' +
+      '<div class="col">' + list.map(function (b) {
+        var sent = !!state.cheered[today() + b.name];
+        var line = (b.time ? 'Checked in at ' + b.time : 'Not yet today') + ' · ' + b.streak + '-day streak';
+        return '<div class="list-row"><span class="avatar" style="background:' + b.color + '">' + b.name.charAt(0) + '</span>' +
+          '<div class="col" style="flex:1"><span style="font-size:17px;font-weight:900">' + b.name + '</span><span style="font-size:14px;font-weight:700;color:var(--muted)">' + line + '</span></div>' +
+          '<button data-cheer="' + b.name + '" aria-pressed="' + sent + '" style="min-height:38px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:800;flex-shrink:0;' + (sent ? 'background:' + b.color + ';color:#FFF;border:2px solid ' + b.color : 'background:' + b.soft + ';color:' + b.ink + ';border:2px solid ' + b.soft) + '">' + (sent ? 'Sent' : 'Cheer') + '</button></div>';
+      }).join('') +
+        '<div class="list-row"><span class="avatar" style="border:2px dashed #C9D2D2;color:#9AA5A5;background:none">D</span><span style="font-size:15px;font-weight:700;color:var(--muted)">Dev hasn\'t accepted yet</span></div></div>' +
+      '<a href="#privacy" style="font-size:15px;font-weight:800;color:var(--teal-dark);margin-top:16px;min-height:44px;display:flex;align-items:center">They only see that you showed up. What else?</a>' +
+      '<p class="sub" style="margin:0">Demo buddies, seeded.</p>' +
+    '</main>';
+  };
+
+  SCREENS.privacy = function () {
+    var p = state.privacy;
+    function tog(key, label, sub) {
+      return '<div class="setting"><span class="col">' + label + (sub ? '<span style="font-size:13px;font-weight:700;color:var(--muted)">' + sub + '</span>' : '') + '</span>' +
+        '<button class="toggle" data-priv="' + key + '" aria-pressed="' + !!p[key] + '" aria-label="' + label + '"><span></span></button></div>';
+    }
+    return '<main class="screen" style="gap:4px">' +
+      '<button class="icon-btn" data-back="buddies" aria-label="Back">' + ICON.back + '</button>' +
+      '<h1 style="font-size:30px;margin:12px 0 10px">What buddies see</h1>' +
+      tog('checkin', 'That you checked in') + tog('streak', 'Your streak') + tog('rank', 'Your rank') +
+      '<p style="margin:0;padding:16px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:700;color:#5A5A5A;line-height:1.55">Your scores, types, blood notes and cycle stay with you. Photos are never kept, so there\'s nothing to share.</p>' +
+      '<div style="height:12px"></div>' +
+      tog('discreet', 'Discreet mode', 'Shows as "Daily" on your home screen') +
+      '<button class="setting" data-act="pause">' + (state.paused ? 'Back from your break' : 'Take a break') + '</button>' +
+      '<button class="setting" data-act="remove">Remove a buddy</button>' +
+      '<div id="remove-list" class="hidden col" style="padding:4px 0 8px 12px">' + BUDDIES.filter(function (b) { return !state.removed[b.name]; }).map(function (b) {
+        return '<div class="between" style="min-height:48px"><span style="font-weight:800">' + b.name + '</span><button data-remove="' + b.name + '" style="min-height:40px;padding:0 14px;border-radius:12px;border:2px solid #E3E8E8;background:#FFF;font-weight:800">Remove</button></div>';
+      }).join('') + '</div>' +
+      '<button class="setting" data-act="wipe" style="color:#B3261E">Delete everything</button>' +
+    '</main>';
+  };
+
+  SCREENS.record = function () {
+    var days = lastNDays(30), m = byDate();
+    var photoDays = days.filter(function (d) { return m[d] && m[d].score != null; });
+    var logged = days.filter(function (d) { return m[d]; }).length;
+    var scores = photoDays.map(function (d) { return m[d].score; });
+    var bloodDays = days.filter(function (d) { return m[d] && m[d].blood; });
+    var start = days[0], end = days[29];
+    // line chart
+    var pts = [], dots = [];
+    days.forEach(function (d, i) {
+      var e = m[d]; if (!e || e.score == null) return;
+      var x = Math.round(6 + i * (338 / 29)), y = Math.round(150 - e.score * 1.45);
+      pts.push(x + ',' + y);
+      dots.push('<circle cx="' + x + '" cy="' + y + '" r="' + (e.blood ? 5 : 3.5) + '" fill="' + (e.blood ? '#E11D48' : scoreColor(e.score)) + '" stroke="#FFF" stroke-width="1.5"/>');
+    });
+    var low = scores.length ? Math.min.apply(null, scores) : null;
+    var chartLabel = scores.length ? 'Line chart of daily scores from ' + fmt(start) + ' to ' + fmt(end) + ', low of ' + low + '.' : 'No scores yet.';
+    var xl = [0, 10, 20, 29].map(function (i) { return '<span>' + fmt(days[i]) + '</span>'; }).join('');
+    // calendar
+    var mode = recordMode;
+    var typeColors = ['#E3E8E8', '#7C2D12', '#B45309', '#F59E0B', '#14B8A6', '#60A5FA', '#A78BFA', '#F472B6'];
+    var comfortColors = ['#14B8A6', '#FBBF24', '#FB923C', '#F87171'];
+    var lead = (new Date(start + 'T12:00').getDay() + 6) % 7;
+    var cells = [];
+    for (var k = 0; k < lead; k++) cells.push('<div></div>');
+    days.forEach(function (d) {
+      var e = m[d], isToday = d === today(), fill, txt = '#FFFFFF', extra = '';
+      if (isToday && !e) { fill = '#FFFFFF'; txt = '#0D9488'; extra = 'border:2px dashed #0D9488;'; }
+      else if (!e || e.score == null) { fill = e ? '#DDE4E4' : '#EEF1F1'; txt = '#8A9696'; }
+      else if (mode === 'score') fill = scoreColor(e.score);
+      else if (mode === 'type') fill = typeColors[e.type || 0];
+      else fill = comfortColors[e.comfort || 0];
+      if (fill === '#FBBF24' || fill === '#F59E0B') txt = '#5C3D00';
+      var period = e && e.chips && e.chips.indexOf('On my period') >= 0;
+      cells.push('<div style="background:' + fill + ';color:' + txt + ';' + extra + (period ? 'box-shadow:inset 0 -4px 0 #FB7185;' : '') + '">' + new Date(d + 'T12:00').getDate() +
+        (e && e.blood ? '<span style="position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:999px;background:#E11D48;border:1.5px solid #FFF"></span>' : '') + '</div>');
+    });
+    var sw = function (c) { return '<span style="width:12px;height:12px;border-radius:4px;background:' + c + '"></span>'; };
+    var legend = mode === 'score' ? [['85+', '#14B8A6'], ['60–84', '#FBBF24'], ['40–59', '#FB923C'], ['no photo', '#EEF1F1']]
+      : (mode === 'type' ? [['Type 2', '#B45309'], ['3', '#F59E0B'], ['4', '#14B8A6'], ['5', '#60A5FA'], ['6', '#A78BFA']]
+      : [['Fine', '#14B8A6'], ['Meh', '#FBBF24'], ['Uncomfy', '#FB923C'], ['Ouch', '#F87171']]);
+    // notes from chips
+    var chipDates = {};
+    days.forEach(function (d) { var e = m[d]; if (e && e.chips) e.chips.forEach(function (c) { (chipDates[c] = chipDates[c] || []).push(d); }); });
+    var noteRows = Object.keys(chipDates).map(function (c) {
+      var col = CHIPS[c] ? CHIPS[c][0] : '#9AA5A5';
+      return '<div class="between"><span class="row" style="gap:8px"><span style="width:10px;height:10px;border-radius:999px;background:' + col + '"></span>' + (c === 'On my period' ? 'Period' : c) + '</span><span style="color:var(--muted);text-align:right">' + rangeText(chipDates[c]) + '</span></div>';
+    }).join('');
+    // mini widget
+    var monday = addDays(new Date(), -((new Date().getDay() + 6) % 7)), mini = [], wk = [];
+    for (var i = 0; i < 7; i++) { var e2 = m[dayStr(addDays(monday, i))]; var v = e2 && e2.score != null ? e2.score : null; if (v != null) wk.push(v); mini.push('<div style="height:' + (v == null ? 6 : Math.round(v * 0.6)) + 'px;border-radius:5px;background:' + (v == null ? '#E3E8E8' : scoreColor(v)) + '"></div>'); }
+    return '<main class="screen with-nav" style="gap:20px">' +
+      '<div class="col" style="gap:4px"><h1 style="font-size:30px">Your record</h1><span class="sub" style="font-size:15px">' + fmt(start) + ' – ' + fmt(end) + '. Show this to your doctor.</span></div>' +
+      '<div class="tiles">' +
+        '<div style="background:#D5F5F0;color:#0B6E64"><b style="font-size:28px">' + photoDays.length + '<span style="font-size:15px">/30</span></b><span>days logged</span></div>' +
+        '<div style="background:#E8E7FF;color:#4338CA"><b style="font-size:28px">' + (avg(scores) != null ? avg(scores) : '–') + '</b><span>avg score</span></div>' +
+        '<div style="background:#FFE4E6;color:#9F1239"><b style="font-size:28px">' + bloodDays.length + '</b><span>blood note' + (bloodDays.length === 1 ? '' : 's') + '</span></div></div>' +
+      '<section class="col" style="gap:8px"><div class="between" style="align-items:baseline"><h2>Score over 30 days</h2><span style="font-size:12px;font-weight:800;color:var(--muted)">gaps = no photo</span></div>' +
+        '<svg viewBox="0 0 350 150" width="100%" role="img" aria-label="' + chartLabel + '"><rect x="0" y="0" width="350" height="27" fill="#D5F5F0" opacity="0.6"/><rect x="0" y="27" width="350" height="36" fill="#FEF3C7" opacity="0.6"/><rect x="0" y="63" width="350" height="87" fill="#FFEDD5" opacity="0.5"/>' +
+        '<text x="346" y="15" text-anchor="end" font-size="10" font-weight="800" fill="#0B6E64">85+</text><text x="346" y="52" text-anchor="end" font-size="10" font-weight="800" fill="#92400E">60–84</text>' +
+        '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#0D9488" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>' + dots.join('') + '</svg>' +
+        '<div class="between" style="font-size:12px;font-weight:800;color:#9AA5A5">' + xl + '</div></section>' +
+      '<section class="col" style="gap:10px"><div class="between"><h2>Calendar</h2><div class="seg small" role="group" aria-label="Calendar colours">' +
+        [['score', 'Score'], ['type', 'Type'], ['comfort', 'Comfort']].map(function (x) { return '<button data-cal="' + x[0] + '" aria-pressed="' + (mode === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
+        '<div class="cal" style="font-size:11px;font-weight:800;color:#9AA5A5;text-align:center"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>' +
+        '<div class="cal">' + cells.join('') + '</div>' +
+        '<div class="legend">' + legend.map(function (l) { return '<span>' + sw(l[1]) + l[0] + '</span>'; }).join('') +
+          '<span><span style="width:12px;height:3px;border-radius:2px;background:#FB7185"></span>period</span><span><span style="width:7px;height:7px;border-radius:999px;background:#E11D48"></span>blood note</span></div></section>' +
+      '<section class="card no-print"><div class="col" style="gap:2px"><h2>Put Ploopy on your home screen</h2><span style="font-size:13px;font-weight:700;color:var(--muted)">Streak and this week, without opening the app.</span></div>' +
+        '<div class="row" style="gap:10px;align-items:stretch"><div aria-label="Small widget preview" style="width:120px;height:120px;flex-shrink:0;border-radius:26px;background:var(--teal);color:#FFF;padding:12px;display:flex;flex-direction:column;justify-content:space-between">' + mascot('hello', 52) +
+          '<div class="col"><span style="font-size:22px;font-weight:900;line-height:1">Day ' + dayNumber() + '</span><span style="font-size:11px;font-weight:800;color:#CCF5EF">' + (loggedToday() ? 'done today' : 'photo still to do') + '</span></div></div>' +
+          '<div aria-label="Medium widget preview" style="flex:1;height:120px;border-radius:26px;background:#FFF;padding:12px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:12px;font-weight:900">This week · avg ' + (avg(wk) != null ? avg(wk) : '–') + '</span>' +
+          '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;align-items:end;height:60px">' + mini.join('') + '</div><span style="font-size:11px;font-weight:800;color:#9AA5A5">' + curRank() + ' · ' + streak() + ' days</span></div></div>' +
+        '<button data-act="widget" style="min-height:48px;border-radius:14px;background:var(--teal);border:0;font-size:16px;font-weight:900;color:#FFF">Add widget</button></section>' +
+      (noteRows ? '<section class="col" style="gap:8px;font-size:15px;font-weight:700"><h2 style="margin-bottom:4px">Notes</h2>' + noteRows + '</section>' : '') +
+      '<label class="col" style="gap:8px;font-size:17px;font-weight:900">Things to ask<textarea id="notes" rows="3" placeholder="Is the cramping before my period normal?">' + esc(state.notes) + '</textarea></label>' +
+      '<button class="btn btn-outline no-print" data-act="pdf" style="font-size:17px">Save as PDF</button>' +
+      '<p class="sub" style="margin:0">' + DISCLAIMER + ' Bring it to your appointment.</p>' +
+      demoSettings() +
+    '</main>';
+  };
+  var recordMode = 'score';
+  AFTER.record = function () {
+    var n = document.getElementById('notes');
+    if (n) n.addEventListener('input', function () { state.notes = n.value; save(); });
+  };
+  function rangeText(list) {
+    var out = [], run = [list[0]];
+    for (var i = 1; i < list.length; i++) {
+      if (dayStr(addDays(new Date(run[run.length - 1] + 'T12:00'), 1)) === list[i]) run.push(list[i]);
+      else { out.push(run); run = [list[i]]; }
+    }
+    out.push(run);
+    return out.map(function (r) { return r.length > 2 ? fmt(r[0]) + '–' + new Date(r[r.length - 1] + 'T12:00').getDate() : r.map(fmt).join(', '); }).join(', ');
+  }
+  function demoSettings() {
+    return '<details class="demo no-print"><summary>Demo settings</summary>' +
+      '<label><input type="radio" name="scanmode" value="live" ' + (state.scanMode === 'live' ? 'checked' : '') + '> Live scan (Gemini)</label>' +
+      '<label><input type="radio" name="scanmode" value="cached" ' + (state.scanMode === 'cached' ? 'checked' : '') + '> Cached demo run (no network)</label>' +
+      '<label><input type="checkbox" id="force-unclear" ' + (state.forceUnclear ? 'checked' : '') + '> Make the next scan unclear</label>' +
+      '<div class="row" style="gap:8px;min-height:44px;font-weight:700;font-size:15px">Ploopy colour' + ['#B5764A', '#8DB08F', '#8E9CCB'].map(function (c) {
+        return '<button data-mascot="' + c + '" aria-label="Mascot colour ' + c + '" aria-pressed="' + (state.mascot === c) + '" style="width:36px;height:36px;border-radius:999px;background:' + c + ';border:3px solid ' + (state.mascot === c ? '#3C3C3C' : '#FFF') + ';box-shadow:0 0 0 1px #E3E8E8"></button>';
+      }).join('') + '</div>' +
+      '<button class="demo-btn" data-act="slip">Simulate a missed day</button>' +
+      '<button class="demo-btn" data-act="promote-demo">Show the promotion screen</button>' +
+      '<button class="demo-btn" data-act="reseed">Reset to demo data</button>' +
+      '<p class="sub">Demo data lives on this phone only.</p></details>';
   }
 
-  function finish(bristol, kind) {
-    state.entries.push({ date: dayStr(new Date()), kind: kind, bristol: bristol });
-    save(); clearPending();
-    var n = streak();
-    $('saved-title').textContent = 'Logged';
-    $('saved-sub').textContent = n + '-day streak. ' + (kind === 'nothing' ? 'Nothing to report counts too.' : 'Nice work showing up.');
-    $('cheer').textContent = 'Sam cheered you 🎉 (demo buddy, scripted)';
-    show('saved');
+  // ---------- camera ----------
+  function startCamera() {
+    var video = document.getElementById('video');
+    if (state.scanMode === 'cached' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(function (s) {
+      if (current() !== 'scan') { s.getTracks().forEach(function (t) { t.stop(); }); return; }
+      stream = s; video.srcObject = s; video.classList.remove('hidden');
+      document.getElementById('vf-msg').classList.add('hidden');
+    }).catch(function () { /* no camera: shutter falls back to the file picker */ });
   }
-
-  // Resize in the browser so uploads stay small. The result is a data URL held in memory only.
-  async function toJpeg(file) {
+  function stopCamera() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } }
+  function grabFrame() {
+    var video = document.getElementById('video');
+    if (!stream || !video || !video.videoWidth) return null;
+    var s = Math.min(1, 800 / Math.max(video.videoWidth, video.videoHeight));
+    var c = document.createElement('canvas'); c.width = Math.round(video.videoWidth * s); c.height = Math.round(video.videoHeight * s);
+    c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.8).split(',')[1];
+  }
+  // Resize in the browser so uploads stay small. Held in memory only.
+  async function fileToJpeg(file) {
     var bmp = await createImageBitmap(file);
     var s = Math.min(1, 800 / Math.max(bmp.width, bmp.height));
     var c = document.createElement('canvas'); c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
@@ -223,57 +830,161 @@
   }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-  async function scan(file) {
-    if ($('force-unclear').checked) { $('force-unclear').checked = false; await sleep(700); return { usable: false }; }
-    if (state.mode === 'cached') {
-      await sleep(900);
-      var r = CACHED[state.cacheIdx % CACHED.length]; state.cacheIdx++; save(); return r;
-    }
-    var b64 = await toJpeg(file);
-    var ctrl = new AbortController(); var t = setTimeout(function () { ctrl.abort(); }, 25000);
+  async function runScan(b64) {
+    var reading = document.getElementById('reading'), shutter = document.getElementById('shutter');
+    if (reading) reading.classList.remove('hidden');
+    if (shutter) shutter.disabled = true;
+    var r;
     try {
-      var res = await fetch('/api/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ image: b64, mime: 'image/jpeg' }), signal: ctrl.signal });
-      if (!res.ok) throw new Error('http_' + res.status);
-      return await res.json();
-    } finally { clearTimeout(t); }
-  }
-
-  async function onFile(file) {
-    if (!file) return;
-    var previewUrl = URL.createObjectURL(file);
-    show('scanning');
-    try {
-      var r = await scan(file);
-      if (r && r.usable) openConfirm({ source: 'scan', guess: r, previewUrl: previewUrl });
-      else openConfirm({ source: 'failed', reason: "We couldn't read that photo clearly.", previewUrl: previewUrl });
+      if (state.forceUnclear) { state.forceUnclear = false; save(); await sleep(800); r = { usable: false }; }
+      else if (state.scanMode === 'cached') { await sleep(1100); r = CACHED[state.cacheIdx % CACHED.length]; state.cacheIdx++; save(); }
+      else {
+        var ctrl = new AbortController(); var t = setTimeout(function () { ctrl.abort(); }, 25000);
+        try {
+          var res = await fetch('/api/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ image: b64, mime: 'image/jpeg' }), signal: ctrl.signal });
+          if (!res.ok) throw new Error('http_' + res.status);
+          r = await res.json();
+        } finally { clearTimeout(t); }
+      }
+      if (r && r.usable) {
+        draft = { source: 'scan', guess: r, chips: [], comfort: 0, blood: !!r.possibleBlood, bloodByUser: false };
+        go('result');
+      } else {
+        draft = { source: 'failed', reason: "Couldn't make that one out.", chips: [], comfort: 0, type: 0 };
+        go('pick');
+      }
     } catch (e) {
-      openConfirm({ source: 'failed', reason: "The scan isn't available right now. Your photo was not stored.", previewUrl: previewUrl });
+      draft = { source: 'failed', reason: "Scan isn't available right now. Photo not kept.", chips: [], comfort: 0, type: 0 };
+      go('pick');
     }
-    $('file').value = '';
   }
 
-  $('btn-photo').addEventListener('click', function () { $('file').click(); });
-  $('file').addEventListener('change', function (e) { onFile(e.target.files && e.target.files[0]); });
-  $('btn-quick').addEventListener('click', function () { openConfirm({ source: 'quick' }); });
-  $('btn-nothing').addEventListener('click', function () { finish(null, 'nothing'); });
-  $('btn-save').addEventListener('click', function () {
-    var c = document.querySelector('input[name=bristol]:checked');
-    if (!c) return;
-    finish(Number(c.value), pending && pending.source === 'scan' ? 'scan' : 'quick');
-  });
-  $('btn-cancel').addEventListener('click', function () { clearPending(); renderHome(); });
-  $('btn-done').addEventListener('click', renderHome);
-  document.querySelectorAll('input[name=mode]').forEach(function (r) {
-    r.addEventListener('change', function () { state.mode = r.value; save(); });
-  });
-  $('btn-seed').addEventListener('click', function () {
-    var have = loggedDays();
-    for (var i = 1; i <= 6; i++) { var d = dayStr(addDays(new Date(), -i)); if (!have[d]) state.entries.push({ date: d, kind: 'seed', bristol: null }); }
-    save(); renderHome();
-  });
-  $('btn-reset').addEventListener('click', function () { state = { entries: [], mode: state.mode, cacheIdx: 0 }; save(); renderHome(); });
+  // ---------- logging ----------
+  function applyGp(delta) {
+    var before = [state.tier, state.div];
+    state.gp += delta;
+    var promoted = false;
+    while (state.gp >= 100) {
+      if (state.div > 1) { state.div--; } else if (state.tier < TIERS.length - 1) { state.tier++; state.div = 3; } else { state.gp = 99; break; }
+      state.gp -= 100; promoted = true;
+    }
+    var dropped = false;
+    while (state.gp < 0) {
+      if (state.div < 3) { state.div++; } else if (state.tier > 0) { state.tier--; state.div = 1; } else { state.gp = 0; break; }
+      state.gp += 100; dropped = true;
+    }
+    return { before: before, promoted: promoted, dropped: dropped };
+  }
+  function commit(entry) {
+    var d = today();
+    var m = byDate();
+    if (m[d]) state.entries = state.entries.filter(function (e) { return e.date !== d; });
+    state.entries.push(entry);
+    var lines = [], total = 0, gpBefore = state.gp;
+    if (entry.kind === 'scan' && state.mode === 'ranked') {
+      lines.push(['Photo check-in', 15]);
+      var b = scoreBonus(entry.score); if (b) lines.push(['Scored ' + entry.score, b]);
+      state.pendingTips.forEach(function (t) { lines.push([t.label, t.gp]); });
+      state.pendingTips = [];
+      lines.forEach(function (l) { total += l[1]; });
+    }
+    var res = applyGp(total);
+    state.gpLog[d] = (state.gpLog[d] || 0) + total;
+    lastCheckin = { lines: lines, total: total, promoted: res.promoted, tierBefore: res.before, tierAfter: [state.tier, state.div], barPct: res.promoted ? 100 : state.gp };
+    void gpBefore;
+    save();
+    draft = null;
+    go('checked');
+  }
 
-  renderHome();
+  // ---------- events ----------
+  document.addEventListener('click', function (ev) {
+    var el = ev.target.closest('button, a[data-go], [data-act]');
+    if (!el) return;
+    var ds = el.dataset;
+    if (ds.go) { ev.preventDefault(); go(ds.go); return; }
+    if (ds.back) { ev.preventDefault(); go(ds.back); return; }
+    if (ds.chip) { var i = draft.chips.indexOf(ds.chip); if (i >= 0) draft.chips.splice(i, 1); else draft.chips.push(ds.chip); render(); return; }
+    if (ds.comfort) { draft.comfort = Number(ds.comfort); render(); return; }
+    if (ds.type) { draft.type = Number(ds.type); var y = window.scrollY; render(); window.scrollTo(0, y); return; }
+    if (ds.tip) { var k = today() + ds.tip; if (state.tipsDone[k]) { delete state.tipsDone[k]; applyGp(-4); } else { state.tipsDone[k] = true; applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; } save(); var y2 = window.scrollY; render(); window.scrollTo(0, y2); return; }
+    if (ds.cheer) { var ck = today() + ds.cheer; if (state.cheered[ck]) delete state.cheered[ck]; else { state.cheered[ck] = true; toast(ds.cheer + ' gets a 🎉'); } save(); render(); return; }
+    if (ds.mode) { state.mode = ds.mode; save(); render(); return; }
+    if (ds.cal) { recordMode = ds.cal; var y3 = window.scrollY; render(); window.scrollTo(0, y3); return; }
+    if (ds.priv) { state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); render(); return; }
+    if (ds.remove) {
+      if (confirm('Remove ' + ds.remove + '? They won\'t be told.')) { state.removed[ds.remove] = true; save(); toast(ds.remove + ' removed'); render(); }
+      return;
+    }
+    if (ds.mascot) { state.mascot = ds.mascot; save(); var y4 = window.scrollY; render(); window.scrollTo(0, y4); document.querySelector('details.demo').open = true; return; }
+    if (el.id === 'shutter') { onShutter(); return; }
+    switch (ds.act) {
+      case 'skip': draft = { source: 'pick', chips: [], comfort: 0, type: 0 }; go('pick'); break;
+      case 'cancel': draft = null; go('home'); break;
+      case 'plain': state.plain = !state.plain; save(); render(); break;
+      case 'blood': draft.blood = !draft.blood; draft.bloodByUser = draft.blood; render(); break;
+      case 'checkin':
+        commit({ date: today(), kind: 'scan', score: draft.score, type: draft.guess.bristol, colour: draft.guess.colour, confidence: draft.guess.confidence, comfort: draft.comfort, chips: draft.chips.slice(), blood: !!draft.blood });
+        break;
+      case 'logpick':
+        if (!draft.type) return;
+        commit({ date: today(), kind: 'pick', score: null, type: draft.type, comfort: draft.comfort || 0, chips: draft.chips || [], blood: false });
+        break;
+      case 'continue': var promo = lastCheckin && lastCheckin.promoted; lastCheckin = null; go(promo ? 'promoted' : 'home'); break;
+      case 'share':
+        var text = 'I made it to ' + curRank() + ' on Plop. Day ' + streak() + '.';
+        if (navigator.share) navigator.share({ text: text }).catch(function () {}); else { copy(text); toast('Copied to share'); }
+        break;
+      case 'invite':
+        var link = location.origin + location.pathname + '?invite=demo';
+        if (navigator.share) navigator.share({ title: 'Plop', text: 'Did you plop today? Join my circle.', url: link }).catch(function () {}); else { copy(link); toast('Invite link copied'); }
+        break;
+      case 'global': state.globalOn = !state.globalOn; save(); render(); break;
+      case 'showall': toast('Full board comes with the real backend'); break;
+      case 'pause': state.paused = !state.paused; save(); toast(state.paused ? 'Break on. Buddies see nothing new.' : 'Welcome back'); render(); break;
+      case 'remove': document.getElementById('remove-list').classList.toggle('hidden'); break;
+      case 'wipe':
+        if (confirm('Delete everything? Your log, rank and settings are wiped from this phone. This can\'t be undone.')) {
+          state = emptyState(); save(); draft = null; lastCheckin = null; toast('Everything deleted'); go('home');
+        }
+        break;
+      case 'widget': toast('Use your browser\'s Share menu, then Add to Home Screen'); break;
+      case 'pdf': window.print(); break;
+      case 'slip': simulateSlip(); break;
+      case 'promote-demo': go('promoted'); break;
+      case 'reseed': state = seed(); save(); toast('Demo data restored'); render(); break;
+    }
+  });
+  document.addEventListener('change', function (ev) {
+    var t = ev.target;
+    if (t.name === 'scanmode') { state.scanMode = t.value; save(); }
+    if (t.id === 'force-unclear') { state.forceUnclear = t.checked; save(); }
+  });
+  document.getElementById('file').addEventListener('change', async function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try { runScan(await fileToJpeg(f)); } catch (err) { draft = { source: 'failed', reason: "Couldn't open that photo.", chips: [], comfort: 0, type: 0 }; go('pick'); }
+  });
+  function onShutter() {
+    if (state.scanMode === 'cached' || state.forceUnclear) { runScan(null); return; }
+    var b64 = grabFrame();
+    if (b64) { runScan(b64); return; }
+    document.getElementById('file').click();
+  }
+  function simulateSlip() {
+    var yest = dayStr(addDays(new Date(), -1));
+    var before = [state.tier, state.div];
+    var res = applyGp(-30);
+    state.gpLog[yest] = -30;
+    state.entries = state.entries.filter(function (e) { return e.date !== yest; });
+    state.lastSlip = { day: new Date(yest + 'T12:00').toLocaleDateString('en-US', { weekday: 'long' }), miss: 20, streak: 10, from: before, to: [state.tier, state.div] };
+    save();
+    state.lastSlip.dropped = res.dropped; save();
+    go('deranked');
+  }
+  function copy(text) { try { navigator.clipboard.writeText(text); } catch (e) {} }
+
+  render();
 })();
 </script>
 </body>

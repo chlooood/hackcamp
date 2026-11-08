@@ -1,6 +1,6 @@
 # Deploying the Plop phone demo
 
-What is here: `public/index.html` is the phone page (quick log, photo scan, confirm or pick, streak, scripted buddy cheer). `api/scan.js` is the Gemini route. Zan's `prototype/plop.html` is separate and is not deployed by this.
+What is here: `public/index.html` is the phone page built from the Front End Ploopy design (home, photo scan, score result, quick pick, check-in GP, ranks, buddies, privacy, record). Demo switches live under Record > Demo settings. `api/scan.js` is the Gemini route. Zan's `prototype/plop.html` is separate and is not deployed by this.
 
 ## Host it on Vercel (about 10 minutes, free, gives you HTTPS)
 Camera access on a phone needs HTTPS, so open the page from a Vercel link, not a file.
@@ -13,8 +13,8 @@ Camera access on a phone needs HTTPS, so open the page from a Vercel link, not a
 6. Safari or Chrome: Share, Add to Home Screen. It opens full screen like an app.
 
 ## Before judging
-- Run one live scan on the phone with the Play-Doh sample. If it fails or is slow, use the cached run: open `YOUR-LINK/?mode=cached` (or Demo settings, Cached demo run). The page labels it "Cached demo run".
-- Demo settings also has "Make the next scan unclear" (shows the Not sure, you pick path) and "Seed a 6-day demo streak". Both are demo data kept on the phone only.
+- Run one live scan on the phone with the Play-Doh sample. If it fails or is slow, use the cached run: open `YOUR-LINK/?mode=cached` (or Record > Demo settings > Cached demo run). The page labels it "Cached demo run".
+- Demo settings also has "Make the next scan unclear" (shows the Not sure, you pick path) and "Reset to demo data" and "Simulate a missed day". Both are demo data kept on the phone only.
 - Use a phone hotspot, not venue Wi-Fi.
 - In AI Studio set a quota cap on the key, and delete the key after the event. The Vercel link is public, so anyone with it can spend your quota.
 
