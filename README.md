@@ -49,15 +49,18 @@ public/index.html   the phone app: plain HTML, CSS and JS, hash routing, no fram
 api/scan.js         Gemini scan: score out of 100 and two ideas for the day (server-side key)
 api/auth.js         Auth0 login on the server (code flow with PKCE, encrypted session cookie)
 api/data.js         the only code that touches the database, always as the logged-in user
-db/schema.sql       Supabase Postgres tables and buddy functions; db/seed.sql = fake demo data
+db/schema.sql       Postgres tables and buddy functions
+db/tiger.sql        Tiger Data setup: hypertables, compression, continuous aggregates
+db/seed.sql         fake demo data (db/seed-crowd.sql adds 240 seeded players for the board)
 dev-server.js       runs the app and all three functions locally (npm run dev)
 pitch/              the interactive pitch: src.html + build.py -> index.html
 context/            decisions, research, status: our running project log
 ```
 
 - **Gemini** reads the photo in memory on the server and returns structured fields only (usable, Bristol type, colour, possible blood, confidence, three texture ratings, short notes, two ideas). The score is fixed tables plus those ratings: shape 40 (Bristol type), colour 30, texture 30. The server filters every sentence and writes the blood wording itself, so the model can never tell someone "no blood".
-- **Auth0** handles login. Phones never get a database key: only our server talks to Supabase.
-- **Supabase** stores the structured entry, Deuces, rank, settings and buddy links. Row level security is on with no public access. Buddies read activity through one function that returns only "logged today", streak, rank and cheers.
+- **Auth0** handles login. Phones never get a database key: only our server talks to the database.
+- **Tiger Data** (Tiger Cloud, Postgres with TimescaleDB) stores the structured entry, Deuces, rank, settings and buddy links. Our data is a daily time series, so `entries`, `gp_events` and `logins` are hypertables split into weekly chunks, old chunks are compressed after 90 days, and logins are dropped after 180 days. Three continuous aggregates (`weekly_deuces`, `daily_community`, `daily_logins`) keep weekly Deuces, daily check-in totals and daily logins up to date, and the global board reads `weekly_deuces`. Buddies read activity through one function that returns only "logged today", streak, rank and cheers.
+- **What Tiger does and doesn't show:** the data is tiny, a few demo accounts plus 240 seeded fake players on the board, so this shows the design and not scale. Columnstore compression can't be used with row level security, so `entries` and `gp_events` no longer have it. Only our server connects to the database, and Tiger has no public data API.
 - **Task photos** (proof you did a daily task) never leave the phone.
 - **No photo is ever stored** by Plop.
 - **Cached demo mode** (`?mode=cached`) replays known-good scans so a demo never depends on venue wifi.
@@ -68,7 +71,7 @@ context/            decisions, research, status: our running project log
 # 1. Just look at it: open public/index.html, add ?mode=cached
 # 2. Run everything locally: npm install, cp .env.example .env (fill it in), npm run dev
 # 3. Deploy (camera needs HTTPS): import the repo on Vercel and add the variables from
-#    .env.example. Database: run db/schema.sql (and db/seed.sql) in Supabase. See DEPLOY.md.
+#    .env.example. Database: create a Tiger Cloud service and run `TIGER_URL=... npm run db:tiger` (loads db/schema.sql, db/tiger.sql, db/seed.sql). See DEPLOY.md. Any Postgres also works, without the Tiger time-series features.
 # Rebuild the pitch after changing the app:
 python3 pitch/build.py
 ```
