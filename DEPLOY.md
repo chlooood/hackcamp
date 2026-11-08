@@ -1,35 +1,59 @@
-# Deploying the Plop phone demo
+# Deploying Plop
 
-What is here: `public/index.html` is the phone page built from the Front End Ploopy design (home, photo scan, score result, quick pick, check-in GP, ranks, buddies, privacy, record). Demo switches live under Record > Demo settings. `api/scan.js` is the Gemini route. `db/schema.sql` is the Supabase database and `public/config.js` holds its public connection details.
+What is here:
+- `public/index.html`: the phone app (scan, score, ranks, buddies, record).
+- `api/scan.js`: Gemini scan route. Scores out of 100 and writes two ideas for the day.
+- `api/auth.js`: Auth0 login (server side).
+- `api/data.js`: the only thing that reads or writes the database, always as the logged-in user.
+- `db/schema.sql` and `db/seed.sql`: the Supabase database and the fake demo data.
+- `dev-server.js`: runs all of the above on your laptop.
 
-## Host it on Vercel (about 10 minutes, free, gives you HTTPS)
-Camera access on a phone needs HTTPS, so open the page from a Vercel link, not a file.
+No secret ever goes to the phone or into git. They live in `.env` on your laptop and in Vercel's environment variables.
 
-1. Get a Gemini API key from Google AI Studio. Never paste it into chat or commit it.
-2. vercel.com: sign in with GitHub, Add New Project, import `chlooood/hackcamp`.
-3. Framework preset: Other. Output Directory: `public`. Leave build settings empty.
-4. Environment variables: `GEMINI_API_KEY` (required). `GEMINI_MODEL` (optional, default `gemini-2.5-flash`; check the current model name in AI Studio and set it here if that one is gone).
-5. Deploy. Open the `.vercel.app` link on the phone you will present with.
-6. Safari or Chrome: Share, Add to Home Screen. It opens full screen like an app.
+## 1. Supabase (database)
+1. In the project, open **SQL Editor > New query**, paste all of `db/schema.sql` and press **Run**. If a "destructive operation" warning pops up, confirm it. It only drops old Plop tables.
+2. New query again: paste all of `db/seed.sql` and **Run**. This adds the fake buddies Zan, Chloe and Mo and 12 fake players. Re-run it on demo day so "checked in today" is fresh.
+3. **Project Settings > Database > Connection string**: copy the **Transaction pooler** string (port 6543), put your database password in it, and use it as `DATABASE_URL`.
 
-## Set up the database (Supabase, about 10 minutes, free)
-Without this the app runs on demo data saved on the phone. With it, logs, rank, buddies and cheers are saved for real.
+Anonymous sign-ins and the publishable key are no longer used. Row level security is on with no policies, so the public keys can't read anything.
 
-1. supabase.com: New project. Pick a region near you and save the database password somewhere safe (you won't need it in the app).
-2. Authentication > Sign In / Providers (or Settings): turn on **Allow anonymous sign-ins**. Each phone gets its own private account with no login screen.
-3. SQL Editor > New query: paste all of `db/schema.sql` and Run. Re-running it wipes Plop data, so run it once.
-4. Project Settings > API: copy the **Project URL** and the **anon public** key into `public/config.js`, then commit and push. The anon key is meant to be public; row level security protects the data. Never put the `service_role` key in the repo.
-5. Optional fake data: run `db/seed.sql` in the SQL Editor too. It makes fake buddies Zan, Chloe and Mo with a month of logs, plus 12 fake players. Then in the app: Record > Demo settings > Add demo buddies. Re-run the seed on demo day so "logged today" is fresh.
-6. Redeploy on Vercel. Record > Demo settings > Database should say "Connected as …".
-7. Two-phone test: on phone A, Buddies > add your name > Invite and send the link. Open it on phone B and add a name there too. Both phones should list each other. Log on A, and B sees "Checked in" within 30 seconds.
+## 2. Auth0 (login)
+In the Auth0 dashboard, open **Applications > your app > Settings**:
+1. Application type: **Regular Web Application**.
+2. **Allowed Callback URLs**: `http://localhost:3000/api/auth/callback, https://YOUR-APP.vercel.app/api/auth/callback`
+3. **Allowed Logout URLs**: `http://localhost:3000/, https://YOUR-APP.vercel.app/`
+4. **Allowed Web Origins**: `http://localhost:3000, https://YOUR-APP.vercel.app`
+5. Save. Optional: under **Authentication > Social**, turn on Google so people can log in with one tap.
 
-What the database stores: the structured result (type, colour, score, comfort, chips, blood flag), GP events, rank, settings and buddy links. Never a photo. Buddies only ever get logged-today, streak and rank through `buddy_activity()`, and only what each person shares. "Delete everything" removes the account and every row.
+## 3. Vercel (hosting, HTTPS for the camera)
+1. vercel.com: Add New Project, import `chlooood/hackcamp`. Framework preset: **Other**. Leave build settings empty (`vercel.json` sets the output folder).
+2. **Settings > Environment Variables**, add every name from `.env.example`:
+   `GEMINI_API_KEY`, `GEMINI_MODEL` (`gemini-3.8-flash`), `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_SECRET` (32+ random characters: `openssl rand -hex 32`), `DATABASE_URL`.
+3. Deploy, then put the real `.vercel.app` address into the Auth0 URLs from step 2.
+4. On the phone: open the link, then Share > Add to Home Screen.
+
+## Run it on your laptop
+```bash
+npm install
+cp .env.example .env    # fill it in
+npm run dev             # http://localhost:3000
+```
+Without `.env` the app still runs in demo mode. Without `DATABASE_URL` or the Auth0 values, login is hidden and the app stays on demo data.
 
 ## Before judging
-- Run one live scan on the phone with the Play-Doh sample. If it fails or is slow, use the cached run: open `YOUR-LINK/?mode=cached` (or Record > Demo settings > Cached demo run). The page labels it "Cached demo run".
-- Demo settings also has "Make the next scan unclear" (shows the Not sure, you pick path) and "Reset to demo data" and "Simulate a missed day". Both are demo data kept on the phone only.
+- Do one live scan with the Play-Doh sample. If it's slow or fails, use `YOUR-LINK/?mode=cached` (or Record > Demo settings > Cached demo run). The screen says "Cached demo run".
+- Record > Demo settings also has: make the next scan unclear (shows the "you pick" path), add demo buddies, simulate a missed day, show the promotion screen.
 - Use a phone hotspot, not venue Wi-Fi.
-- In AI Studio set a quota cap on the key, and delete the key after the event. The Vercel link is public, so anyone with it can spend your quota.
+- Set a quota cap on the Gemini key in AI Studio. The scan route is public, so anyone with the link can use it.
+- After the event, generate new copies of the Gemini key, the Auth0 client secret and the Supabase database password. They were shared in a chat.
+
+## Two-phone test
+1. Phone A: log in, Buddies > Invite, send the link.
+2. Phone B: open the link, log in. Both phones list each other.
+3. Log on A. B shows "Checked in" within 30 seconds. Cheer from B; A sees "cheered you".
+4. Ranked on a new account shows the "Join ranked?" screen first.
 
 ## Not done yet
-Login across devices (each phone is its own anonymous account, so a cleared browser starts fresh), the global top 100 (still demo data, labelled), PDF export beyond the browser's print, app icon. Rank and GP are calculated on the phone, so a determined user could edit their own rank; fine for a demo, move to the server before a real launch.
+- Deleting your account removes all your Plop data. The Auth0 login itself stays until someone deletes it in the Auth0 dashboard (doing it from the app needs the Auth0 Management API).
+- Rank and GP are still worked out on the phone and saved by the server, so a determined user could edit their own rank. Fine for a demo; move the maths to the server before a real launch.
+- The global top 100 is still labelled demo data.

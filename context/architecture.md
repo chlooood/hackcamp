@@ -45,11 +45,11 @@ Open. Gemini is now core (the scan). Auth0 is login and invites. The rules allow
 
 ## Stack (as built 2026-11-07)
 - Frontend: plain HTML in public/index.html on Vercel, no framework (the Next.js rewrite is deferred)
-- Database: Supabase Postgres (db/schema.sql). The page talks to it directly with supabase-js and the public anon key from public/config.js. Each phone signs in anonymously. Row level security limits every table to its owner; buddies see activity only through the buddy_activity() function. Writes go to the phone first, then an outbox that syncs and retries offline. Without config.js values the app runs on demo data.
-- Scan: Gemini vision, structured output, server route, image held in memory only
-- Auth: Auth0 passwordless login and invitations. If the prize pick moves to Gemini, a plain magic link is acceptable.
-- Buddy updates: polling. No native push.
-- Status: frontend, scan route and database built; auth is anonymous per phone until Auth0 or a magic link is added.
+- Server: three Vercel functions. api/scan.js (Gemini 3.8 Flash, score out of 100, two ideas), api/auth.js (Auth0 login, code flow with PKCE, encrypted session cookie), api/data.js (every database read and write, scoped to the logged-in user)
+- Database: Supabase Postgres (db/schema.sql), reached only by the server through DATABASE_URL. User ids are Auth0 subs. RLS on with no policies, so public API keys read nothing. Buddies see activity only through buddy_activity()
+- Phone storage: writes land on the phone first, then an outbox syncs them and retries offline. Demo mode (no login) keeps its own seeded cache and never touches the server
+- Buddy updates: polling every 30 seconds. No native push
+- Local dev: dev-server.js runs the page and all three functions with secrets from .env
 
 ## Diagram
 

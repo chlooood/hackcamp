@@ -2,11 +2,11 @@
 -- Safe to re-run: it deletes the previous demo accounts first, then rebuilds them with dates
 -- relative to today, so re-run it on demo day to make "logged today" fresh.
 --
--- What it makes (all fake, all marked with invite codes starting "demo"):
+-- What it makes (all fake: ids start with "demo|", invite codes start with "demo"):
 --   * Zan, Chloe and Mo: buddies with each other, a month of logs, streaks, ranks and cheers.
 --   * 12 fake players with made-up handles, for a fuller database.
---   * demo_join(): called from the app (Record > Demo settings > Add demo buddies) to make
---     your phone buddies with Zan, Chloe and Mo, and Zan cheers you.
+--   * demo_join(user): the server calls it for Record > Demo settings > Add demo buddies, so
+--     you become buddies with Zan, Chloe and Mo, and Zan cheers you.
 -- Real users are never touched.
 
 -- Local "today" for the hackathon (Mountain Time). Change if you demo somewhere else.
@@ -14,7 +14,7 @@ create or replace function public.demo_today() returns date
 language sql stable as $$ select (now() at time zone 'America/Edmonton')::date $$;
 
 -- ---------- wipe old demo accounts (cascades to every Plop row they own) ----------
-delete from auth.users where id in (select id from public.profiles where invite_code like 'demo%');
+delete from public.profiles where id like 'demo|%';
 
 -- ---------- build ----------
 do $$
@@ -39,7 +39,7 @@ declare
     ["",      "QuietLeek77", "demo0012", "#8DB08F", 1, 3,  5,  2, false, null]
   ]';
   p jsonb;
-  uid uuid;
+  uid text;
   d date;
   k int;
   len int;
@@ -49,12 +49,9 @@ declare
 begin
   perform setseed(0.42);  -- same fake data every run
   for p in select * from jsonb_array_elements(people) loop
-    uid := gen_random_uuid();
-    insert into auth.users (id, instance_id, aud, role, is_anonymous, created_at, updated_at, raw_app_meta_data, raw_user_meta_data)
-    values (uid, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', true, now() - interval '40 days', now(), '{}', '{}');
-
-    insert into public.profiles (id, display_name, handle, invite_code, mascot, tier, div, gp, global_on, created_at)
-    values (uid, p->>0, p->>1, p->>2, p->>3, (p->>4)::smallint, (p->>5)::smallint, (p->>6)::smallint, true, now() - interval '40 days');
+    uid := 'demo|' || lower(p->>1);
+    insert into public.profiles (id, display_name, handle, invite_code, mascot, tier, div, gp, mode, league_joined, global_on, created_at)
+    values (uid, p->>0, p->>1, p->>2, p->>3, (p->>4)::smallint, (p->>5)::smallint, (p->>6)::smallint, 'ranked', true, true, now() - interval '40 days');
 
     -- the current streak: consecutive days ending today (or yesterday if not logged today)
     len := (p->>7)::int;
@@ -91,26 +88,29 @@ begin
   where (f.invite_code, x.invite_code) in (('demozan1','demochl1'), ('demozan1','demomoo1'), ('demochl1','demozan1'));
 end $$;
 
--- ---------- demo_join: make the caller buddies with Zan, Chloe and Mo ----------
-create or replace function public.demo_join() returns int
-language plpgsql security definer set search_path = public as $$
-declare me uuid := auth.uid(); n int;
+-- ---------- demo_join: make a user buddies with Zan, Chloe and Mo ----------
+drop function if exists public.demo_join() cascade;
+create or replace function public.demo_join(p_user text) returns int
+language plpgsql as $$
+declare n int;
 begin
-  if me is null then raise exception 'not signed in'; end if;
   insert into public.buddies (user_id, buddy_id)
-  select me, p.id from public.profiles p where p.invite_code in ('demozan1','demochl1','demomoo1')
+  select p_user, p.id from public.profiles p where p.invite_code in ('demozan1','demochl1','demomoo1')
   union all
-  select p.id, me from public.profiles p where p.invite_code in ('demozan1','demochl1','demomoo1')
+  select p.id, p_user from public.profiles p where p.invite_code in ('demozan1','demochl1','demomoo1')
   on conflict do nothing;
   get diagnostics n = row_count;
   -- Zan says hi
   insert into public.cheers (from_id, to_id, day)
-  select p.id, me, public.demo_today() from public.profiles p where p.invite_code = 'demozan1'
+  select p.id, p_user, public.demo_today() from public.profiles p where p.invite_code = 'demozan1'
   on conflict do nothing;
   return n / 2;
 end $$;
-revoke all on function public.demo_join() from public, anon;
-grant execute on function public.demo_join() to authenticated;
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    execute 'revoke all on function public.demo_join(text), public.demo_today() from public, anon, authenticated';
+  end if;
+end $$;
 
 -- quick check
 select display_name, handle, tier, div,

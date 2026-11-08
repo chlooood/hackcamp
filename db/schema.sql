@@ -1,21 +1,32 @@
 -- Plop database schema (Supabase Postgres)
--- Run once in the Supabase dashboard: SQL Editor > New query > paste this file > Run.
--- Safe to re-run: it drops and recreates the Plop objects (this WIPES Plop data).
+-- Run once: Supabase dashboard > SQL Editor > New query > paste this file > Run (confirm the
+-- "destructive operation" prompt: it drops old Plop tables first). Re-running WIPES Plop data.
+--
+-- Who talks to this database: only our own server (api/data.js), using DATABASE_URL.
+-- Users log in with Auth0, so a user id is the Auth0 "sub" (for example "auth0|65ab..." or
+-- "google-oauth2|1098..."). Phones never get database keys.
 --
 -- Privacy model (see context/architecture.md):
---   * Every phone signs in anonymously, so each row belongs to one auth user.
---   * Row level security: you can only read and write your own rows.
+--   * Row level security is ON with no policies, so the public Supabase API keys can read nothing.
+--   * The server only ever reads and writes the logged-in user's own rows.
 --   * Buddies never read your entries. They only get activity through buddy_activity():
 --     logged today, streak and rank, and only the parts you share. Pausing hides all of it.
 --   * Photos are never stored anywhere. entries holds only the structured result.
 
 -- ---------- clean slate ----------
 drop function if exists public.ensure_profile() cascade;
+drop function if exists public.ensure_profile(text, text) cascade;
 drop function if exists public.current_streak(uuid, date) cascade;
+drop function if exists public.current_streak(text, date) cascade;
 drop function if exists public.buddy_activity(date) cascade;
+drop function if exists public.buddy_activity(text, date) cascade;
 drop function if exists public.accept_invite(text) cascade;
+drop function if exists public.accept_invite(text, text) cascade;
 drop function if exists public.remove_buddy(uuid) cascade;
+drop function if exists public.remove_buddy(text, text) cascade;
 drop function if exists public.delete_me() cascade;
+drop function if exists public.demo_join() cascade;
+drop function if exists public.demo_join(text) cascade;
 drop function if exists public.touch_updated_at() cascade;
 drop table if exists public.cheers cascade;
 drop table if exists public.buddies cascade;
@@ -25,16 +36,17 @@ drop table if exists public.profiles cascade;
 
 -- ---------- tables ----------
 create table public.profiles (
-  id            uuid primary key references auth.users (id) on delete cascade,
+  id            text primary key check (char_length(id) between 3 and 128),  -- Auth0 sub
   display_name  text not null default '' check (char_length(display_name) <= 40),
-  handle        text not null unique,                      -- pseudonymous, for any public board
+  handle        text not null unique,                      -- pseudonymous, for the global board
   invite_code   text not null unique default substr(md5(gen_random_uuid()::text), 1, 8),
   mascot        text not null default '#B5764A' check (mascot ~ '^#[0-9A-Fa-f]{6}$'),
   tier          smallint not null default 0 check (tier between 0 and 6),   -- 0 Iron .. 6 Mythic
   div           smallint not null default 3 check (div between 1 and 3),    -- 3 is the bottom division
   gp            smallint not null default 0 check (gp between 0 and 99),    -- GP inside the division
   shields       smallint not null default 2 check (shields between 0 and 2),
-  mode          text not null default 'ranked' check (mode in ('ranked', 'casual')),
+  mode          text not null default 'casual' check (mode in ('ranked', 'casual')),
+  league_joined boolean not null default false,            -- opted in to ranked at least once
   share_checkin boolean not null default true,
   share_streak  boolean not null default true,
   share_rank    boolean not null default true,
@@ -49,7 +61,7 @@ create table public.profiles (
 
 create table public.entries (
   id          bigint generated always as identity primary key,
-  user_id     uuid not null default auth.uid() references public.profiles (id) on delete cascade,
+  user_id     text not null references public.profiles (id) on delete cascade,
   day         date not null,                               -- the user's local date
   kind        text not null check (kind in ('scan', 'pick')),
   score       smallint check (score between 0 and 100),    -- null for no-photo logs
@@ -65,7 +77,7 @@ create table public.entries (
 
 create table public.gp_events (
   id          bigint generated always as identity primary key,
-  user_id     uuid not null default auth.uid() references public.profiles (id) on delete cascade,
+  user_id     text not null references public.profiles (id) on delete cascade,
   day         date not null,
   delta       smallint not null,
   reason      text not null check (char_length(reason) <= 60),
@@ -74,16 +86,16 @@ create table public.gp_events (
 
 -- Stored in both directions once an invite is accepted.
 create table public.buddies (
-  user_id     uuid not null references public.profiles (id) on delete cascade,
-  buddy_id    uuid not null references public.profiles (id) on delete cascade,
+  user_id     text not null references public.profiles (id) on delete cascade,
+  buddy_id    text not null references public.profiles (id) on delete cascade,
   created_at  timestamptz not null default now(),
   primary key (user_id, buddy_id),
   check (user_id <> buddy_id)
 );
 
 create table public.cheers (
-  from_id     uuid not null default auth.uid() references public.profiles (id) on delete cascade,
-  to_id       uuid not null references public.profiles (id) on delete cascade,
+  from_id     text not null references public.profiles (id) on delete cascade,
+  to_id       text not null references public.profiles (id) on delete cascade,
   day         date not null,
   created_at  timestamptz not null default now(),
   primary key (from_id, to_id, day)
@@ -98,46 +110,31 @@ begin new.updated_at := now(); return new; end $$;
 create trigger profiles_touch before update on public.profiles
   for each row execute function public.touch_updated_at();
 
--- ---------- row level security ----------
+-- ---------- lock the public API out ----------
+-- RLS on with no policies: Supabase's anon/authenticated keys see nothing. Our server connects
+-- as the table owner, which RLS does not apply to.
 alter table public.profiles  enable row level security;
 alter table public.entries   enable row level security;
 alter table public.gp_events enable row level security;
 alter table public.buddies   enable row level security;
 alter table public.cheers    enable row level security;
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    execute 'revoke all on public.profiles, public.entries, public.gp_events, public.buddies, public.cheers from anon, authenticated';
+  end if;
+end $$;
 
-create policy "own profile: read"   on public.profiles for select using (id = auth.uid());
-create policy "own profile: update" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid());
-
-create policy "own entries" on public.entries for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
-
-create policy "own gp events" on public.gp_events for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
-
--- You can see your own buddy rows. Adding goes through accept_invite(), removing through remove_buddy().
-create policy "own buddy rows" on public.buddies for select using (user_id = auth.uid());
-
--- Cheers: send only to an accepted buddy, see cheers you sent or got, take back your own.
-create policy "cheers: read mine" on public.cheers for select using (from_id = auth.uid() or to_id = auth.uid());
-create policy "cheers: send to buddy" on public.cheers for insert with check (
-  from_id = auth.uid()
-  and exists (select 1 from public.buddies b where b.user_id = auth.uid() and b.buddy_id = to_id)
-);
-create policy "cheers: take back" on public.cheers for delete using (from_id = auth.uid());
-
--- ---------- functions ----------
--- Create (or fetch) the caller's profile with a generated pseudonymous handle.
-create function public.ensure_profile() returns public.profiles
-language plpgsql security definer set search_path = public as $$
+-- ---------- functions (called by the server with the logged-in user's id) ----------
+-- Create (or fetch) a profile with a generated pseudonymous handle.
+create function public.ensure_profile(p_user text, p_name text) returns public.profiles
+language plpgsql as $$
 declare
-  me uuid := auth.uid();
   p public.profiles;
   adj text[] := array['Quiet','Brave','Sunny','Cosmic','Swift','Happy','Bold','Calm','Lucky','Zen','Mighty','Tiny','Neat','Gentle','Plump'];
   noun text[] := array['Otter','Bean','Kiwi','Fig','Plum','Yam','Pear','Mango','Oat','Beet','Leek','Taro','Basil','Rye','Pea'];
   h text;
 begin
-  if me is null then raise exception 'not signed in'; end if;
-  select * into p from public.profiles where id = me;
+  select * into p from public.profiles where id = p_user;
   if found then return p; end if;
   loop
     h := adj[1 + floor(random() * array_length(adj, 1))::int]
@@ -145,13 +142,16 @@ begin
       || (1 + floor(random() * 99))::int;
     exit when not exists (select 1 from public.profiles where handle = h);
   end loop;
-  insert into public.profiles (id, handle) values (me, h) returning * into p;
+  insert into public.profiles (id, handle, display_name)
+  values (p_user, h, left(coalesce(p_name, ''), 40))
+  on conflict (id) do nothing;
+  select * into p from public.profiles where id = p_user;
   return p;
 end $$;
 
 -- Consecutive logged days ending today (or yesterday, if today is not logged yet).
-create function public.current_streak(p_user uuid, p_today date) returns int
-language sql stable security definer set search_path = public as $$
+create function public.current_streak(p_user text, p_today date) returns int
+language sql stable as $$
   with days as (
     select distinct day from public.entries where user_id = p_user and day <= p_today
   ), anchor as (
@@ -164,14 +164,14 @@ language sql stable security definer set search_path = public as $$
   select count(*)::int from numbered where day = (select d from anchor) - (rn - 1)::int;
 $$;
 
--- What the caller may see about each buddy: activity only, filtered by that buddy's share switches.
-create function public.buddy_activity(p_today date)
+-- What p_user may see about each buddy: activity only, filtered by that buddy's share switches.
+create function public.buddy_activity(p_user text, p_today date)
 returns table (
-  buddy_id uuid, display_name text, mascot text,
+  buddy_id text, display_name text, mascot text,
   logged_today boolean, logged_at timestamptz, streak int,
   tier smallint, div smallint, cheered_me boolean, i_cheered boolean
 )
-language sql stable security definer set search_path = public as $$
+language sql stable as $$
   select
     p.id,
     p.display_name,
@@ -184,66 +184,41 @@ language sql stable security definer set search_path = public as $$
          else public.current_streak(p.id, p_today) end,
     case when p.share_rank and p.mode = 'ranked' then p.tier end,
     case when p.share_rank and p.mode = 'ranked' then p.div end,
-    exists (select 1 from public.cheers c where c.from_id = p.id and c.to_id = auth.uid() and c.day = p_today),
-    exists (select 1 from public.cheers c where c.from_id = auth.uid() and c.to_id = p.id and c.day = p_today)
+    exists (select 1 from public.cheers c where c.from_id = p.id and c.to_id = p_user and c.day = p_today),
+    exists (select 1 from public.cheers c where c.from_id = p_user and c.to_id = p.id and c.day = p_today)
   from public.buddies b
   join public.profiles p on p.id = b.buddy_id
-  where b.user_id = auth.uid()
+  where b.user_id = p_user
   order by p.display_name;
 $$;
 
 -- Opening an invite link is the accept. Links both ways. Returns the inviter's name.
-create function public.accept_invite(p_code text) returns text
-language plpgsql security definer set search_path = public as $$
-declare
-  me uuid := auth.uid();
-  inviter public.profiles;
+create function public.accept_invite(p_user text, p_code text) returns text
+language plpgsql as $$
+declare inviter public.profiles;
 begin
-  if me is null then raise exception 'not signed in'; end if;
   select * into inviter from public.profiles where invite_code = lower(trim(p_code));
   if not found then raise exception 'invite not found'; end if;
-  if inviter.id = me then raise exception 'that is your own invite'; end if;
-  insert into public.buddies (user_id, buddy_id) values (me, inviter.id), (inviter.id, me)
+  if inviter.id = p_user then raise exception 'that is your own invite'; end if;
+  insert into public.buddies (user_id, buddy_id) values (p_user, inviter.id), (inviter.id, p_user)
     on conflict do nothing;
   return inviter.display_name;
 end $$;
 
 -- Removing is silent and immediate, both directions. Cheers between you go too.
-create function public.remove_buddy(p_buddy uuid) returns void
-language sql security definer set search_path = public as $$
+create function public.remove_buddy(p_user text, p_buddy text) returns void
+language sql as $$
   delete from public.buddies
-   where (user_id = auth.uid() and buddy_id = p_buddy)
-      or (user_id = p_buddy and buddy_id = auth.uid());
+   where (user_id = p_user and buddy_id = p_buddy)
+      or (user_id = p_buddy and buddy_id = p_user);
   delete from public.cheers
-   where (from_id = auth.uid() and to_id = p_buddy)
-      or (from_id = p_buddy and to_id = auth.uid());
+   where (from_id = p_user and to_id = p_buddy)
+      or (from_id = p_buddy and to_id = p_user);
 $$;
 
--- "Delete everything": removes the auth user, which cascades to every Plop row.
-create function public.delete_me() returns void
-language sql security definer set search_path = public, auth as $$
-  delete from auth.users where id = auth.uid();
-$$;
-
--- Only signed-in users may call these.
-revoke all on function public.ensure_profile()            from public, anon;
-revoke all on function public.current_streak(uuid, date)  from public, anon, authenticated;
-revoke all on function public.buddy_activity(date)        from public, anon;
-revoke all on function public.accept_invite(text)         from public, anon;
-revoke all on function public.remove_buddy(uuid)          from public, anon;
-revoke all on function public.delete_me()                 from public, anon;
-grant execute on function public.ensure_profile()     to authenticated;
-grant execute on function public.buddy_activity(date) to authenticated;
-grant execute on function public.accept_invite(text)  to authenticated;
-grant execute on function public.remove_buddy(uuid)   to authenticated;
-grant execute on function public.delete_me()          to authenticated;
-
--- Profiles are created only through ensure_profile(); id, handle and invite_code can't be changed.
--- (Column grants only bite once the table-wide grant is gone, so revoke first, then grant columns.)
-revoke insert, update, delete on public.profiles from anon, authenticated;
-grant update (display_name, mascot, tier, div, gp, shields, mode, share_checkin, share_streak, share_rank,
-              discreet, paused, global_on, plain_names, notes) on public.profiles to authenticated;
--- Buddy rows only change through accept_invite() and remove_buddy().
-revoke insert, update, delete on public.buddies from anon, authenticated;
--- Signed-out visitors get nothing.
-revoke all on public.profiles, public.entries, public.gp_events, public.buddies, public.cheers from anon;
+-- Nobody outside the server may call these.
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    execute 'revoke all on function public.ensure_profile(text, text), public.current_streak(text, date), public.buddy_activity(text, date), public.accept_invite(text, text), public.remove_buddy(text, text) from public, anon, authenticated';
+  end if;
+end $$;
