@@ -486,7 +486,50 @@
 
   // ---------- motion helpers ----------
   function motionOK() { return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-  function buzz(ms) {
+  // ---------- sound ----------
+  // Tiny sounds made with Web Audio (no files). Off in Discreet mode or when switched off in
+  // What buddies see > Sounds. Only plays after the user has tapped something.
+  var SFX = (function () {
+    var ctx = null;
+    function enabled() {
+      var off = null; try { off = localStorage.getItem('plop-sound') === 'off'; } catch (e) {}
+      return !off && !(state && state.privacy && state.privacy.discreet);
+    }
+    function ac() {
+      if (!ctx) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+    // one note: wave, start/end pitch, length, volume, delay
+    function tone(type, f1, f2, len, vol, at) {
+      var c = ac(); if (!c) return;
+      var t = c.currentTime + (at || 0), o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(f1, t);
+      if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t + len);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + len + 0.02);
+    }
+    var SOUNDS = {
+      tap: function () { tone('sine', 520, 760, 0.07, 0.06); },
+      toggle: function () { tone('triangle', 660, 880, 0.08, 0.06); },
+      plop: function () { tone('sine', 900, 160, 0.18, 0.16); },                 // the app's namesake
+      shutter: function () { tone('square', 2400, 1200, 0.03, 0.03); tone('sine', 300, 120, 0.09, 0.08, 0.03); },
+      cheer: function () { tone('sine', 700, 1050, 0.09, 0.07); tone('sine', 1050, 1400, 0.1, 0.06, 0.08); },
+      win: function () { [523, 659, 784].forEach(function (f, i) { tone('triangle', f, f, 0.16, 0.08, i * 0.09); }); },
+      promote: function () { [523, 659, 784, 1047].forEach(function (f, i) { tone('triangle', f, f, 0.2, 0.09, i * 0.1); }); tone('sine', 1568, 2093, 0.25, 0.04, 0.42); },
+      drop: function () { tone('triangle', 440, 330, 0.18, 0.07); tone('triangle', 330, 220, 0.24, 0.07, 0.16); }
+    };
+    return function (name) {
+      try {
+        var active = !navigator.userActivation || navigator.userActivation.hasBeenActive;
+        if (active && enabled() && SOUNDS[name]) SOUNDS[name]();
+      } catch (e) {}
+    };
+  })();
+  function soundOn() { try { return localStorage.getItem('plop-sound') !== 'off'; } catch (e) { return true; } }
+  function buzz(ms, sound) {
+    SFX(sound || (typeof ms === 'number' && ms <= 10 ? 'tap' : ''));
     try {
       var active = !navigator.userActivation || navigator.userActivation.hasBeenActive;
       if (navigator.vibrate && active) navigator.vibrate(ms || 10);
@@ -920,7 +963,7 @@
     var done = document.getElementById('snap-done'), gp = document.getElementById('snap-gp');
     if (gp) gp.textContent = ranked ? '+4 Deuces' : 'Task done';
     if (done) done.classList.remove('hidden');
-    buzz([12, 40, 12]); confetti(30, 0.35);
+    buzz([12, 40, 12], 'win'); confetti(30, 0.35);
     setTimeout(function () {
       var still = document.getElementById('still'); if (still) still.removeAttribute('src');  // photo gone
       snapTask = null; go(back);
@@ -1117,6 +1160,8 @@
       '<p style="margin:0;padding:16px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:700;color:#5A5A5A;line-height:1.55">Your scores, types, blood notes and cycle stay with you. Photos are never kept, so there\'s nothing to share.</p>' +
       '<div style="height:12px"></div>' +
       tog('discreet', 'Discreet mode', 'Shows as "Daily" on your home screen') +
+      '<div class="setting"><span class="col">Sounds<span style="font-size:13px;font-weight:700;color:var(--muted)">Little pops and plops. Always off in Discreet mode</span></span>' +
+        '<button class="toggle" data-act="sound" aria-pressed="' + soundOn() + '" aria-label="Sounds"><span></span></button></div>' +
       '<button class="setting" data-act="pause">' + (state.paused ? 'Back from your break' : 'Take a break') + '</button>' +
       '<button class="setting" data-act="remove">Remove a buddy</button>' +
       '<div id="remove-list" class="hidden col" style="padding:4px 0 8px 12px">' + (buddyList().length ? '' : '<span class="sub" style="min-height:44px;display:flex;align-items:center">No buddies to remove.</span>') + buddyList().map(function (b) {
@@ -1216,15 +1261,15 @@
   };
   AFTER.checked = function (entering) {
     if (!entering) return;
-    buzz([12, 40, 12]);
+    buzz([12, 40, 12], 'plop'); setTimeout(function () { SFX('win'); }, 260);
     if (lastCheckin && lastCheckin.total > 0) setTimeout(function () { confetti(46, 0.18); }, 250);
   };
   AFTER.promoted = function (entering) {
     if (!entering) return;
-    buzz([20, 60, 20, 60, 40]);
+    buzz([20, 60, 20, 60, 40], 'promote');
     setTimeout(function () { confetti(90, 0.35); }, 450);
   };
-  AFTER.deranked = function (entering) { if (entering) buzz(60); };
+  AFTER.deranked = function (entering) { if (entering) buzz(60, 'drop'); };
   AFTER.record = function (entering) {
     var line = document.getElementById('trend');
     if (entering && line && motionOK() && line.getTotalLength) {
@@ -1664,7 +1709,7 @@
       var who = buddyList().filter(function (b) { return String(b.id) === ds.cheer; })[0];
       var nowOn = !state.cheered[ck];
       if (!nowOn) delete state.cheered[ck];
-      else { state.cheered[ck] = true; buzz(15); floatFrom(cheerRect, ['🎉', '👏', '💩', '🙌', '✨'], { size: 24 }); toast((who ? who.name : 'They') + ' gets a cheer'); }
+      else { state.cheered[ck] = true; buzz(15, 'cheer'); floatFrom(cheerRect, ['🎉', '👏', '💩', '🙌', '✨'], { size: 24 }); toast((who ? who.name : 'They') + ' gets a cheer'); }
       if (who && !who.demo) cloud.cheer(who.id, nowOn);
       save(); render('[data-cheer="' + ds.cheer + '"]'); return;
     }
@@ -1679,7 +1724,7 @@
     }
     if (ds.cal) { recordMode = ds.cal; var y3 = window.scrollY; render(); window.scrollTo(0, y3); return; }
     if (ds.priv) {
-      state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); buzz(6);
+      state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); buzz(6, 'toggle');
       var col = { checkin: 'share_checkin', streak: 'share_streak', rank: 'share_rank', discreet: 'discreet' }[ds.priv], patch = {};
       patch[col] = state.privacy[ds.priv]; cloud.profile(patch);
       el.setAttribute('aria-pressed', String(state.privacy[ds.priv])); // slide the knob, then re-render
@@ -1732,12 +1777,15 @@
         if (navigator.share) navigator.share({ title: 'Plop', text: 'Did you plop today? Join my circle.', url: link }).catch(function () {}); else { copy(link); toast('Invite link copied'); }
         break;
       case 'global':
-        state.globalOn = !state.globalOn; cloud.profile({ global_on: state.globalOn }); save(); buzz(6);
+        state.globalOn = !state.globalOn; cloud.profile({ global_on: state.globalOn }); save(); buzz(6, 'toggle');
         setTimeout(cloud.loadBoard, 1200);
         el.setAttribute('aria-pressed', String(state.globalOn));
         setTimeout(function () { render(); }, motionOK() ? 200 : 0);
         break;
       case 'showall': toast(liveBoard() ? 'Showing the top 12 this week' : 'Full board comes with the real backend'); break;
+      case 'sound':
+        try { localStorage.setItem('plop-sound', soundOn() ? 'off' : 'on'); } catch (e) {}
+        el.setAttribute('aria-pressed', String(soundOn())); buzz(6, 'toggle'); break;
       case 'pause': state.paused = !state.paused; cloud.profile({ paused: state.paused }); save(); toast(state.paused ? 'Break on. Buddies see nothing new.' : 'Welcome back'); render(); break;
       case 'remove': document.getElementById('remove-list').classList.toggle('hidden'); break;
       case 'wipe':
@@ -1778,7 +1826,7 @@
         setSource('demo'); loginError = null; go('home'); break;
       case 'join-ranked':
         state.leagueJoined = true; state.mode = 'ranked';
-        cloud.profile({ league_joined: true, mode: 'ranked' }); save(); buzz([15, 40, 15]);
+        cloud.profile({ league_joined: true, mode: 'ranked' }); save(); buzz([15, 40, 15], 'win');
         go('ranked'); setTimeout(function () { confetti(40, 0.25); }, 300); toast("You're in. Good luck this week."); break;
       case 'stay-casual': go('ranked'); break;
     }
@@ -1803,7 +1851,7 @@
     });
   });
   function shutterFlash() {
-    buzz(20);
+    buzz(20, 'shutter');
     var vf = document.getElementById('vf');
     if (!vf || !motionOK()) return;
     var f = document.createElement('div'); f.className = 'flash'; vf.appendChild(f);
@@ -1825,7 +1873,7 @@
   function poke() {
     var p = document.getElementById('ploopy'), b = document.getElementById('bubble');
     if (!p || !b) return;
-    buzz(10);
+    buzz(10, 'plop');
     var moves = ['squish', 'wiggle', 'jump'], mv = moves[pokeIdx % moves.length];
     moves.forEach(function (c) { p.classList.remove(c); }); void p.offsetWidth; p.classList.add(mv);
     b.textContent = loggedToday() && pokeIdx % 3 === 0 ? 'Day ' + streak() + '. Nice.' : POKES[pokeIdx % POKES.length];
