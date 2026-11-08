@@ -429,7 +429,13 @@
   function rankName(t, d) { return TIERS[t].name + ' ' + d; }
   function curRank() { return rankName(state.tier, state.div); }
   function scoreColor(s) { return s >= 85 ? '#14B8A6' : (s >= 60 ? '#FBBF24' : (s >= 40 ? '#FB923C' : '#F87171')); }
-  function scoreBonus(s) { return s >= 85 ? 6 : (s >= 60 ? 3 : (s < 40 ? -4 : 0)); }
+  // GP for a ranked photo check-in: a flat amount for showing up, plus a bonus that swings with
+  // the scan score so a great scan and a rough one land far apart (best +30, worst -5).
+  var CHECKIN_GP = 10;
+  var SCORE_GP = [[90, 20], [80, 14], [70, 8], [60, 3], [50, 0], [40, -6], [0, -15]];
+  function scoreBonus(s) { for (var i = 0; i < SCORE_GP.length; i++) if (s >= SCORE_GP[i][0]) return SCORE_GP[i][1]; return -15; }
+  function scanGp(s) { return CHECKIN_GP + scoreBonus(s); }
+  function signed(n) { return (n >= 0 ? '+' : '−') + Math.abs(n); }
   function headline(s) { return s >= 85 ? 'Great one.' : (s >= 60 ? 'Pretty good.' : (s >= 40 ? 'Off day.' : 'Rough one. Hang in there.')); }
   function sureWord(c) { return c >= 0.85 ? 'very sure' : (c >= 0.65 ? 'pretty sure' : 'not totally sure'); }
   function scoreParts(g) {
@@ -648,7 +654,7 @@
     var tipsDone = TIPS.filter(function (t, i) { return state.tipsDone[today() + i]; }).length;
     var cheeredToday = Object.keys(state.cheered).some(function (k) { return k.indexOf(today()) === 0; });
     var quests = [
-      { label: 'Today’s photo', done: done, gp: '+15', c: '#0D9488', soft: '#D5F5F0', go: done ? 'record' : 'scan' },
+      { label: 'Today’s photo', done: done, gp: state.mode === 'ranked' ? 'up to +30' : 'photo', c: '#0D9488', soft: '#D5F5F0', go: done ? 'record' : 'scan' },
       { label: 'Snap 2 tasks', done: tipsDone >= 2, gp: tipsDone + ' of 2', c: '#6366F1', soft: '#E8E7FF', go: 'tasks' },
       { label: 'Cheer someone on', done: cheeredToday, gp: '+2', c: '#F97316', soft: '#FFEDD5', go: 'buddies' }
     ];
@@ -707,7 +713,12 @@
         '<h1 style="font-size:30px">Join ranked?</h1>' +
         '<p style="margin:0;font-size:16px;font-weight:700;color:#5A5A5A;line-height:1.45">A weekly ladder with your buddies. You can go back to casual any time.</p></div>' +
       '<section class="card" style="gap:10px;font-size:15px;font-weight:700;line-height:1.45">' +
-        '<div class="row" style="align-items:flex-start;gap:10px"><span class="qbox" style="background:#0D9488">1</span><span>Photo check-ins earn GP. Your scan score adds a bonus.</span></div>' +
+        '<div class="row" style="align-items:flex-start;gap:10px"><span class="qbox" style="background:#0D9488">1</span><span>Your scan score sets your GP: a great scan (90+) is worth +30, a rough one (under 40) costs 5.</span></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center;font-size:12px;font-weight:900">' +
+          SCORE_GP.map(function (t) {
+            var gp = CHECKIN_GP + t[1];
+            return '<div style="border-radius:10px;padding:6px 0;background:' + (gp >= 24 ? '#D5F5F0' : gp >= 13 ? '#FEF3C7' : gp >= 4 ? '#FFEDD5' : '#FFE4E6') + '"><div>' + signed(gp) + '</div><div style="font-size:10px;color:var(--muted)">' + (t[0] ? t[0] + '+' : '<40') + '</div></div>';
+          }).join('') + '</div>' +
         '<div class="row" style="align-items:flex-start;gap:10px"><span class="qbox" style="background:#6366F1">2</span><span>100 GP moves you up a division, from Iron to Mythic.</span></div>' +
         '<div class="row" style="align-items:flex-start;gap:10px"><span class="qbox" style="background:#F97316">3</span><span>Missing a day can cost GP. Two shields a week cover sick or travel days.</span></div>' +
       '</section>' +
@@ -763,7 +774,8 @@
         '<div class="between" style="position:relative;align-items:flex-end"><div class="col" style="gap:2px">' +
           '<span style="font-size:72px;font-weight:900;line-height:0.9"><span data-count="' + score + '" data-dur="1100">' + score + '</span><span style="font-size:22px;font-weight:800;color:#CCF5EF">/100</span></span>' +
           '<span style="font-size:22px;font-weight:900;margin-top:4px">' + headline(score) + '</span>' +
-          '<span style="font-size:14px;font-weight:700;color:#CCF5EF">Type ' + g.bristol + ', ' + sureWord(g.confidence) + ' (' + Math.round(g.confidence * 100) + '%)</span></div>' +
+          '<span style="font-size:14px;font-weight:700;color:#CCF5EF">Type ' + g.bristol + ', ' + sureWord(g.confidence) + ' (' + Math.round(g.confidence * 100) + '%)</span>' +
+          (state.mode === 'ranked' ? '<span class="pill" style="align-self:flex-start;margin-top:8px;background:' + (scanGp(score) >= 0 ? '#FFFFFF' : '#FFE1CF') + ';color:#1B1A17">Worth ' + signed(scanGp(score)) + ' GP</span>' : '') + '</div>' +
           mascot(score >= 60 ? 'cheer' : 'gotthis', 116, 'style="flex-shrink:0;margin-bottom:4px"') + '</div>' +
         '<div class="col" style="position:relative;gap:6px"><div style="height:14px;background:#0B7D73;border-radius:999px;overflow:hidden"><div data-fill="' + score + '" style="height:100%;background:#FFF;border-radius:999px;width:' + score + '%"></div></div>' +
           '<div style="position:relative;height:14px;font-size:11px;font-weight:800;color:#CCF5EF"><span style="position:absolute;left:0">0</span><span style="position:absolute;left:40%;transform:translateX(-50%)">40</span><span style="position:absolute;left:60%;transform:translateX(-50%)">60</span><span style="position:absolute;left:85%;transform:translateX(-50%)">85</span><span style="position:absolute;right:0">100</span></div></div>' +
@@ -1398,7 +1410,7 @@
     state.entries.push(entry);
     var lines = [], total = 0, gpBefore = state.gp;
     if (entry.kind === 'scan' && state.mode === 'ranked') {
-      lines.push(['Photo check-in', 15]);
+      lines.push(['Photo check-in', CHECKIN_GP]);
       var b = scoreBonus(entry.score); if (b) lines.push(['Scored ' + entry.score, b]);
       state.pendingTips.forEach(function (t) { lines.push([t.label, t.gp]); });
       state.pendingTips = [];

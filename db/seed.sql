@@ -66,7 +66,7 @@ begin
               case when random() < 0.2 then array[chip_pool[1 + floor(random() * 6)::int]] else '{}' end, false,
               ((d + coalesce((p->>9)::time, time '09:00')) at time zone 'America/Vancouver'));
       insert into public.gp_events (user_id, day, delta, reason)
-      values (uid, d, 15 + case when sc >= 85 then 6 when sc >= 60 then 3 else 0 end, 'check-in');
+      values (uid, d, 10 + case when sc >= 90 then 20 when sc >= 80 then 14 when sc >= 70 then 8 when sc >= 60 then 3 when sc >= 50 then 0 when sc >= 40 then -6 else -15 end, 'check-in');
     end loop;
     -- a few older logs before a gap, so streaks look real
     for k in len + 2 .. len + 8 loop
