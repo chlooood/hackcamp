@@ -1,47 +1,62 @@
 # Plop design brief
 
-For Codex, Claude Code and anyone designing screens. Design work goes in `design/`, not in `prototype/plop.html` (Zan owns that file).
+Updated 2026-11-08 to match the shipped app (`public/index.html`, the "Front End Ploopy" design) and the Figma file. The earlier version described a cobalt, paper and cocoa palette that was never shipped.
+
+For anyone designing screens. Design work goes in `design/` and Figma, not in `prototype/plop.html` (Zan owns that file).
 
 ## The brief in one line each
 - **User:** students 18 to 25 in a friend group of about five. Not a patient, not a gamer.
 - **Job:** log a poo in 5 seconds, one hand, then feel it was ordinary.
 - **Tone:** warm, matter-of-fact, a little funny. Never gross, never clinical, never preachy.
-- **Constraint:** the mission is to destigmatize poo. Every screen should make "I plopped" feel as normal as "I ran 5k".
-- **Hard rules from the logs:** no pink or gendered coding; a warm neutral palette; 3 mascot colourways the user picks; mascot never reacts to the Bristol type; every type gets the same celebration; no stool imagery anywhere in the UI; no "normal" or "abnormal" labels; rank copy says "Rank shows effort, not health"; blood copy says "Possible blood" or "Can't tell from a photo", never "no blood".
+- **Mission:** destigmatize poo. Every screen should make "I plopped" feel as normal as "I ran 5k".
+- **Hard rules from the logs:** no pink or gendered coding; the mascot never reacts to the Bristol type and every type gets the same celebration; no stool imagery in the UI outside the scan; no "normal" or "abnormal" labels; rank shows effort, not health.
 
-## Watch out for our own palette trap
-"Warm neutral" can slide into cream paper + serif + terracotta, which the anti-slop skill lists as the new default. Warm neutral is still the decision. Pick the ground, one ownable accent and the type pairing on purpose, and say why. No purple, no pink, no Duolingo green.
+## What shipped
 
-## Palette (decided 2026-11-08)
-Cobalt is the primary action and the brand ground for splash and share-card moments. Tangerine is the one pop accent. Cocoa and mocha are the warm neutrals and the first mascot colourway. No lemon, no green, no purple, no pink.
+**Look.** Teal ground, white cards, Nunito (600 to 900), and Ploopy, the mascot, in several colourways (switch under Record, Demo settings).
 
-| Role | Name | Hex |
+| Token | Hex | Use |
 |---|---|---|
-| Primary action, brand ground | Cobalt | #1747E6 |
-| Text and outlines | Ink | #1B1A17 |
-| Reading surface | Paper | #FFFBEA |
-| Secondary text, lines, mascot | Cocoa | #7A5A48 |
-| Soft fills, secondary buttons | Mocha | #C9A58C |
-| Pop accent (badges, small highlights) | Tangerine | #FF7A3D |
-| Possible-blood note background | Note tint | #FFE1CF |
+| teal | #0D9488 | primary action, brand ground |
+| teal-dark | #0B6E64 | text and icons on light teal tints, pressed states |
+| teal-soft, teal-tile, teal-pale | #E6F7F5, #D5F5F0, #CCF5EF | tinted fills |
+| ink | #3C3C3C | body text |
+| muted, faint | #6F6F6F, #9AA5A5 | secondary text, hints |
+| line, track, card | #EDEFEF, #E3E8E8, #F4F6F6 | borders, tracks, card fills |
+| indigo | #4F46E5 | global board toggle and banner |
+| orange | #F97316 | streak flame |
+| gold | #F2B705 | tier colour, mascot colourway |
+| night | #141C30 | camera and dark screens |
+| red | #C0312B | real alerts |
 
-Contrast rules: ink on mocha, tangerine and the note tint only. White on cobalt is fine. Never cocoa text on mocha (2.7:1), never cobalt text on mocha (3.0:1), never tangerine text on paper (2.5:1) or on cobalt (2.6:1), and never white on tangerine (2.6:1). Tangerine is for fills and shapes, with ink on top. Mascot colourways: cocoa, cobalt, and one more the designer proposes (not pink). The streak marker must not be a flame, since orange flames are Duolingo's. Pair paper with a sans-serif, never a serif. Red is not in the brand; it is reserved for real alerts.
+League tiers (Iron, Bronze, Silver, Gold, Platinum, Diamond, Mythic) each have their own colour pair.
 
-## Screens to design (one Figma frame each, phone size)
-1. Home and log (one primary action, quick log and nothing to report within thumb reach)
-2. Scan reading (waiting state)
-3. Confirm or edit the guess (type picker, confidence, blood note, disclaimer)
-4. Scan failed, "Not sure, you pick"
-5. Saved (streak, cheer from a friend)
-6. Circle (friends see activity only: logged today, streak, cheers)
-7. League (weekly 0 to 100 effort score, "Rank shows effort, not health")
-8. Doctor summary (30 days: frequency, type spread, possible-blood dates, chips, cycle ribbon, notes)
-9. Onboarding including "Do you track a cycle? (optional)", mascot colourway, discreet mode
-10. Privacy ledger (what friends can see, revoke, delete all data)
-Design empty, error and long-text states for at least the log, circle and summary screens.
+**Screens in the app** (hash routes): login, home, snap, scan, pick, result, checked, record, ranked, tiers, global, join, promoted, deranked, privacy. The Figma page "App screens & flow" has 13 frames in three flows. Confirm which routes those frames cover and design any that are missing.
+
+## Departures from the earlier brief (decide, then update this file)
+- **Teal, not a warm neutral palette.** Intentional. The cobalt, tangerine, cocoa and mocha palette is dropped.
+- **Indigo and a purple tier (Mythic).** The earlier brief said no purple. Keep them or recolour the global board and the top tier.
+- **A flame icon for the streak.** The earlier brief ruled this out because an orange flame is Duolingo's symbol, and the team wanted a look that doesn't resemble it. Keep it or swap the icon.
+- **Ranked tiers.** Metal-style tiers sit close to game conventions. The rule stays: rank shows effort, not health, and every league screen says so.
 
 ## Accessibility (needed for Best Design)
-Text 16px or larger, tap targets 48px or larger, contrast 4.5:1, never colour alone (label beside every colour), visible focus, respect reduced motion. Write a short accessibility note to paste into Devpost.
+Targets: text 16px or larger, tap targets 48px or larger, contrast 4.5:1 for normal text, never colour alone (a label beside every colour), visible focus, respect reduced motion.
+
+Measured contrast of the shipped colours (computed, not eyeballed):
+
+| Pair | Ratio | Verdict |
+|---|---|---|
+| ink on white | 11.0:1 | pass |
+| muted on white | 5.0:1 | pass |
+| white on teal-dark | 6.1:1 | pass |
+| white on indigo | 6.3:1 | pass |
+| white on red | 5.7:1 | pass |
+| teal-dark on teal-soft | 5.5:1 | pass |
+| **white on teal (primary buttons)** | **3.7:1** | **fails for small text; passes only for large text and UI shapes** |
+| **faint on white** | **2.5:1** | **fails; use only for decoration, never for text that matters** |
+| **orange flame on white** | **2.8:1** | **below 3:1 for graphics** |
+
+Fix before claiming accessibility: use teal-dark for button fills that carry small white text, or make that text large and bold; check where faint is used as text. Do not claim an accessibility audit has been done. Write a short, honest accessibility note for Devpost from this table.
 
 ## Figma handoff
-Best Design needs a Figma link. Codex output is code, so someone imports the screens into Figma (see the chat notes) or rebuilds the key frames there. Keep the Figma file to the 10 screens above and share a view link.
+Best Design needs a Figma link: https://www.figma.com/design/n6vlmh5saWGs1k7fOicHJ0. Pages: "Foundations" (colour variables, built before the teal decision and still showing the cobalt palette, so update it to the table above) and "App screens & flow" (13 screens as editable layers, Nunito). Judges should read Foundations, then the screens, then this brief.
