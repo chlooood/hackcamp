@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.webmanifest">
+<script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -356,10 +357,31 @@
   function emptyState() {
     var s = seed();
     s.entries = []; s.gpLog = {}; s.tier = 0; s.div = 3; s.gp = 0; s.pendingTips = []; s.lastSlip = null; s.name = '';
+    s.globalOn = false; s.buddies = []; s.outbox = [];
     return s;
   }
-  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {} return seed(); }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  // Two data sources, each with its own cache so demo data never reaches the real database:
+  //   'demo'  = seeded data, this phone only
+  //   'cloud' = Supabase (public/config.js), cached on the phone and synced
+  var CFG = window.PLOP_CONFIG || {};
+  var CLOUD_READY = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
+  var source = (function () {
+    var s = null; try { s = localStorage.getItem('plop-source'); } catch (e) {}
+    if (s === 'cloud' && CLOUD_READY) return 'cloud';
+    if (s === 'demo') return 'demo';
+    return CLOUD_READY ? 'cloud' : 'demo';
+  })();
+  function storeKey() { return source === 'cloud' ? 'plop-cloud-v1' : KEY; }
+  function load() {
+    try { var s = JSON.parse(localStorage.getItem(storeKey())); if (s && s.v === 2) return s; } catch (e) {}
+    return source === 'cloud' ? emptyState() : seed();
+  }
+  function save() { try { localStorage.setItem(storeKey(), JSON.stringify(state)); } catch (e) {} }
+  function setSource(next) {
+    source = next;
+    try { localStorage.setItem('plop-source', next); } catch (e) {}
+    state = load(); draft = null; lastCheckin = null;
+  }
   var state = load();
   var qs = new URLSearchParams(location.search);
   if (qs.get('mode') === 'cached' || qs.get('mode') === 'live') { state.scanMode = qs.get('mode'); save(); }
@@ -786,7 +808,8 @@
       return '<div class="col" style="height:140px"><div class="col" style="height:70px;justify-content:flex-end;align-items:center">' + up + '</div><div class="col" style="height:70px;align-items:center">' + down + '</div></div>';
     }).join('');
     var dayLabels = days.map(function (d) { return '<span>' + DOW[new Date(d + 'T12:00').getDay()] + '</span>'; }).join('');
-    var ladder = BUDDIES.filter(function (b) { return !state.removed[b.name]; }).map(function (b) { return { name: b.name, t: b.rank[0], d: b.rank[1], you: false }; });
+    // buddies who hide their rank (or play casual) are left off the ladder
+    var ladder = buddyList().filter(function (b) { return b.rank; }).map(function (b) { return { name: b.name, t: b.rank[0], d: b.rank[1], you: false }; });
     ladder.push({ name: 'You', t: state.tier, d: state.div, you: true });
     ladder.sort(function (a, b) { return (b.t * 10 - b.d) - (a.t * 10 - a.d); });
     return '<main class="screen with-nav" style="gap:22px">' + head +
@@ -857,26 +880,30 @@
   };
 
   SCREENS.buddies = function () {
-    var list = BUDDIES.filter(function (b) { return !state.removed[b.name]; });
-    var loggedCount = list.filter(function (b) { return b.time; }).length;
+    var list = buddyList(), isCloud = source === 'cloud';
+    var loggedCount = list.filter(function (b) { return b.loggedToday; }).length;
     return '<main class="screen with-nav" style="gap:8px">' +
       '<div class="between" style="margin-bottom:8px"><h1>Buddies</h1><button data-act="invite" style="min-height:44px;padding:0 18px;border-radius:999px;border:0;background:var(--indigo);color:#FFF;font-size:16px;font-weight:900">Invite</button></div>' +
       // the two poop buddies, styled like Home's hero card
       '<section class="hero buddy-duo" style="margin-bottom:6px"><div class="row" style="gap:8px"><div class="col" style="flex:1;gap:4px">' +
-        '<span style="font-size:24px;font-weight:900;line-height:1.1;color:#0B6E64">' + loggedCount + ' of ' + list.length + ' plopped today</span>' +
-        '<span style="font-size:15px;font-weight:700;color:#3F5F5B;line-height:1.35">Everybody plops. Send a cheer.</span></div>' +
+        '<span style="font-size:24px;font-weight:900;line-height:1.1;color:#0B6E64">' + (list.length ? loggedCount + ' of ' + list.length + ' plopped today' : 'Plopping is better together') + '</span>' +
+        '<span style="font-size:15px;font-weight:700;color:#3F5F5B;line-height:1.35">' + (list.length ? 'Everybody plops. Send a cheer.' : 'Invite up to five friends. They only see that you showed up.') + '</span></div>' +
         '<div class="row" style="gap:0;flex-shrink:0" aria-hidden="true"><span class="pal pal-a">' + mascot('smile', 64, '', '#8E9CCB') + '</span><span class="pal pal-b" style="margin-left:-6px">' + mascot('peek', 64, '', '#B5764A') + '</span></div>' +
       '</div></section>' +
+      (isCloud && !state.name ? '<section class="card" style="margin-bottom:6px"><label class="col" style="gap:8px;font-size:16px;font-weight:900">What should buddies call you?' +
+        '<input id="my-name" maxlength="40" autocomplete="nickname" placeholder="First name or nickname" style="min-height:48px;border:2px solid var(--track);border-radius:14px;padding:0 12px;font:inherit;font-size:16px;font-weight:700"></label>' +
+        '<button class="btn btn-teal" data-act="savename" style="min-height:48px;font-size:16px">Save name</button></section>' : '') +
       '<div class="col">' + list.map(function (b) {
-        var sent = !!state.cheered[today() + b.name];
-        var line = (b.time ? 'Checked in at ' + b.time : 'Not yet today') + ' · ' + b.streak + '-day streak';
+        var sent = !!state.cheered[today() + b.id];
+        var act = b.loggedToday == null ? 'Check-ins private' : (b.loggedToday ? (b.time ? 'Checked in at ' + b.time : 'Logged today') : 'Not yet today');
+        var line = act + (b.streak != null ? ' · ' + b.streak + '-day streak' : '') + (b.cheeredMe ? ' · cheered you 🎉' : '');
         return '<div class="list-row"><span class="avatar" style="background:' + b.tint + '">' + mascot(b.face, 34, '', b.poop) + '</span>' +
-          '<div class="col" style="flex:1"><span style="font-size:17px;font-weight:900">' + b.name + '</span><span style="font-size:14px;font-weight:700;color:var(--muted)">' + line + '</span></div>' +
-          '<button data-cheer="' + b.name + '" aria-pressed="' + sent + '" style="min-height:38px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:800;flex-shrink:0;' + (sent ? 'background:' + b.color + ';color:#FFF;border:2px solid ' + b.color : 'background:' + b.soft + ';color:' + b.ink + ';border:2px solid ' + b.soft) + '">' + (sent ? 'Sent' : 'Cheer') + '</button></div>';
+          '<div class="col" style="flex:1"><span style="font-size:17px;font-weight:900">' + esc(b.name) + '</span><span style="font-size:14px;font-weight:700;color:var(--muted)">' + line + '</span></div>' +
+          '<button data-cheer="' + esc(b.id) + '" aria-pressed="' + sent + '" style="min-height:38px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:800;flex-shrink:0;' + (sent ? 'background:' + b.color + ';color:#FFF;border:2px solid ' + b.color : 'background:' + b.soft + ';color:' + b.ink + ';border:2px solid ' + b.soft) + '">' + (sent ? 'Sent' : 'Cheer') + '</button></div>';
       }).join('') +
-        '<div class="list-row"><span class="avatar" style="border:2px dashed #C9D2D2;color:#9AA5A5;background:none">D</span><span style="font-size:15px;font-weight:700;color:var(--muted)">Dev hasn\'t accepted yet</span></div></div>' +
+        (isCloud ? '' : '<div class="list-row"><span class="avatar" style="border:2px dashed #C9D2D2;color:#9AA5A5;background:none">D</span><span style="font-size:15px;font-weight:700;color:var(--muted)">Dev hasn\'t accepted yet</span></div>') + '</div>' +
       '<a href="#privacy" style="font-size:15px;font-weight:800;color:var(--teal-dark);margin-top:16px;min-height:44px;display:flex;align-items:center">They only see that you showed up. What else?</a>' +
-      '<p class="sub" style="margin:0">Demo buddies, seeded.</p>' +
+      (isCloud ? '' : '<p class="sub" style="margin:0">Demo buddies, seeded.</p>') +
     '</main>';
   };
 
@@ -895,8 +922,8 @@
       tog('discreet', 'Discreet mode', 'Shows as "Daily" on your home screen') +
       '<button class="setting" data-act="pause">' + (state.paused ? 'Back from your break' : 'Take a break') + '</button>' +
       '<button class="setting" data-act="remove">Remove a buddy</button>' +
-      '<div id="remove-list" class="hidden col" style="padding:4px 0 8px 12px">' + BUDDIES.filter(function (b) { return !state.removed[b.name]; }).map(function (b) {
-        return '<div class="between" style="min-height:48px"><span style="font-weight:800">' + b.name + '</span><button data-remove="' + b.name + '" style="min-height:40px;padding:0 14px;border-radius:12px;border:2px solid #E3E8E8;background:#FFF;font-weight:800">Remove</button></div>';
+      '<div id="remove-list" class="hidden col" style="padding:4px 0 8px 12px">' + (buddyList().length ? '' : '<span class="sub" style="min-height:44px;display:flex;align-items:center">No buddies to remove.</span>') + buddyList().map(function (b) {
+        return '<div class="between" style="min-height:48px"><span style="font-weight:800">' + esc(b.name) + '</span><button data-remove="' + esc(b.id) + '" style="min-height:40px;padding:0 14px;border-radius:12px;border:2px solid #E3E8E8;background:#FFF;font-weight:800">Remove</button></div>';
       }).join('') + '</div>' +
       '<button class="setting" data-act="wipe" style="color:#B3261E">Delete everything</button>' +
     '</main>';
@@ -983,7 +1010,7 @@
       demoSettings() +
     '</main>';
   };
-  var recordMode = 'score';
+  var recordMode = 'score', notesTimer = null;
   // Ploopy says hi with a little jump when you open Home
   AFTER.home = function (entering) {
     var p = document.getElementById('ploopy');
@@ -1011,7 +1038,11 @@
       line.style.strokeDashoffset = 0;
     }
     var n = document.getElementById('notes');
-    if (n) n.addEventListener('input', function () { state.notes = n.value; save(); });
+    if (n) n.addEventListener('input', function () {
+      state.notes = n.value; save();
+      clearTimeout(notesTimer);
+      notesTimer = setTimeout(function () { cloud.profile({ notes: state.notes.slice(0, 2000) }); }, 800);
+    });
   };
   function rangeText(list) {
     var out = [], run = [list[0]];
@@ -1032,8 +1063,12 @@
       }).join('') + '</div>' +
       '<button class="demo-btn" data-act="slip">Simulate a missed day</button>' +
       '<button class="demo-btn" data-act="promote-demo">Show the promotion screen</button>' +
-      '<button class="demo-btn" data-act="reseed">Reset to demo data</button>' +
-      '<p class="sub">Demo data lives on this phone only.</p></details>';
+      '<div style="padding:8px 0 4px;font-weight:900">Database</div>' +
+      '<p class="sub" id="cloud-status" role="status" style="margin:0 0 6px">' + esc(cloud.statusText()) + '</p>' +
+      (source === 'cloud'
+        ? '<button class="demo-btn" data-act="reseed">Switch to demo data</button>'
+        : (CLOUD_READY ? '<button class="demo-btn" data-act="use-cloud">Use the real database</button>' : '') + '<button class="demo-btn" data-act="reseed">Reset demo data</button>') +
+      '<p class="sub">' + (source === 'cloud' ? 'Your log is saved to the database. Photos are never stored.' : 'Demo data lives on this phone only.') + '</p></details>';
   }
 
   // ---------- camera ----------
@@ -1127,10 +1162,165 @@
     var res = applyGp(total);
     state.gpLog[d] = (state.gpLog[d] || 0) + total;
     lastCheckin = { fromPct: gpBefore, lines: lines, total: total, promoted: res.promoted, tierBefore: res.before, tierAfter: [state.tier, state.div], barPct: res.promoted ? 100 : state.gp };
-    void gpBefore;
+    cloud.entry(entry);
+    if (total) cloud.gp(d, total, 'check-in');
+    cloud.rank();
     save();
     draft = null;
     go('checked');
+  }
+
+  // ---------- cloud (Supabase) ----------
+  // Every write goes to state first (so the app never waits on the network), then into an
+  // outbox that is sent in order. If the phone is offline the outbox waits and retries.
+  // Photos never come through here: only the structured entry is sent.
+  var cloud = (function () {
+    var sb = null, status = CLOUD_READY ? 'starting' : 'off', handle = '', flushing = false, warned = false;
+    var on = function () { return source === 'cloud' && CLOUD_READY; };
+    function loadLib() {
+      if (window.supabase) return Promise.resolve();
+      return new Promise(function (res, rej) {
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
+        s.onload = res; s.onerror = function () { rej(new Error('lib')); };
+        document.head.appendChild(s);
+      });
+    }
+    function must(r) { if (r && r.error) throw r.error; return r ? r.data : null; }
+    function setStatus(s) { status = s; var el = document.getElementById('cloud-status'); if (el) el.textContent = statusText(); }
+    function statusText() {
+      if (!CLOUD_READY) return 'Not set up. Add your Supabase URL and key to public/config.js.';
+      if (source !== 'cloud') return 'Off. Using demo data on this phone.';
+      return { starting: 'Connecting…', ok: 'Connected as ' + (handle || 'you') + '. Saved to the database.', offline: 'Offline. Saved on this phone, will sync.' }[status] || status;
+    }
+    function queue(op) {
+      if (!on()) return;
+      state.outbox = state.outbox || [];
+      if (op.t === 'profile') { // merge profile patches into one pending op
+        var last = state.outbox.slice(flushing ? 1 : 0).filter(function (o) { return o.t === 'profile'; })[0];
+        if (last) { Object.assign(last.patch, op.patch); save(); flush(); return; }
+      }
+      state.outbox.push(op); save(); flush();
+    }
+    async function send(op) {
+      if (op.t === 'entry') return must(await sb.from('entries').upsert(op.row, { onConflict: 'user_id,day' }));
+      if (op.t === 'delEntry') return must(await sb.from('entries').delete().eq('day', op.day));
+      if (op.t === 'gp') return must(await sb.from('gp_events').insert(op.row));
+      if (op.t === 'profile') { var me = (await sb.auth.getUser()).data.user; return must(await sb.from('profiles').update(op.patch).eq('id', me.id)); }
+      if (op.t === 'cheer') {
+        if (op.on) return must(await sb.from('cheers').upsert({ to_id: op.to, day: op.day }, { onConflict: 'from_id,to_id,day', ignoreDuplicates: true }));
+        return must(await sb.from('cheers').delete().eq('to_id', op.to).eq('day', op.day));
+      }
+    }
+    async function flush() {
+      if (!on() || !sb || flushing) return;
+      flushing = true;
+      try {
+        while (state.outbox && state.outbox.length) {
+          await send(state.outbox[0]);
+          state.outbox.shift(); save();
+        }
+        setStatus('ok');
+      } catch (e) {
+        // A row the database rejects (bad data) is dropped so it can't block the queue forever.
+        if (e && e.code && /^(22|23|42)/.test(e.code)) { state.outbox.shift(); save(); }
+        setStatus('offline');
+        if (!warned) { warned = true; toast("Couldn't reach the database. Saved on this phone."); }
+      } finally { flushing = false; }
+    }
+    function entryRow(e) {
+      return { day: e.date, kind: e.kind, score: e.score == null ? null : e.score, bristol: e.type || null,
+        colour: e.colour || null, confidence: e.confidence == null ? null : e.confidence,
+        comfort: e.comfort || 0, chips: e.chips || [], blood: !!e.blood };
+    }
+    function mapBuddy(b, i) {
+      var pal = [['#14B8A6', '#D5F5F0', '#0B6E64'], ['#6366F1', '#E8E7FF', '#4338CA'], ['#F97316', '#FFEDD5', '#9A3412'], ['#0EA5E9', '#E0F2FE', '#075985'], ['#8B5CF6', '#EDE9FE', '#5B21B6']][i % 5];
+      return {
+        id: b.buddy_id, name: b.display_name || 'A buddy', poop: b.mascot, face: 'eyes',
+        color: pal[0], soft: pal[1], ink: pal[2], tint: '#F1F4F4',
+        loggedToday: b.logged_today, time: b.logged_at ? new Date(b.logged_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : null,
+        streak: b.streak, rank: b.tier == null ? null : [b.tier, b.div], cheeredMe: b.cheered_me, iCheered: b.i_cheered
+      };
+    }
+    async function refreshBuddies() {
+      if (!on() || !sb) return;
+      var rows = must(await sb.rpc('buddy_activity', { p_today: today() })) || [];
+      state.buddies = rows.map(mapBuddy);
+      state.buddies.forEach(function (b) { if (b.iCheered) state.cheered[today() + b.id] = true; });
+      save();
+    }
+    async function pull() {
+      var p = must(await sb.rpc('ensure_profile'));
+      handle = p.handle;
+      var since = dayStr(addDays(new Date(), -60));
+      var rows = must(await sb.from('entries').select('day,kind,score,bristol,colour,confidence,comfort,chips,blood').gte('day', since).order('day'));
+      var ev = must(await sb.from('gp_events').select('day,delta').gte('day', dayStr(addDays(new Date(), -14))));
+      Object.assign(state, {
+        name: p.display_name, mascot: p.mascot, tier: p.tier, div: p.div, gp: p.gp, shields: p.shields, mode: p.mode,
+        privacy: { checkin: p.share_checkin, streak: p.share_streak, rank: p.share_rank, discreet: p.discreet },
+        paused: p.paused, globalOn: p.global_on, plain: p.plain_names, notes: p.notes, inviteCode: p.invite_code, handle: p.handle,
+        entries: rows.map(function (r) { return { date: r.day, kind: r.kind, score: r.score, type: r.bristol, colour: r.colour, confidence: r.confidence, comfort: r.comfort, chips: r.chips || [], blood: r.blood }; }),
+        gpLog: ev.reduce(function (m, x) { m[x.day] = (m[x.day] || 0) + x.delta; return m; }, {})
+      });
+      await refreshBuddies();
+      save();
+    }
+    async function boot() {
+      if (!on()) { setStatus(status); return; }
+      try {
+        await loadLib();
+        sb = sb || window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'plop-auth' } });
+        var sess = (await sb.auth.getSession()).data.session;
+        if (!sess) must(await sb.auth.signInAnonymously());
+        await flush();           // send anything saved while offline first
+        await pull();            // then take the database as the truth
+        var code = new URLSearchParams(location.search).get('invite');
+        if (code) await acceptInvite(code);
+        setStatus('ok');
+        render();
+      } catch (e) {
+        setStatus('offline');
+        if (!warned) { warned = true; toast("Couldn't reach the database. Using what's on this phone."); }
+      }
+    }
+    async function acceptInvite(code) {
+      try {
+        var who = must(await sb.rpc('accept_invite', { p_code: code }));
+        await refreshBuddies();
+        toast('You and ' + (who || 'your friend') + ' are buddies now');
+      } catch (e) {
+        toast(/own invite/.test(e.message) ? "That's your own invite link" : "That invite link didn't work");
+      }
+      history.replaceState(null, '', location.pathname + location.hash);
+    }
+    // Poll buddies while the app is open (no push notifications).
+    setInterval(function () {
+      if (!on() || !sb || document.hidden || status !== 'ok') return;
+      var cur = current();
+      if (cur !== 'buddies' && cur !== 'home' && cur !== 'ranked') return;
+      refreshBuddies().then(function () { if (current() === cur && !draft) render(); }).catch(function () {});
+    }, 30000);
+    window.addEventListener('online', flush);
+    return {
+      on: on, boot: boot, flush: flush, statusText: statusText, refreshBuddies: refreshBuddies,
+      entry: function (e) { queue({ t: 'entry', row: entryRow(e) }); },
+      delEntry: function (day) { queue({ t: 'delEntry', day: day }); },
+      gp: function (day, delta, reason) { queue({ t: 'gp', row: { day: day, delta: delta, reason: reason } }); },
+      rank: function () { queue({ t: 'profile', patch: { tier: state.tier, div: state.div, gp: state.gp } }); },
+      profile: function (patch) { queue({ t: 'profile', patch: patch }); },
+      cheer: function (to, isOn) { queue({ t: 'cheer', to: to, day: today(), on: isOn }); },
+      removeBuddy: async function (id) { must(await sb.rpc('remove_buddy', { p_buddy: id })); await refreshBuddies(); },
+      deleteMe: async function () { must(await sb.rpc('delete_me')); await sb.auth.signOut(); },
+      inviteLink: function () { return state.inviteCode ? location.origin + location.pathname + '?invite=' + state.inviteCode : null; }
+    };
+  })();
+
+  // Buddies to show: real ones from the database in cloud mode, the seeded ones in demo mode.
+  function buddyList() {
+    if (source === 'cloud') return state.buddies || [];
+    return BUDDIES.filter(function (b) { return !state.removed[b.name]; }).map(function (b) {
+      return Object.assign({ id: b.name, loggedToday: !!b.time, demo: true }, b);
+    });
   }
 
   // ---------- events ----------
@@ -1148,33 +1338,48 @@
     if (ds.type) { draft.type = Number(ds.type); buzz(6); render('[data-type="' + ds.type + '"]'); return; }
     if (ds.tip) {
       var k = today() + ds.tip, tipRect = rectOf(el);
-      if (state.tipsDone[k]) { delete state.tipsDone[k]; applyGp(-4); state.gpLog[today()] = (state.gpLog[today()] || 0) - 4; }
-      else { state.tipsDone[k] = true; applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; buzz(12); floatFrom(tipRect, ['+4 GP'], { size: 18 }); }
-      save(); render('[data-tip="' + ds.tip + '"]'); return;
+      if (state.tipsDone[k]) { delete state.tipsDone[k]; applyGp(-4); state.gpLog[today()] = (state.gpLog[today()] || 0) - 4; cloud.gp(today(), -4, 'tip undone'); }
+      else { state.tipsDone[k] = true; applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; cloud.gp(today(), 4, 'tip'); buzz(12); floatFrom(tipRect, ['+4 GP'], { size: 18 }); }
+      cloud.rank(); save(); render('[data-tip="' + ds.tip + '"]'); return;
     }
     if (ds.cheer) {
       var ck = today() + ds.cheer, cheerRect = rectOf(el);
-      if (state.cheered[ck]) delete state.cheered[ck];
-      else { state.cheered[ck] = true; buzz(15); floatFrom(cheerRect, ['🎉', '👏', '💩', '🙌', '✨'], { size: 24 }); toast(ds.cheer + ' gets a cheer'); }
+      var who = buddyList().filter(function (b) { return String(b.id) === ds.cheer; })[0];
+      var nowOn = !state.cheered[ck];
+      if (!nowOn) delete state.cheered[ck];
+      else { state.cheered[ck] = true; buzz(15); floatFrom(cheerRect, ['🎉', '👏', '💩', '🙌', '✨'], { size: 24 }); toast((who ? who.name : 'They') + ' gets a cheer'); }
+      if (who && !who.demo) cloud.cheer(who.id, nowOn);
       save(); render('[data-cheer="' + ds.cheer + '"]'); return;
     }
-    if (ds.mode) { state.mode = ds.mode; save(); render(); return; }
+    if (ds.mode) { state.mode = ds.mode; cloud.profile({ mode: ds.mode }); save(); render(); return; }
     if (ds.cal) { recordMode = ds.cal; var y3 = window.scrollY; render(); window.scrollTo(0, y3); return; }
     if (ds.priv) {
       state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); buzz(6);
+      var col = { checkin: 'share_checkin', streak: 'share_streak', rank: 'share_rank', discreet: 'discreet' }[ds.priv], patch = {};
+      patch[col] = state.privacy[ds.priv]; cloud.profile(patch);
       el.setAttribute('aria-pressed', String(state.privacy[ds.priv])); // slide the knob, then re-render
       setTimeout(function () { render(); }, motionOK() ? 200 : 0); return;
     }
     if (ds.remove) {
-      if (confirm('Remove ' + ds.remove + '? They won\'t be told.')) { state.removed[ds.remove] = true; save(); toast(ds.remove + ' removed'); render(); }
+      var gone = buddyList().filter(function (b) { return String(b.id) === ds.remove; })[0];
+      if (!gone || !confirm('Remove ' + gone.name + '? They won\'t be told.')) return;
+      if (gone.demo) { state.removed[gone.name] = true; save(); toast(gone.name + ' removed'); render(); return; }
+      cloud.removeBuddy(gone.id).then(function () { toast(gone.name + ' removed'); render(); })
+        .catch(function () { toast("Couldn't remove right now. Try again with signal."); });
       return;
     }
-    if (ds.mascot) { state.mascot = ds.mascot; save(); var y4 = window.scrollY; render(); window.scrollTo(0, y4); document.querySelector('details.demo').open = true; return; }
+    if (ds.mascot) { state.mascot = ds.mascot; cloud.profile({ mascot: ds.mascot }); save(); var y4 = window.scrollY; render(); window.scrollTo(0, y4); document.querySelector('details.demo').open = true; return; }
     if (el.id === 'shutter') { onShutter(); return; }
     switch (ds.act) {
       case 'skip': draft = { source: 'pick', chips: [], comfort: 0, type: 0 }; go('pick'); break;
       case 'cancel': draft = null; go('home'); break;
-      case 'plain': state.plain = !state.plain; save(); render(); break;
+      case 'plain': state.plain = !state.plain; cloud.profile({ plain_names: state.plain }); save(); render(); break;
+      case 'savename':
+        var nm = (document.getElementById('my-name') || {}).value || '';
+        nm = nm.trim().slice(0, 40);
+        if (!nm) { toast('Type a name first'); break; }
+        state.name = nm; cloud.profile({ display_name: nm }); save(); toast('Buddies will see you as ' + nm); render();
+        break;
       case 'blood': draft.blood = !draft.blood; draft.bloodByUser = draft.blood; buzz(10); render('[data-act="blood"]'); break;
       case 'poke': poke(); break;
       case 'checkin':
@@ -1190,27 +1395,43 @@
         if (navigator.share) navigator.share({ text: text }).catch(function () {}); else { copy(text); toast('Copied to share'); }
         break;
       case 'invite':
-        var link = location.origin + location.pathname + '?invite=demo';
+        var link = cloud.on() ? cloud.inviteLink() : location.origin + location.pathname + '?invite=demo';
+        if (!link) { toast('Still connecting. Try again in a moment.'); break; }
+        if (cloud.on() && !state.name) { toast('Add your name first so they know who it is'); break; }
         if (navigator.share) navigator.share({ title: 'Plop', text: 'Did you plop today? Join my circle.', url: link }).catch(function () {}); else { copy(link); toast('Invite link copied'); }
         break;
       case 'global':
-        state.globalOn = !state.globalOn; save(); buzz(6);
+        state.globalOn = !state.globalOn; cloud.profile({ global_on: state.globalOn }); save(); buzz(6);
         el.setAttribute('aria-pressed', String(state.globalOn));
         setTimeout(function () { render(); }, motionOK() ? 200 : 0);
         break;
       case 'showall': toast('Full board comes with the real backend'); break;
-      case 'pause': state.paused = !state.paused; save(); toast(state.paused ? 'Break on. Buddies see nothing new.' : 'Welcome back'); render(); break;
+      case 'pause': state.paused = !state.paused; cloud.profile({ paused: state.paused }); save(); toast(state.paused ? 'Break on. Buddies see nothing new.' : 'Welcome back'); render(); break;
       case 'remove': document.getElementById('remove-list').classList.toggle('hidden'); break;
       case 'wipe':
-        if (confirm('Delete everything? Your log, rank and settings are wiped from this phone. This can\'t be undone.')) {
-          state = emptyState(); save(); draft = null; lastCheckin = null; toast('Everything deleted'); go('home');
-        }
+        if (!confirm(cloud.on()
+          ? 'Delete everything? Your account, log, rank, buddies and settings are deleted from the database and this phone. This can\'t be undone.'
+          : 'Delete everything? Your log, rank and settings are wiped from this phone. This can\'t be undone.')) break;
+        var wipeLocal = function () {
+          try { localStorage.removeItem(storeKey()); } catch (e) {}
+          state = emptyState(); save(); draft = null; lastCheckin = null;
+          toast('Everything deleted'); go('home');
+        };
+        if (cloud.on()) {
+          cloud.deleteMe().then(function () { wipeLocal(); cloud.boot(); })
+            .catch(function () { toast("Couldn't reach the database, so nothing was deleted. Try again with signal."); });
+        } else wipeLocal();
         break;
       case 'widget': toast('Use your browser\'s Share menu, then Add to Home Screen'); break;
       case 'pdf': window.print(); break;
       case 'slip': simulateSlip(); break;
       case 'promote-demo': go('promoted'); break;
-      case 'reseed': state = seed(); save(); toast('Demo data restored'); render(); break;
+      case 'reseed':
+        if (source === 'cloud') { setSource('demo'); }
+        else { state = seed(); }
+        save(); toast('Demo data on this phone'); render(); break;
+      case 'use-cloud':
+        setSource('cloud'); render(); toast('Connecting to the database…'); cloud.boot(); break;
     }
   });
   document.addEventListener('change', function (ev) {
@@ -1256,6 +1477,7 @@
     var res = applyGp(-30);
     state.gpLog[yest] = -30;
     state.entries = state.entries.filter(function (e) { return e.date !== yest; });
+    cloud.gp(yest, -30, 'missed day (demo switch)'); cloud.delEntry(yest); cloud.rank();
     state.lastSlip = { day: new Date(yest + 'T12:00').toLocaleDateString('en-US', { weekday: 'long' }), miss: 20, streak: 10, from: before, to: [state.tier, state.div] };
     save();
     state.lastSlip.dropped = res.dropped; save();
@@ -1264,6 +1486,7 @@
   function copy(text) { try { navigator.clipboard.writeText(text); } catch (e) {} }
 
   render();
+  cloud.boot();
 })();
 </script>
 </body>

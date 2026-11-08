@@ -43,13 +43,13 @@ This replaces Wave V2 (the user's call, 2026-11-07, see decisions.md). Photo sca
 ## Prize
 Open. Gemini is now core (the scan). Auth0 is login and invites. The rules allow one opt-in. Recommendation: Gemini (Senate run 8 agrees). Decide by about hour 3 and confirm timing with organizers. Until decided, rules.md still says Auth0.
 
-## Stack (proposed, not confirmed)
-- Frontend and backend: Next.js with TypeScript on Vercel (public URL so two phones can open it)
-- Database: Supabase Postgres, DB only
+## Stack (as built 2026-11-07)
+- Frontend: plain HTML in public/index.html on Vercel, no framework (the Next.js rewrite is deferred)
+- Database: Supabase Postgres (db/schema.sql). The page talks to it directly with supabase-js and the public anon key from public/config.js. Each phone signs in anonymously. Row level security limits every table to its owner; buddies see activity only through the buddy_activity() function. Writes go to the phone first, then an outbox that syncs and retries offline. Without config.js values the app runs on demo data.
 - Scan: Gemini vision, structured output, server route, image held in memory only
 - Auth: Auth0 passwordless login and invitations. If the prize pick moves to Gemini, a plain magic link is acceptable.
 - Buddy updates: polling. No native push.
-- Status: all TODO until the team confirms.
+- Status: frontend, scan route and database built; auth is anonymous per phone until Auth0 or a magic link is added.
 
 ## Diagram
 
