@@ -100,7 +100,6 @@ What this does and doesn't show: ten of eleven were comfortable hearing about a 
 
 - **Not a medical device.** Plop logs, it never diagnoses. "Possible blood" only suggests talking to a doctor.
 - **Research is desk research** from public sources. We polled 11 hackathon participants (see above) but did not run interviews or a study. Two of the surveys above were run or commissioned by companies.
-- **On stage we use Play-Doh**, never real samples. Demo buddies and leaderboard players are seeded.
 - **Gemini terms:** on the free tier Google may use inputs to improve its products and human reviewers may read them, so health photos should only go through a billed (paid tier) key. The API is 18+ only, and Google's terms say it must not be used to give medical advice.
 
 ## What's next
