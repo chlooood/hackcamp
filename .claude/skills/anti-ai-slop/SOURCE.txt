@@ -1,0 +1,3 @@
+Source: https://github.com/Vinayak-Shukla-03/anti-ai-slop
+Commit: c414eba (2026-07-02), MIT license, copied unmodified on 2026-11-08.
+Reviewed before adding: markdown only, no scripts, no network calls, no instructions beyond design guidance.

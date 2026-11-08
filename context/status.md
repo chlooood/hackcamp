@@ -14,6 +14,8 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 - Phone demo built (not yet deployed): public/index.html (quick log, photo scan, confirm or pick, failure path, streak, scripted buddy, cached demo switch) and api/scan.js (Gemini, server-side, fixed blood wording). API logic and page flow pass local tests (mocked Gemini, jsdom). Deploy steps are in DEPLOY.md. Never run against real Gemini yet.
 
+- Anti-slop skill added for design work: Vinayak-Shukla-03/anti-ai-slop (MIT, markdown only, reviewed) in .agents/skills/ for Codex and .claude/skills/ for Claude Code. design/BRIEF.md is the design brief. CLAUDE.md and AGENTS.md point to the skill.
+
 ## In progress
 - A teammate (Zan Tian) uploaded a front-end only prototype: `prototype/plop.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
 - Prototype conflicts with logged decisions. Scoring is now settled and built in the prototype. Still open and not yet agreed with Zan: privacy copy says photos are analysed on-device (we send them to Gemini and discard); health advice cards and fixed hydration/fibre readouts (do-not-build); gender, age, conditions and medications profile fields; one log per day lock; no quick log, confirm/edit or failure path; friends rank sharing defaults on; no streak freeze, buddy invite, gentle day, habits or cycle chip.
