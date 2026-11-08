@@ -13,7 +13,7 @@ Update this at the end of every session, whichever agent or person you are. Over
 - Senate run 11 done (context/senate-result-11.md). Simulated opinion, no consensus. Main advice: no claim ships unverified, deploy then freeze at 3:00am, early Devpost submission, Best Design as the single opt-in.
 - Devpost post drafted: context/devpost.md (Tiger section, Privacy section, Best Design Figma guide, community impact statement, tags). README rewritten to match.
 - Entire: sessions push to a private repo (chlooood/hackcamp-checkpoints), first checkpoint confirmed, automatic policy. Only sessions on the user's laptop are recorded. Graph and Brain are not set up.
-- Anti-ai-slop skill removed (user's call). design/BRIEF.md rewritten for the shipped teal design.
+- design/BRIEF.md rewritten for the shipped teal design.
 
 ## In progress
 - Two VERIFY lines in context/devpost.md: Gemini paid tier (confirm the Vercel key is billed, re-read Google's terms) and the Figma Foundations page (still shows the old cobalt palette; the app is teal).
