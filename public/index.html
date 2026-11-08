@@ -71,6 +71,7 @@
   .tiles b { font-size: 22px; font-weight: 900; line-height: 1.1; }
   .tiles span { font-size: 12px; font-weight: 800; }
   .quest { display: flex; align-items: center; gap: 12px; min-height: 36px; }
+  .quest-btn { width: 100%; background: none; border: 0; padding: 4px 0; min-height: 44px; color: inherit; }
   .qbox { width: 26px; height: 26px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; font-weight: 900; color: #FFFFFF; }
 
   /* scan */
@@ -445,7 +446,7 @@
 
   // ---------- router ----------
   var NAV_SCREENS = { home: 1, ranked: 1, buddies: 1, record: 1, global: 1 };
-  var BODY_CLASS = { scan: 'dark', promoted: 'night', deranked: 'slip' };
+  var BODY_CLASS = { scan: 'dark', snap: 'dark', promoted: 'night', deranked: 'slip' };
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else render(); }
   function current() { return (location.hash || '#home').slice(1).split('?')[0]; }
   window.addEventListener('hashchange', function () { render(); });
@@ -456,7 +457,7 @@
     var name = current();
     if (!SCREENS[name]) name = 'home';
     if ((name === 'result' || name === 'checked') && !draft && !lastCheckin) name = 'home';
-    if (name !== 'scan') stopCamera();
+    if (name !== 'scan' && name !== 'snap') stopCamera();
     var entering = name !== lastScreen;
     lastScreen = name;
     document.body.className = BODY_CLASS[name] || '';
@@ -647,9 +648,9 @@
     var tipsDone = TIPS.filter(function (t, i) { return state.tipsDone[today() + i]; }).length;
     var cheeredToday = Object.keys(state.cheered).some(function (k) { return k.indexOf(today()) === 0; });
     var quests = [
-      { label: 'Today’s photo', done: done, gp: '+15', c: '#0D9488', soft: '#D5F5F0' },
-      { label: 'Snap 2 tips', done: tipsDone >= 2, gp: tipsDone + ' of 2', c: '#6366F1', soft: '#E8E7FF' },
-      { label: 'Cheer someone on', done: cheeredToday, gp: '+2', c: '#F97316', soft: '#FFEDD5' }
+      { label: 'Today’s photo', done: done, gp: '+15', c: '#0D9488', soft: '#D5F5F0', go: done ? 'record' : 'scan' },
+      { label: 'Snap 2 tasks', done: tipsDone >= 2, gp: tipsDone + ' of 2', c: '#6366F1', soft: '#E8E7FF', go: 'tasks' },
+      { label: 'Cheer someone on', done: cheeredToday, gp: '+2', c: '#F97316', soft: '#FFEDD5', go: 'buddies' }
     ];
     var n = dayNumber();
     var sub = done ? 'Done for today. Ploopy approves.' : (state.entries.length ? "Ploopy's been waiting since breakfast." : 'Day one. Ploopy is ready when you are.');
@@ -672,8 +673,8 @@
           '<div style="background:#FFEDD5;color:#9A3412"><b>' + (topType ? 'Type ' + topType : '–') + '</b><span>most often</span></div>' +
         '</div></section>' +
       '<section class="col" style="gap:10px"><h2>Today</h2>' + quests.map(function (q) {
-        return '<div class="quest"><span class="qbox" style="' + (q.done ? 'background:' + q.c : 'border:2.5px solid ' + q.c) + '">' + (q.done ? '✓' : '') + '</span>' +
-          '<span style="flex:1;font-size:15px;font-weight:800">' + q.label + '</span><span class="pill" style="background:' + q.soft + ';color:' + q.c + '">' + q.gp + '</span></div>';
+        return '<button class="quest quest-btn" data-go="' + q.go + '"><span class="qbox" style="' + (q.done ? 'background:' + q.c : 'border:2.5px solid ' + q.c) + '">' + (q.done ? '✓' : '') + '</span>' +
+          '<span style="flex:1;font-size:15px;font-weight:800;text-align:left">' + q.label + '</span><span class="pill" style="background:' + q.soft + ';color:' + q.c + '">' + q.gp + '</span></button>';
       }).join('') + '</section>' +
     '</main>';
   };
@@ -838,16 +839,80 @@
         '<span style="font-size:14px;font-weight:900;color:#0B6E64">' + (c.promoted ? rankName(c.tierAfter[0], c.tierAfter[1]) + '!' : (100 - state.gp) + ' to go') + '</span></div>' +
       '<div class="hr"></div>' +
       '<section class="col" style="gap:12px"><div class="col" style="gap:2px"><h2 style="font-size:20px">Two things for today</h2><span class="sub">Snap a pic when you\'ve done one. +4 GP each.</span></div>' +
-        todaysTips().map(function (tip, i) {
-          var on = !!state.tipsDone[today() + i];
-          return '<div class="tip"><span class="ic" style="background:' + tip.bg + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + tip.ink + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + tip.icon + '"/></svg></span>' +
-            '<div class="col" style="flex:1"><span style="font-size:16px;font-weight:800">' + esc(tip.title) + '</span><span style="font-size:12px;font-weight:700;color:var(--muted)">' + esc(tip.source) + '</span></div>' +
-            '<button data-tip="' + i + '" aria-pressed="' + on + '">' + (on ? 'Done' : 'Snap') + '</button></div>';
-        }).join('') +
+        taskList() +
         '<span style="font-size:12px;font-weight:700;color:#9AA5A5">General ideas, not medical advice.</span></section>' +
       '<button class="btn btn-teal" data-act="continue" style="margin-top:4px">Continue</button>' +
     '</main>';
   };
+
+  // Today's two tasks with a Snap button each. Snap opens the task camera; Done can be undone.
+  function taskList() {
+    return todaysTips().map(function (tip, i) {
+      var on = !!state.tipsDone[today() + i];
+      return '<div class="tip"><span class="ic" style="background:' + tip.bg + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + tip.ink + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + tip.icon + '"/></svg></span>' +
+        '<div class="col" style="flex:1"><span style="font-size:16px;font-weight:800">' + esc(tip.title) + '</span><span style="font-size:12px;font-weight:700;color:var(--muted)">' + esc(tip.source) + '</span></div>' +
+        '<button data-tip="' + i + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Done. Tap to undo' : 'Snap a photo of this task') + '">' + (on ? 'Done' : 'Snap') + '</button></div>';
+    }).join('');
+  }
+
+  SCREENS.tasks = function () {
+    var n = TIPS.filter(function (t, i) { return state.tipsDone[today() + i]; }).length;
+    return '<main class="screen" style="gap:16px">' +
+      '<button class="icon-btn" data-back="home" aria-label="Back">' + ICON.back + '</button>' +
+      '<div class="col" style="gap:4px"><h1>Today\'s tasks</h1><span class="sub" style="font-size:15px">Done one? Snap a photo of it. ' + (state.mode === 'ranked' ? '+4 GP each.' : 'Counts toward your day.') + '</span></div>' +
+      '<section class="col" style="gap:12px">' + taskList() + '</section>' +
+      '<span style="font-size:13px;font-weight:700;color:var(--muted)">' + n + ' of 2 done. Task photos stay on your phone and are deleted right away.</span>' +
+      '<span style="font-size:12px;font-weight:700;color:#9AA5A5">General ideas, not medical advice.</span>' +
+    '</main>';
+  };
+
+  // Task camera: same camera as the scan, but the photo never leaves the phone.
+  var snapTask = null; // { i, back }
+  SCREENS.snap = function () {
+    if (!snapTask) return SCREENS.tasks();
+    var tip = todaysTips()[snapTask.i] || TIPS[0];
+    return '<div class="scan"><main class="screen" style="gap:18px">' +
+      '<div class="between"><button class="icon-btn" data-act="snap-cancel" aria-label="Close" style="background:#2E3437;margin-left:0">' + ICON.close('#FFF') + '</button>' +
+        '<span class="pill" style="background:#2E3437;color:#FFF;font-size:14px;padding:6px 14px">Snap a task</span><span style="width:44px"></span></div>' +
+      '<div class="col" style="align-items:center;gap:2px;text-align:center"><span style="font-size:22px;font-weight:900">' + esc(tip.title) + '</span>' +
+        '<span style="font-size:14px;font-weight:700;color:#B5C0C0">Show it done: your glass, your shoes, your plate.</span></div>' +
+      '<div class="viewfinder" id="vf" style="aspect-ratio:350/420"><video id="video" playsinline muted autoplay class="hidden"></video>' +
+        '<img id="still" class="hidden" alt="Your task photo, shown only on this phone">' +
+        '<span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>' +
+        '<div id="vf-msg" class="vf-msg" role="status">Starting camera…</div>' +
+        '<div class="reading hidden" id="snap-done">' + mascot('cheer', 110, 'class="hop"') + '<span style="font-size:26px">Nice one!</span>' +
+          '<span id="snap-gp" style="font-size:16px;color:#5EEAD4"></span></div>' +
+      '</div>' +
+      '<p style="margin:0;text-align:center;font-size:14px;font-weight:700;color:#D0D6D6;line-height:1.45">This photo stays on your phone and is deleted right away.</p>' +
+      '<div class="cam-row">' +
+        '<button class="cam-side" data-act="upload" aria-label="Upload a photo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-7 8"/></svg><span>Upload</span></button>' +
+        '<button class="shutter" id="shutter" aria-label="Take the photo" disabled><span></span></button>' +
+        '<button class="cam-side hidden" id="flip" data-act="flip" aria-label="Switch camera"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9a8 8 0 0 1 14-3l2 2M20 15a8 8 0 0 1-14 3l-2-2"/><path d="M20 4v4h-4M4 20v-4h4"/></svg><span>Flip</span></button>' +
+        '<span class="cam-side" id="flip-spacer" aria-hidden="true"></span>' +
+      '</div>' +
+    '</main></div>';
+  };
+  AFTER.snap = function () { startCamera(); };
+
+  // A task photo was taken: mark the task done, celebrate, then drop the photo.
+  function completeSnap() {
+    if (!snapTask) return;
+    var i = snapTask.i, back = snapTask.back, k = today() + i;
+    var ranked = state.mode === 'ranked';
+    if (!state.tipsDone[k]) {
+      state.tipsDone[k] = true;
+      if (ranked) { applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; cloud.gp(today(), 4, 'task photo'); cloud.rank(); }
+      save();
+    }
+    var done = document.getElementById('snap-done'), gp = document.getElementById('snap-gp');
+    if (gp) gp.textContent = ranked ? '+4 GP' : 'Task done';
+    if (done) done.classList.remove('hidden');
+    buzz([12, 40, 12]); confetti(30, 0.35);
+    setTimeout(function () {
+      var still = document.getElementById('still'); if (still) still.removeAttribute('src');  // photo gone
+      snapTask = null; go(back);
+    }, 1500);
+  }
 
   SCREENS.promoted = function () {
     var r = rankName(state.tier, state.div);
@@ -1534,10 +1599,15 @@
     if (ds.comfort) { draft.comfort = Number(ds.comfort); buzz(6); render('[data-comfort="' + ds.comfort + '"]'); return; }
     if (ds.type) { draft.type = Number(ds.type); buzz(6); render('[data-type="' + ds.type + '"]'); return; }
     if (ds.tip) {
-      var k = today() + ds.tip, tipRect = rectOf(el);
-      if (state.tipsDone[k]) { delete state.tipsDone[k]; applyGp(-4); state.gpLog[today()] = (state.gpLog[today()] || 0) - 4; cloud.gp(today(), -4, 'tip undone'); }
-      else { state.tipsDone[k] = true; applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; cloud.gp(today(), 4, 'tip'); buzz(12); floatFrom(tipRect, ['+4 GP'], { size: 18 }); }
-      cloud.rank(); save(); render('[data-tip="' + ds.tip + '"]'); return;
+      var k = today() + ds.tip;
+      if (state.tipsDone[k]) {
+        if (!confirm('Mark this task as not done?')) return;
+        delete state.tipsDone[k];
+        if (state.mode === 'ranked') { applyGp(-4); state.gpLog[today()] = (state.gpLog[today()] || 0) - 4; cloud.gp(today(), -4, 'task undone'); cloud.rank(); }
+        save(); render('[data-tip="' + ds.tip + '"]'); return;
+      }
+      snapTask = { i: Number(ds.tip), back: current() === 'checked' ? 'checked' : 'tasks' };
+      go('snap'); return;
     }
     if (ds.cheer) {
       var ck = today() + ds.cheer, cheerRect = rectOf(el);
@@ -1578,6 +1648,7 @@
     switch (ds.act) {
       case 'skip': draft = { source: 'pick', chips: [], comfort: 0, type: 0 }; go('pick'); break;
       case 'upload': document.getElementById('upload').click(); break;
+      case 'snap-cancel': var bk = snapTask ? snapTask.back : 'tasks'; snapTask = null; go(bk); break;
       case 'native-cam': document.getElementById('file').click(); break;
       case 'retry-cam': startCamera(); break;
       case 'flip': camFacing = camFacing === 'environment' ? 'user' : 'environment'; stopCamera(); startCamera(); break;
@@ -1671,6 +1742,10 @@
     document.getElementById(id).addEventListener('change', async function (e) {
       var f = e.target.files && e.target.files[0]; e.target.value = '';
       if (!f) return;
+      if (current() === 'snap') {
+        try { await fileToJpeg(f); shutterFlash(); completeSnap(); } catch (err) { toast("Couldn't open that photo. Try a JPG or PNG."); }
+        return;
+      }
       if (current() !== 'scan') go('scan');
       try { var b64 = await fileToJpeg(f); shutterFlash(); runScan(b64); }
       catch (err) { draft = { source: 'failed', reason: "Couldn't open that photo. Try a JPG or PNG.", chips: [], comfort: 0, type: 0 }; go('pick'); }
@@ -1684,6 +1759,10 @@
     setTimeout(function () { f.remove(); }, 400);
   }
   function onShutter() {
+    if (current() === 'snap') {
+      if (grabFrame()) { shutterFlash(); completeSnap(); return; }
+      document.getElementById('file').click(); return;
+    }
     if (state.scanMode === 'cached' || state.forceUnclear) { shutterFlash(); runScan(null); return; }
     var b64 = grabFrame();
     if (b64) { shutterFlash(); runScan(b64); return; }
