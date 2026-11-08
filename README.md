@@ -75,23 +75,23 @@ python3 pitch/build.py
 
 ## Who we asked
 
-We asked 9 fellow hackathon participants in person, one minute each, with no names and no health details recorded. It is a small convenience sample of people at a hackathon, so treat it as a pulse check and not a study.
+We asked 11 fellow hackathon participants in person, one minute each, with no names and no health details recorded. It is a small convenience sample of people at a hackathon, so treat it as a pulse check and not a study.
 
-| Question | What they said (n = 9) |
+| Question | What they said (n = 11) |
 |---|---|
-| A friend tells you about stomach trouble: fine (1) to awkward (10)? | 1 (x3), 3 (x2), 4 (x3), 6 (x1). Eight of nine said 4 or lower. |
-| Ever put off seeing a doctor because it felt embarrassing? | 5 yes, 4 no. Comments were general: not wanting an older male doctor, and waiting to see if it goes away. |
-| How would you describe changes to a doctor today? | Of the 6 who answered: from memory (3), maybe photos (2), have a parent explain it (1). |
-| Would you be OK with a friend seeing only "logged today" and your streak? | 8 yes, 1 maybe. |
-| A scan sends your photo to Google's Gemini and Plop doesn't save it. OK? | 6 yes, 2 don't mind, 1 no. |
-| What would make you trust it or stop using it? | Open answers: leaked entries would lose trust; ads and feeling gimmicky would make them stop; several had no privacy worries. |
+| A friend tells you about stomach trouble: fine (1) to awkward (10)? | 1 (x5), 3 (x2), 4 (x3), 6 (x1). Ten of eleven said 4 or lower. |
+| Ever put off seeing a doctor because it felt embarrassing? | 5 yes, 6 no. Comments were general: not wanting an older male doctor, and waiting to see if it goes away. |
+| How would you describe changes to a doctor today? | Of the 8 who answered: from memory (5), maybe photos (2), have a parent explain it (1). |
+| Would you be OK with a friend seeing only "logged today" and your streak? | 8 yes, 1 maybe, 2 no. The two "no" answers said they don't want to hear about friends' bathroom habits. |
+| A scan sends your photo to Google's Gemini and Plop doesn't save it. OK? | 8 yes, 2 don't mind, 1 no. One yes was for the health analytics. |
+| What would make you trust it or stop using it? | Trust: photos deleted right away. Stop: entries or any info becoming public (3 people), ads, feeling gimmicky. Several had no privacy worries. |
 
-What this does and doesn't show: most people said they would be fine hearing about a friend's stomach trouble, yet 5 of 9 had put off a doctor visit because of embarrassment. Our reading is that talking to a friend may be easier than talking to a doctor, but nine people can't establish that. It does not confirm the survey figures above. Several people rely on memory when they see a doctor, and most were fine with activity-only sharing. The concerns they raised (leaks, ads, gimmicks) are on our list.
+What this does and doesn't show: ten of eleven were comfortable hearing about a friend's stomach trouble, and 5 of 11 had put off a doctor visit because it felt embarrassing. That is milder than the survey figures above, and eleven people can't confirm or refute them. Most relied on memory when they see a doctor. Most were fine with activity-only sharing, but two didn't want it at all, so sharing has to stay optional. The concerns they raised (leaks, ads, gimmicks) are on our list.
 
 ## Being honest about it
 
 - **Not a medical device.** Plop logs, it never diagnoses. "Possible blood" only suggests talking to a doctor.
-- **Research is desk research** from public sources. We polled 9 hackathon participants (see above) but did not run interviews or a study. Two of the surveys above were run or commissioned by companies.
+- **Research is desk research** from public sources. We polled 11 hackathon participants (see above) but did not run interviews or a study. Two of the surveys above were run or commissioned by companies.
 - **On stage we use Play-Doh**, never real samples. Demo buddies and leaderboard players are seeded.
 - **Gemini terms:** on the free tier Google may use inputs to improve its products and human reviewers may read them, so health photos should only go through a billed (paid tier) key. The API is 18+ only, and Google's terms say it must not be used to give medical advice.
 
