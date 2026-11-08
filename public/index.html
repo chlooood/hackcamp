@@ -1066,7 +1066,7 @@
       '<div style="padding:8px 0 4px;font-weight:900">Database</div>' +
       '<p class="sub" id="cloud-status" role="status" style="margin:0 0 6px">' + esc(cloud.statusText()) + '</p>' +
       (source === 'cloud'
-        ? '<button class="demo-btn" data-act="reseed">Switch to demo data</button>'
+        ? '<button class="demo-btn" data-act="demo-join">Add demo buddies (Zan, Chloe, Mo)</button><button class="demo-btn" data-act="reseed">Switch to demo data</button>'
         : (CLOUD_READY ? '<button class="demo-btn" data-act="use-cloud">Use the real database</button>' : '') + '<button class="demo-btn" data-act="reseed">Reset demo data</button>') +
       '<p class="sub">' + (source === 'cloud' ? 'Your log is saved to the database. Photos are never stored.' : 'Demo data lives on this phone only.') + '</p></details>';
   }
@@ -1309,6 +1309,7 @@
       rank: function () { queue({ t: 'profile', patch: { tier: state.tier, div: state.div, gp: state.gp } }); },
       profile: function (patch) { queue({ t: 'profile', patch: patch }); },
       cheer: function (to, isOn) { queue({ t: 'cheer', to: to, day: today(), on: isOn }); },
+      demoJoin: async function () { var n = must(await sb.rpc('demo_join')); await refreshBuddies(); return n; },
       removeBuddy: async function (id) { must(await sb.rpc('remove_buddy', { p_buddy: id })); await refreshBuddies(); },
       deleteMe: async function () { must(await sb.rpc('delete_me')); await sb.auth.signOut(); },
       inviteLink: function () { return state.inviteCode ? location.origin + location.pathname + '?invite=' + state.inviteCode : null; }
@@ -1430,6 +1431,10 @@
         if (source === 'cloud') { setSource('demo'); }
         else { state = seed(); }
         save(); toast('Demo data on this phone'); render(); break;
+      case 'demo-join':
+        cloud.demoJoin().then(function (n) { toast(n ? 'Zan, Chloe and Mo are your buddies now' : 'They are already your buddies'); render(); })
+          .catch(function () { toast('Run db/seed.sql in Supabase first'); });
+        break;
       case 'use-cloud':
         setSource('cloud'); render(); toast('Connecting to the database…'); cloud.boot(); break;
     }

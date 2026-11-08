@@ -19,8 +19,9 @@ Without this the app runs on demo data saved on the phone. With it, logs, rank, 
 2. Authentication > Sign In / Providers (or Settings): turn on **Allow anonymous sign-ins**. Each phone gets its own private account with no login screen.
 3. SQL Editor > New query: paste all of `db/schema.sql` and Run. Re-running it wipes Plop data, so run it once.
 4. Project Settings > API: copy the **Project URL** and the **anon public** key into `public/config.js`, then commit and push. The anon key is meant to be public; row level security protects the data. Never put the `service_role` key in the repo.
-5. Redeploy on Vercel. Record > Demo settings > Database should say "Connected as …".
-6. Two-phone test: on phone A, Buddies > add your name > Invite and send the link. Open it on phone B and add a name there too. Both phones should list each other. Log on A, and B sees "Checked in" within 30 seconds.
+5. Optional fake data: run `db/seed.sql` in the SQL Editor too. It makes fake buddies Zan, Chloe and Mo with a month of logs, plus 12 fake players. Then in the app: Record > Demo settings > Add demo buddies. Re-run the seed on demo day so "logged today" is fresh.
+6. Redeploy on Vercel. Record > Demo settings > Database should say "Connected as …".
+7. Two-phone test: on phone A, Buddies > add your name > Invite and send the link. Open it on phone B and add a name there too. Both phones should list each other. Log on A, and B sees "Checked in" within 30 seconds.
 
 What the database stores: the structured result (type, colour, score, comfort, chips, blood flag), GP events, rank, settings and buddy links. Never a photo. Buddies only ever get logged-today, streak and rank through `buddy_activity()`, and only what each person shares. "Delete everything" removes the account and every row.
 
