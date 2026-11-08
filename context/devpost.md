@@ -74,7 +74,7 @@ Some people welcomed buddy streaks. Others wanted absolutely no updates about th
 
 ### Fitting a time-series database to a small app
 
-> **[FILL IN BEFORE SUBMITTING]** Optional. One or two true sentences about what was hard in the move to Tiger, for example hypertable keys needing the time column, or compression not working with row level security. Delete this subsection if there is nothing to say.
+Moving to a time-series database changed our table design. A hypertable's unique keys have to include its time column, so the entries and Deuces tables couldn't keep a plain id as their primary key and now use id plus day. Compression also doesn't work on tables with row level security, so we dropped it on those two tables. That is safe for us because only our server connects to the database and Tiger has no public data API, but it was a trade-off we had to make deliberately.
 
 ## Accomplishments that we're proud of
 - Bringing together manual logging, AI-assisted entry suggestions and a personal history in one approachable experience.
@@ -123,4 +123,4 @@ Ultimately, we want Plop to become an easy habit: **log it, learn about your pat
 
 ## Built with
 
-gemini-api, tiger-data, timescaledb, postgresql, auth0, vercel, javascript, html, css, figma
+gemini-api, tiger-data, timescaledb, postgresql, auth0, vercel, node.js, javascript, html5, css3, web-audio-api, figma
