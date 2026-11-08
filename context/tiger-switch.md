@@ -1,6 +1,8 @@
 # Handoff: switch the database from Supabase to Tiger Data (owner: Riley)
 
-Written 2026-11-08. Nothing here has been run against Tiger Cloud. Copy exact commands from Tiger's own quickstart, because their hypertable and compression syntax has changed across versions.
+**Status 2026-11-08 ~10:50 MST: DONE and live on https://plop-beryl.vercel.app.** Tiger service in AWS us-west-2; `npm run db:tiger` loads `db/schema.sql`, `db/tiger.sql`, `db/seed.sql`. All four tests below passed on Tiger (same-day upsert overwrites, delete-everything empties all five tables, buddy_activity works on the hypertable, load matches the raw rows). The aggregate built is `weekly_deuces` (real weekly global board) plus `daily_community`, not the doctor summary. Supabase is untouched as a fallback: put its pooler string back in `DATABASE_URL`.
+
+Written 2026-11-08. The original handoff follows. Copy exact commands from Tiger's own quickstart, because their hypertable and compression syntax has changed across versions.
 
 ## Why this is a small change
 - The app talks to Postgres only through `api/_lib/db.js` (`DATABASE_URL`, `postgres` library, SSL on). Nothing uses the Supabase API or Supabase Auth. Login is Auth0.

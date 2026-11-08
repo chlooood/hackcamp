@@ -130,6 +130,14 @@ const OPS = {
       return { ok: true, added: r.n, buddies: await buddies(sql, me, day(b.today)) };
     } catch (e) { throw new Bad('seed_missing'); }
   },
+  // Global board from Tiger's weekly_deuces continuous aggregate (db/tiger.sql). On a database
+  // without it (plain Supabase), the app keeps its demo board.
+  async board(sql, me, b) {
+    try {
+      const rows = await sql`select * from global_board(${me}, ${day(b.today)}, 100)`;
+      return { ok: true, rows };
+    } catch (e) { return { ok: false, rows: [] }; }
+  },
   async deleteMe(sql, me) {
     // Cascades to entries, GP, buddies and cheers. The Auth0 login itself is removed by
     // logging out; deleting the Auth0 account needs the Management API (see DEPLOY.md).

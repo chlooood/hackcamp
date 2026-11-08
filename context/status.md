@@ -3,6 +3,7 @@
 Update this at the end of every session, whichever agent or person you are. Overwrite, do not append.
 
 ## Done
+- 2026-11-08 ~10:50 MST: DATABASE IS NOW TIGER CLOUD (Postgres 18 + TimescaleDB 2.31), live on https://plop-beryl.vercel.app (Vercel DATABASE_URL switched, redeployed, live API tested). db/tiger.sql: hypertables for entries and gp_events, compression after 90 days, weekly_deuces and daily_community continuous aggregates, global_board(). The Global top 100 screen shows the real weekly board when logged in (demo board otherwise). Handoff tests in context/tiger-switch.md all passed. Supabase left intact as fallback (its string is commented in the local .env). Auth0 callback URLs for plop-beryl.vercel.app are still NOT added, so live login stays off.
 - Repo set up with CLAUDE.md, AGENTS.md, and the context/ folder.
 - Idea: Plop, a gamified, social gut diary with Gemini photo scan (the user's call, 2026-11-07). Final. Reaffirmed after Senate run 10 and a competitor check of its alternatives: every alternative has shipped competitors too. Wave V2, Paper Trail and the run 10 ideas are shelved, not deleted. See decisions.md and research.md.
 - Architecture, cut order, hour-8 gate, honesty rules and a gut-health research section are written.

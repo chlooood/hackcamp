@@ -7,12 +7,19 @@ What is here:
 - `api/scan.js`: Gemini scan route. Scores out of 100 and writes two ideas for the day.
 - `api/auth.js`: Auth0 login (server side).
 - `api/data.js`: the only thing that reads or writes the database, always as the logged-in user.
-- `db/schema.sql` and `db/seed.sql`: the Supabase database and the fake demo data.
+- `db/schema.sql`, `db/tiger.sql` and `db/seed.sql`: the database (Tiger Cloud), its time-series setup and the fake demo data.
 - `dev-server.js`: runs all of the above on your laptop.
 
 No secret ever goes to the phone or into git. They live in `.env` on your laptop and in Vercel's environment variables.
 
-## 1. Supabase (database)
+## 1. Tiger Cloud (database)
+The live app uses Tiger Cloud (Postgres with TimescaleDB). Logs and Deuces are hypertables, old data is compressed, and the global board reads the `weekly_deuces` continuous aggregate.
+1. In console.cloud.timescale.com, create a service (free tier, AWS us-west-2) and copy its connection string.
+2. Load everything: `TIGER_URL='postgres://…' npm run db:tiger` (runs `db/schema.sql`, `db/tiger.sql`, `db/seed.sql`; needs `psql`). Re-running wipes Plop data and rebuilds the demo accounts.
+3. Use the connection string as `DATABASE_URL`.
+
+### Supabase (previous database, still works)
+The app runs on any Postgres. On Supabase, skip `db/tiger.sql`; the global board then shows demo data.
 1. In the project, open **SQL Editor > New query**, paste all of `db/schema.sql` and press **Run**. If a "destructive operation" warning pops up, confirm it. It only drops old Plop tables.
 2. New query again: paste all of `db/seed.sql` and **Run**. This adds the fake buddies Zan, Chloe and Mo and 12 fake players. Re-run it on demo day so "checked in today" is fresh.
 3. **Project Settings > Database > Connection string**: copy the **Transaction pooler** string (port 6543), put your database password in it, and use it as `DATABASE_URL`.

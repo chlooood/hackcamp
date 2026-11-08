@@ -5,9 +5,13 @@
   "description": "Plop: phone front end in public/, Vercel functions in api/",
   "scripts": {
     "dev": "node dev-server.js",
-    "test": "node test/run.js"
+    "test": "node test/run.js",
+    "db:tiger": "psql \"$TIGER_URL\" -v ON_ERROR_STOP=1 -f db/schema.sql -f db/tiger.sql -f db/seed.sql -f db/seed-crowd.sql",
+    "db:crowd": "psql \"$TIGER_URL\" -v ON_ERROR_STOP=1 -f db/seed-crowd.sql"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "postgres": "3.4.4"
   }

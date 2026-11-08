@@ -471,6 +471,7 @@
     var app = document.getElementById('app');
     app.innerHTML = SCREENS[name]();
     renderNav(name);
+    if (entering && name === 'global') cloud.loadBoard();
     if (entering) {
       window.scrollTo(0, 0);
       stagger(app.querySelector('main'));
@@ -485,7 +486,50 @@
 
   // ---------- motion helpers ----------
   function motionOK() { return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-  function buzz(ms) {
+  // ---------- sound ----------
+  // Tiny sounds made with Web Audio (no files). Off in Discreet mode or when switched off in
+  // What buddies see > Sounds. Only plays after the user has tapped something.
+  var SFX = (function () {
+    var ctx = null;
+    function enabled() {
+      var off = null; try { off = localStorage.getItem('plop-sound') === 'off'; } catch (e) {}
+      return !off && !(state && state.privacy && state.privacy.discreet);
+    }
+    function ac() {
+      if (!ctx) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+    // one note: wave, start/end pitch, length, volume, delay
+    function tone(type, f1, f2, len, vol, at) {
+      var c = ac(); if (!c) return;
+      var t = c.currentTime + (at || 0), o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(f1, t);
+      if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t + len);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + len + 0.02);
+    }
+    var SOUNDS = {
+      tap: function () { tone('sine', 520, 760, 0.07, 0.06); },
+      toggle: function () { tone('triangle', 660, 880, 0.08, 0.06); },
+      plop: function () { tone('sine', 900, 160, 0.18, 0.16); },                 // the app's namesake
+      shutter: function () { tone('square', 2400, 1200, 0.03, 0.03); tone('sine', 300, 120, 0.09, 0.08, 0.03); },
+      cheer: function () { tone('sine', 700, 1050, 0.09, 0.07); tone('sine', 1050, 1400, 0.1, 0.06, 0.08); },
+      win: function () { [523, 659, 784].forEach(function (f, i) { tone('triangle', f, f, 0.16, 0.08, i * 0.09); }); },
+      promote: function () { [523, 659, 784, 1047].forEach(function (f, i) { tone('triangle', f, f, 0.2, 0.09, i * 0.1); }); tone('sine', 1568, 2093, 0.25, 0.04, 0.42); },
+      drop: function () { tone('triangle', 440, 330, 0.18, 0.07); tone('triangle', 330, 220, 0.24, 0.07, 0.16); }
+    };
+    return function (name) {
+      try {
+        var active = !navigator.userActivation || navigator.userActivation.hasBeenActive;
+        if (active && enabled() && SOUNDS[name]) SOUNDS[name]();
+      } catch (e) {}
+    };
+  })();
+  function soundOn() { try { return localStorage.getItem('plop-sound') !== 'off'; } catch (e) { return true; } }
+  function buzz(ms, sound) {
+    SFX(sound || (typeof ms === 'number' && ms <= 10 ? 'tap' : ''));
     try {
       var active = !navigator.userActivation || navigator.userActivation.hasBeenActive;
       if (navigator.vibrate && active) navigator.vibrate(ms || 10);
@@ -919,7 +963,7 @@
     var done = document.getElementById('snap-done'), gp = document.getElementById('snap-gp');
     if (gp) gp.textContent = ranked ? '+4 Deuces' : 'Task done';
     if (done) done.classList.remove('hidden');
-    buzz([12, 40, 12]); confetti(30, 0.35);
+    buzz([12, 40, 12], 'win'); confetti(30, 0.35);
     setTimeout(function () {
       var still = document.getElementById('still'); if (still) still.removeAttribute('src');  // photo gone
       snapTask = null; go(back);
@@ -1012,33 +1056,62 @@
       }).join('') + '</div></main>';
   };
 
+  var BOARD = null; // rows from global_board() in cloud mode; null means show the demo board
+  function liveBoard() {
+    if (source !== 'cloud' || !BOARD) return null;
+    var podStyle = { 1: ['#F2B705', 112, '#FEF3C7'], 2: ['#94A3B8', 84, '#EEF2F6'], 3: ['#D97706', 66, '#FFEDD5'] };
+    var fmt = function (n) { return Number(n).toLocaleString('en-US'); };
+    var top = BOARD.filter(function (r) { return r.pos <= 100; });
+    var me = BOARD.filter(function (r) { return r.is_me; })[0] || null;
+    var players = BOARD[0].players;
+    var meIdx = me ? top.indexOf(me) : -1;
+    return {
+      pod: [top[1], top[0], top[2]].filter(Boolean).map(function (r) { var st = podStyle[Math.min(r.pos, 3)]; return { pos: r.pos, name: r.handle, gp: fmt(r.deuces), c: st[0], h: st[1], bg: st[2] }; }),
+      names: top.slice(3, 12).map(function (r) { return r.handle + (r.is_me ? ' (you)' : ''); }),
+      gps: top.slice(3, 12).map(function (r) { return r.deuces; }),
+      near: me ? (meIdx > 0 ? [top[meIdx - 1], me, top[meIdx + 1]] : [me]).filter(Boolean).map(function (r) { return ['#' + r.pos, r.handle + (r.is_me ? ' (you)' : ''), fmt(r.deuces)]; }) : null,
+      me: me, players: players,
+      pct: me ? Math.max(1, Math.round(100 * me.pos / players)) : null
+    };
+  }
+
   SCREENS.global = function () {
+    var live = liveBoard();
     var pod = [{ pos: 2, name: 'BraveBean9', gp: '2,388', c: '#94A3B8', h: 84, bg: '#EEF2F6' }, { pos: 1, name: 'CosmicFig88', gp: '2,451', c: '#F2B705', h: 112, bg: '#FEF3C7' }, { pos: 3, name: 'SunnyKiwi12', gp: '2,340', c: '#D97706', h: 66, bg: '#FFEDD5' }];
     var names = ['SwiftPlum3', 'HappyYam5', 'BoldPear71', 'CalmMango4', 'LuckyOat60', 'ZenBeet23', 'MightyLeek8', 'TinyTaro41', 'NeatBasil2'];
     var gps = [2309, 2297, 2280, 2266, 2251, 2249, 2230, 2214, 2209];
     var dots = ['#14B8A6', '#6366F1', '#F97316', '#EC4899', '#0EA5E9', '#8B5CF6', '#F59E0B', '#10B981', '#EF4444'];
     var near = [['#4,811', 'PlumpPea17', '1,486'], ['#4,812', 'QuietOtter42 (you)', '1,484'], ['#4,813', 'GentleRye30', '1,483']];
+    var place = '#4,812', who = 'QuietOtter42', topPct = 8, fillPct = 92, sub = 'Act 1 · resets Dec 1 · 61,230 players', nudge = '12 more Deuces pass about 300 people.';
+    if (live) {
+      pod = live.pod; names = live.names; gps = live.gps;
+      near = live.near || [];
+      who = state.handle || (live.me && live.me.handle) || 'you';
+      sub = 'This week · ' + live.players.toLocaleString('en-US') + ' players · live';
+      if (live.me) { place = '#' + live.me.pos; topPct = live.pct <= 50 ? live.pct : null; fillPct = Math.max(4, 100 - live.pct); nudge = live.me.pos === 1 ? 'You lead this week. Keep plopping.' : 'Every check-in this week moves you up.'; }
+      else { place = '–'; topPct = null; fillPct = 4; nudge = 'Check in this week to get a place.'; }
+    }
     return '<main class="screen with-nav" style="gap:20px">' +
       '<div class="row" style="align-items:flex-start;gap:8px"><button class="icon-btn" data-back="ranked" aria-label="Back">' + ICON.back + '</button>' +
-        '<div class="col"><h1>Global top 100</h1><span class="sub">Act 1 · resets Dec 1 · 61,230 players</span></div></div>' +
+        '<div class="col"><h1>Global top 100</h1><span class="sub">' + sub + '</span></div></div>' +
       (state.globalOn
         ? '<section style="background:var(--indigo);border-radius:24px;padding:18px;color:#FFF;display:flex;flex-direction:column;gap:10px">' +
-            '<div class="between" style="align-items:flex-start"><div class="col"><span style="font-size:14px;font-weight:800;color:#C7C4FF">You\'re placed</span><span style="font-size:48px;font-weight:900;line-height:1.05">#4,812</span><span style="font-size:15px;font-weight:800;color:#E0DEFF">as QuietOtter42 · ' + curRank() + '</span></div>' +
-            '<span class="pill" style="background:#FBBF24;color:#3C2A00;font-size:15px;padding:6px 14px">Top 8%</span></div>' +
-            '<div class="col" style="gap:6px"><div style="position:relative;height:12px;background:#6D66F0;border-radius:999px"><div data-fill="92" style="width:92%;height:100%;background:#FFF;border-radius:999px"></div><div style="position:absolute;left:92%;top:-5px;width:22px;height:22px;margin-left:-11px;border-radius:999px;background:#FBBF24;border:3px solid #4F46E5"></div></div>' +
+            '<div class="between" style="align-items:flex-start"><div class="col"><span style="font-size:14px;font-weight:800;color:#C7C4FF">You\'re placed</span><span style="font-size:48px;font-weight:900;line-height:1.05">' + place + '</span><span style="font-size:15px;font-weight:800;color:#E0DEFF">as ' + esc(who) + ' · ' + curRank() + '</span></div>' +
+            (topPct ? '<span class="pill" style="background:#FBBF24;color:#3C2A00;font-size:15px;padding:6px 14px">Top ' + topPct + '%</span>' : '') + '</div>' +
+            '<div class="col" style="gap:6px"><div style="position:relative;height:12px;background:#6D66F0;border-radius:999px"><div data-fill="' + fillPct + '" style="width:' + fillPct + '%;height:100%;background:#FFF;border-radius:999px"></div><div style="position:absolute;left:' + fillPct + '%;top:-5px;width:22px;height:22px;margin-left:-11px;border-radius:999px;background:#FBBF24;border:3px solid #4F46E5"></div></div>' +
             '<div class="between" style="font-size:11px;font-weight:800;color:#C7C4FF"><span>everyone</span><span>top 100</span></div></div>' +
-            '<span style="font-size:14px;font-weight:700;color:#E0DEFF">12 more Deuces pass about 300 people.</span></section>'
+            '<span style="font-size:14px;font-weight:700;color:#E0DEFF">' + nudge + '</span></section>'
         : '<section class="card"><h2>You\'re hidden</h2><span class="sub">Turn the switch on below to get a made-up name and a place on the board.</span></section>') +
       '<section aria-label="Top three" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end">' + pod.map(function (p) {
         return '<div class="col" style="align-items:center;gap:6px"><span style="width:34px;height:34px;border-radius:999px;background:' + p.c + ';color:#FFF;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900">' + p.pos + '</span>' +
-          '<span style="font-size:13px;font-weight:900;text-align:center;line-height:1.2">' + p.name + '</span><div style="width:100%;height:' + p.h + 'px;border-radius:16px 16px 6px 6px;background:' + p.bg + ';display:flex;justify-content:center;padding-top:10px;font-size:13px;font-weight:900">' + p.gp + '</div></div>';
+          '<span style="font-size:13px;font-weight:900;text-align:center;line-height:1.2">' + esc(p.name) + '</span><div style="width:100%;height:' + p.h + 'px;border-radius:16px 16px 6px 6px;background:' + p.bg + ';display:flex;justify-content:center;padding-top:10px;font-size:13px;font-weight:900">' + p.gp + '</div></div>';
       }).join('') + '</section>' +
       '<section class="col">' + names.map(function (n, i) {
         return '<div class="row" style="min-height:48px;border-bottom:1px solid var(--line)"><span style="width:26px;font-size:14px;font-weight:900;color:#9AA5A5">' + (i + 4) + '</span><span style="width:10px;height:10px;border-radius:999px;background:' + dots[i] + ';flex-shrink:0"></span>' +
-          '<span style="flex:1;font-size:15px;font-weight:800">' + n + '</span><span style="font-size:14px;font-weight:800;color:var(--muted)">' + gps[i].toLocaleString('en-US') + ' Deuces</span></div>';
+          '<span style="flex:1;font-size:15px;font-weight:800">' + esc(n) + '</span><span style="font-size:14px;font-weight:800;color:var(--muted)">' + gps[i].toLocaleString('en-US') + ' Deuces</span></div>';
       }).join('') + '<button data-act="showall" style="min-height:48px;background:none;border:0;font-size:14px;font-weight:800;color:var(--teal)">Show all 100</button></section>' +
-      (state.globalOn ? '<section style="background:#EEF2FF;border-radius:20px;padding:4px 16px;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:900;color:#4338CA;padding:10px 0 2px">Around you</span>' + near.map(function (r, i) {
-        return '<div class="row" style="gap:10px;min-height:46px;' + (i === 1 ? 'margin:0 -10px;padding:0 10px;border-radius:12px;background:#FFF;color:#4338CA' : '') + '"><span style="width:52px;font-size:13px;font-weight:900;color:var(--muted)">' + r[0] + '</span><span style="flex:1;font-size:15px;font-weight:800">' + r[1] + '</span><span style="font-size:14px;font-weight:800;color:var(--muted)">' + r[2] + ' Deuces</span></div>';
+      (state.globalOn && near.length ? '<section style="background:#EEF2FF;border-radius:20px;padding:4px 16px;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:900;color:#4338CA;padding:10px 0 2px">Around you</span>' + near.map(function (r, i) {
+        return '<div class="row" style="gap:10px;min-height:46px;' + (/\(you\)$/.test(r[1]) ? 'margin:0 -10px;padding:0 10px;border-radius:12px;background:#FFF;color:#4338CA' : '') + '"><span style="width:52px;font-size:13px;font-weight:900;color:var(--muted)">' + r[0] + '</span><span style="flex:1;font-size:15px;font-weight:800">' + esc(r[1]) + '</span><span style="font-size:14px;font-weight:800;color:var(--muted)">' + r[2] + ' Deuces</span></div>';
       }).join('') + '</section>' : '') +
       '<section class="between"><span class="col"><span style="font-size:15px;font-weight:900">Show me on the global board</span><span style="font-size:13px;font-weight:600;color:var(--muted)">Only your made-up name and Deuces. No photo, no real name.</span></span>' +
         '<button class="toggle indigo" data-act="global" aria-pressed="' + state.globalOn + '" aria-label="Show me on the global board"><span></span></button></section>' +
@@ -1087,6 +1160,8 @@
       '<p style="margin:0;padding:16px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:700;color:#5A5A5A;line-height:1.55">Your scores, types, blood notes and cycle stay with you. Photos are never kept, so there\'s nothing to share.</p>' +
       '<div style="height:12px"></div>' +
       tog('discreet', 'Discreet mode', 'Shows as "Daily" on your home screen') +
+      '<div class="setting"><span class="col">Sounds<span style="font-size:13px;font-weight:700;color:var(--muted)">Little pops and plops. Always off in Discreet mode</span></span>' +
+        '<button class="toggle" data-act="sound" aria-pressed="' + soundOn() + '" aria-label="Sounds"><span></span></button></div>' +
       '<button class="setting" data-act="pause">' + (state.paused ? 'Back from your break' : 'Take a break') + '</button>' +
       '<button class="setting" data-act="remove">Remove a buddy</button>' +
       '<div id="remove-list" class="hidden col" style="padding:4px 0 8px 12px">' + (buddyList().length ? '' : '<span class="sub" style="min-height:44px;display:flex;align-items:center">No buddies to remove.</span>') + buddyList().map(function (b) {
@@ -1186,15 +1261,15 @@
   };
   AFTER.checked = function (entering) {
     if (!entering) return;
-    buzz([12, 40, 12]);
+    buzz([12, 40, 12], 'plop'); setTimeout(function () { SFX('win'); }, 260);
     if (lastCheckin && lastCheckin.total > 0) setTimeout(function () { confetti(46, 0.18); }, 250);
   };
   AFTER.promoted = function (entering) {
     if (!entering) return;
-    buzz([20, 60, 20, 60, 40]);
+    buzz([20, 60, 20, 60, 40], 'promote');
     setTimeout(function () { confetti(90, 0.35); }, 450);
   };
-  AFTER.deranked = function (entering) { if (entering) buzz(60); };
+  AFTER.deranked = function (entering) { if (entering) buzz(60, 'drop'); };
   AFTER.record = function (entering) {
     var line = document.getElementById('trend');
     if (entering && line && motionOK() && line.getTotalLength) {
@@ -1585,6 +1660,14 @@
       demoJoin: async function () { var r = await api({ op: 'demoJoin', today: today() }); setBuddies(r.buddies); return r.added; },
       removeBuddy: async function (id) { var r = await api({ op: 'remove', buddy: id, today: today() }); setBuddies(r.buddies); },
       deleteMe: async function () { await api({ op: 'deleteMe' }); },
+      // This week's real board from Tiger (weekly_deuces). Re-renders Global when it arrives.
+      loadBoard: function () {
+        if (!on()) { BOARD = null; return; }
+        api({ op: 'board', today: today() }).then(function (r) {
+          BOARD = r.ok && r.rows && r.rows.length ? r.rows : null;
+          if (current() === 'global' && BOARD) render();
+        }).catch(function () {});
+      },
       inviteLink: function () { return state.inviteCode ? location.origin + location.pathname + '?invite=' + state.inviteCode : null; }
     };
   })();
@@ -1626,7 +1709,7 @@
       var who = buddyList().filter(function (b) { return String(b.id) === ds.cheer; })[0];
       var nowOn = !state.cheered[ck];
       if (!nowOn) delete state.cheered[ck];
-      else { state.cheered[ck] = true; buzz(15); floatFrom(cheerRect, ['🎉', '👏', '💩', '🙌', '✨'], { size: 24 }); toast((who ? who.name : 'They') + ' gets a cheer'); }
+      else { state.cheered[ck] = true; buzz(15, 'cheer'); floatFrom(cheerRect, ['🎉', '👏', '💩', '🙌', '✨'], { size: 24 }); toast((who ? who.name : 'They') + ' gets a cheer'); }
       if (who && !who.demo) cloud.cheer(who.id, nowOn);
       save(); render('[data-cheer="' + ds.cheer + '"]'); return;
     }
@@ -1641,7 +1724,7 @@
     }
     if (ds.cal) { recordMode = ds.cal; var y3 = window.scrollY; render(); window.scrollTo(0, y3); return; }
     if (ds.priv) {
-      state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); buzz(6);
+      state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); buzz(6, 'toggle');
       var col = { checkin: 'share_checkin', streak: 'share_streak', rank: 'share_rank', discreet: 'discreet' }[ds.priv], patch = {};
       patch[col] = state.privacy[ds.priv]; cloud.profile(patch);
       el.setAttribute('aria-pressed', String(state.privacy[ds.priv])); // slide the knob, then re-render
@@ -1694,11 +1777,15 @@
         if (navigator.share) navigator.share({ title: 'Plop', text: 'Did you plop today? Join my circle.', url: link }).catch(function () {}); else { copy(link); toast('Invite link copied'); }
         break;
       case 'global':
-        state.globalOn = !state.globalOn; cloud.profile({ global_on: state.globalOn }); save(); buzz(6);
+        state.globalOn = !state.globalOn; cloud.profile({ global_on: state.globalOn }); save(); buzz(6, 'toggle');
+        setTimeout(cloud.loadBoard, 1200);
         el.setAttribute('aria-pressed', String(state.globalOn));
         setTimeout(function () { render(); }, motionOK() ? 200 : 0);
         break;
-      case 'showall': toast('Full board comes with the real backend'); break;
+      case 'showall': toast(liveBoard() ? 'Showing the top 12 this week' : 'Full board comes with the real backend'); break;
+      case 'sound':
+        try { localStorage.setItem('plop-sound', soundOn() ? 'off' : 'on'); } catch (e) {}
+        el.setAttribute('aria-pressed', String(soundOn())); buzz(6, 'toggle'); break;
       case 'pause': state.paused = !state.paused; cloud.profile({ paused: state.paused }); save(); toast(state.paused ? 'Break on. Buddies see nothing new.' : 'Welcome back'); render(); break;
       case 'remove': document.getElementById('remove-list').classList.toggle('hidden'); break;
       case 'wipe':
@@ -1739,7 +1826,7 @@
         setSource('demo'); loginError = null; go('home'); break;
       case 'join-ranked':
         state.leagueJoined = true; state.mode = 'ranked';
-        cloud.profile({ league_joined: true, mode: 'ranked' }); save(); buzz([15, 40, 15]);
+        cloud.profile({ league_joined: true, mode: 'ranked' }); save(); buzz([15, 40, 15], 'win');
         go('ranked'); setTimeout(function () { confetti(40, 0.25); }, 300); toast("You're in. Good luck this week."); break;
       case 'stay-casual': go('ranked'); break;
     }
@@ -1764,7 +1851,7 @@
     });
   });
   function shutterFlash() {
-    buzz(20);
+    buzz(20, 'shutter');
     var vf = document.getElementById('vf');
     if (!vf || !motionOK()) return;
     var f = document.createElement('div'); f.className = 'flash'; vf.appendChild(f);
@@ -1786,7 +1873,7 @@
   function poke() {
     var p = document.getElementById('ploopy'), b = document.getElementById('bubble');
     if (!p || !b) return;
-    buzz(10);
+    buzz(10, 'plop');
     var moves = ['squish', 'wiggle', 'jump'], mv = moves[pokeIdx % moves.length];
     moves.forEach(function (c) { p.classList.remove(c); }); void p.offsetWidth; p.classList.add(mv);
     b.textContent = loggedToday() && pokeIdx % 3 === 0 ? 'Day ' + streak() + '. Nice.' : POKES[pokeIdx % POKES.length];

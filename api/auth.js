@@ -6,6 +6,7 @@
 // Env: AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_SECRET (and DATABASE_URL for "configured").
 const crypto = require('crypto');
 const S = require('./_lib/session');
+const { db } = require('./_lib/db');
 
 function cfg() {
   return {
@@ -51,6 +52,15 @@ async function loginCheck(base, fetchImpl) {
   }
   loginChecks[base] = { result, until: Date.now() + (result.ready ? 10 : 2) * 60e3 };
   return result;
+}
+
+async function recordLogin(sub, name) {
+  try {
+    const provider = String(sub).split('|')[0];
+    const sql = db();
+    try { await sql`select record_login(${sub}, ${name}, ${provider})`; }
+    catch (e) { await sql`select ensure_profile(${sub}, ${name})`; } // database without db/tiger.sql
+  } catch (e) { console.error('record login failed', e && e.code); }
 }
 
 function action(req) {
@@ -117,9 +127,13 @@ async function handler(req, res, fetchImpl = fetch) {
       (id.aud === c.clientId || (Array.isArray(id.aud) && id.aud.includes(c.clientId))) &&
       id.nonce === tx.nonce && id.exp * 1000 > Date.now() && id.sub;
     if (!okClaims) return fail('bad_token');
-    const name = id.given_name || id.nickname || id.name || '';
+    const raw = id.given_name || id.nickname || id.name || '';
+    const name = raw.includes('@') ? raw.split('@')[0] : raw;
+    // Create the account in the database (Tiger) and record this login. A database hiccup
+    // must not block logging in: the app creates the profile again on its first load.
+    await recordLogin(id.sub, name);
     return redirect(res, base + '/#home', [
-      S.sessionCookie(req, { sub: id.sub, name: name.includes('@') ? name.split('@')[0] : name, picture: id.picture }),
+      S.sessionCookie(req, { sub: id.sub, name, picture: id.picture }),
       S.clearCookie(req, S.TX_COOKIE)
     ]);
   }
