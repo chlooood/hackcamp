@@ -36,7 +36,23 @@ We used **Figma** to develop the screens, teal visual identity and Ploopy's char
 
 ## How we used Tiger Data
 
-> **[FILL IN BEFORE SUBMITTING]** Write 3 to 5 sentences with only what Riley confirms is live on the deployed app. The repo (db/tiger.sql) sets up: hypertables for entries, gp_events and logins; compression of chunks older than 90 days; a 180-day retention policy on logins; and continuous aggregates weekly_deuces, daily_community and daily_logins. The global board reads weekly_deuces. Say plainly that the data is a few demo accounts plus 240 seeded fake players, so this shows the design and not scale. Do not claim anything that has not been run.
+Every poop is a point in time, so Plop's data is a time series, and Tiger Data is built for that.
+
+- **Hypertables.** Every log and every Deuces change is stored in a hypertable split by week.
+- **Continuous aggregate.** Tiger keeps a running weekly total of Deuces for every player and keeps it up to date. That powers our global leaderboard without recalculating it on every load. Two more aggregates track daily check-ins and daily logins.
+- **Compression.** Logs older than 90 days compress automatically.
+- **Retention.** Login records delete themselves after 180 days, so we keep less about people by default.
+
+An honest note: our demo has a handful of accounts plus 240 seeded players, so it shows the design and not scale.
+
+## Privacy, in plain terms
+
+- **The photo's path:** your phone, then our server, then Gemini to be scored. It is held in memory for that one request. Our code never saves it to disk, logs it or puts it in the database.
+- **What we keep:** the structured result only (score, stool type, colour, a possible-blood flag and your tags), never the photo.
+- **Gemini's terms:** we use Gemini's paid tier, where Google's terms say inputs are not used to train its models. Google may keep them briefly for abuse monitoring.
+- **Daily-task photos** never leave your phone.
+
+> **[VERIFY BEFORE SUBMITTING, then delete this line]** Confirm the Vercel `GEMINI_API_KEY` belongs to a billed project and re-read Google's current paid-tier terms. If either fails, replace the "Gemini's terms" bullet with: "The photo is sent to Google's Gemini to be read."
 
 ## Challenges we ran into
 
@@ -75,7 +91,7 @@ Five said they had delayed seeing a doctor because it felt embarrassing. Eight w
 
 That taught us to separate **interest in tracking** from **interest in sharing**.
 
-We also learned that product copy is part of the engineering. Explaining where a photo goes, what is retained and what friends can see requires the same precision as building those boundaries.
+We also learned that product copy is part of engineering. Explaining where a photo goes, what is retained and what friends can see requires the same precision as building those boundaries.
 
 Working with Gemini taught us that structured output makes an interface more predictable, but it does not make an interpretation certain. User review and honest wording remain essential.
 
