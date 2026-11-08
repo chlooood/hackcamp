@@ -108,4 +108,3 @@ What this does and doesn't show: ten of eleven were comfortable hearing about a 
 
 Chloë Dacey · Riley So · Zan Tian 
 
-Design guardrails came from the [anti-ai-slop](https://github.com/Vinayak-Shukla-03/anti-ai-slop) skill (MIT).
