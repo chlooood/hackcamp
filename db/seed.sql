@@ -88,6 +88,27 @@ begin
   where (f.invite_code, x.invite_code) in (('demozan1','demochl1'), ('demozan1','demomoo1'), ('demochl1','demozan1'));
 end $$;
 
+-- ---------- demo_shift_to: keep the fake history lined up with the phone's "today" ----------
+-- The database and phones can disagree about the local date (time-zone rules differ, and the
+-- demo can run past midnight). The server calls this with the phone's date, and every fake
+-- log, GP event and cheer slides so Zan's latest check-in lands on that day.
+create or replace function public.demo_shift_to(p_today date) returns int
+language plpgsql as $$
+declare cur date; d int;
+begin
+  select max(e.day) into cur from public.entries e where e.user_id = 'demo|swiftplum3';  -- Zan logs every day
+  if cur is null then return 0; end if;
+  d := p_today - cur;
+  if d = 0 then return 0; end if;
+  -- two steps so a uniform shift never collides with the unique (user, day) keys mid-update
+  update public.entries set day = day + 10000 where user_id like 'demo|%';
+  update public.entries set day = day - 10000 + d, created_at = created_at + make_interval(days => d) where user_id like 'demo|%';
+  update public.gp_events set day = day + d where user_id like 'demo|%';
+  update public.cheers set day = day + 10000 where from_id like 'demo|%';
+  update public.cheers set day = day - 10000 + d where from_id like 'demo|%';
+  return d;
+end $$;
+
 -- ---------- demo_join: make a user buddies with Zan, Chloe and Mo ----------
 drop function if exists public.demo_join() cascade;
 create or replace function public.demo_join(p_user text) returns int
@@ -108,7 +129,7 @@ begin
 end $$;
 do $$ begin
   if exists (select 1 from pg_roles where rolname = 'anon') then
-    execute 'revoke all on function public.demo_join(text), public.demo_today() from public, anon, authenticated';
+    execute 'revoke all on function public.demo_join(text), public.demo_today(), public.demo_shift_to(date) from public, anon, authenticated';
   end if;
 end $$;
 

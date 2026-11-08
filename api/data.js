@@ -57,7 +57,13 @@ async function load(sql, me, user, today) {
   return { profile: p, entries, gp, buddies: await buddies(sql, me, today) };
 }
 async function buddies(sql, me, today) {
+  await alignDemo(sql, today);
   return sql`select * from buddy_activity(${me}, ${today})`;
+}
+// Slide the fake demo accounts' history to the phone's date (see demo_shift_to in db/seed.sql).
+// Harmless if the seed was never run.
+async function alignDemo(sql, today) {
+  try { await sql`select demo_shift_to(${today})`; } catch (e) { /* no demo data */ }
 }
 
 const OPS = {
