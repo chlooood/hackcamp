@@ -76,6 +76,21 @@ Some people welcomed buddy streaks. Others wanted absolutely no updates about th
 
 Moving to a time-series database changed our table design. A hypertable's unique keys have to include its time column, so the entries and Deuces tables couldn't keep a plain id as their primary key and now use id plus day. Compression also doesn't work on tables with row level security, so we dropped it on those two tables. That is safe for us because only our server connects to the database and Tiger has no public data API, but it was a trade-off we had to make deliberately.
 
+## For Best Design judges: how to read our Figma
+
+Open [our Figma file](https://www.figma.com/design/n6vlmh5saWGs1k7fOicHJ0) and go through it in this order:
+
+1. **Foundations.** Our colour system as Figma variables, with a swatch for each colour and a rule for how it is used.
+2. **App screens & flow.** All 13 screens as editable layers (Nunito, with Ploopy), laid out as three flows with arrows showing how a person moves from one screen to the next.
+3. **Our thinking.** The design brief in our repo ([design/BRIEF.md](https://github.com/chlooood/hackcamp/blob/main/design/BRIEF.md)) records who we designed for, the rules we set, and what we ruled out.
+
+What to look at in the screens:
+- **The scan flow.** A scan suggests an entry, you confirm or edit it, and there is a "can't tell, you choose" path for when the scan is unsure.
+- **The privacy screens.** "What buddies see" with switches, a discreet mode, and a real "Delete everything".
+- **Ploopy.** One mascot whose job is to make a sensitive topic feel welcoming and to cheer you on for showing up, never for a result.
+
+> **[VERIFY BEFORE SUBMITTING, then delete this line]** Open the Foundations page and check it shows the colours the app actually uses (the app is teal). If it still shows the earlier cobalt, paper and cocoa palette, update it or tell judges it is an earlier exploration. If you add a Figma page for design thinking, link it in item 3. Also check the wording above matches the real page names.
+
 ## Accomplishments that we're proud of
 - Bringing together manual logging, AI-assisted entry suggestions and a personal history in one approachable experience.
 - Creating Ploopy and a visual identity that makes a sensitive topic feel more welcoming.
