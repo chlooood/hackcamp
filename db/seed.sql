@@ -9,9 +9,9 @@
 --     you become buddies with Zan, Chloe and Mo, and Zan cheers you.
 -- Real users are never touched.
 
--- Local "today" for the hackathon (Mountain Time). Change if you demo somewhere else.
+-- Local "today" for the hackathon (Pacific Time, UBC). Change if you demo somewhere else.
 create or replace function public.demo_today() returns date
-language sql stable as $$ select (now() at time zone 'America/Edmonton')::date $$;
+language sql stable as $$ select (now() at time zone 'America/Vancouver')::date $$;
 
 -- ---------- wipe old demo accounts (cascades to every Plop row they own) ----------
 delete from public.profiles where id like 'demo|%';
@@ -64,7 +64,7 @@ begin
               (array['brown','brown','light brown','dark brown'])[1 + floor(random() * 4)::int],
               round((0.65 + random() * 0.3)::numeric, 2), case when sc >= 80 then 0 when sc >= 60 then 1 else 2 end,
               case when random() < 0.2 then array[chip_pool[1 + floor(random() * 6)::int]] else '{}' end, false,
-              ((d + coalesce((p->>9)::time, time '09:00')) at time zone 'America/Edmonton'));
+              ((d + coalesce((p->>9)::time, time '09:00')) at time zone 'America/Vancouver'));
       insert into public.gp_events (user_id, day, delta, reason)
       values (uid, d, 15 + case when sc >= 85 then 6 when sc >= 60 then 3 else 0 end, 'check-in');
     end loop;

@@ -388,7 +388,7 @@
   //   'demo'  = seeded data, this phone only
   //   'cloud' = your account: Auth0 login, saved through /api/data, cached on the phone
   // LOGIN is filled in by /api/auth/me when the app starts.
-  var LOGIN = { checked: false, configured: false, user: null };
+  var LOGIN = { checked: false, configured: false, loginReady: false, problem: null, callbackUrl: '', user: null };
   function loggedIn() { return LOGIN.configured && !!LOGIN.user; }
   var source = (function () {
     var s = null; try { s = localStorage.getItem('plop-source'); } catch (e) {}
@@ -478,7 +478,12 @@
 
   // ---------- motion helpers ----------
   function motionOK() { return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-  function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch (e) {} }
+  function buzz(ms) {
+    try {
+      var active = !navigator.userActivation || navigator.userActivation.hasBeenActive;
+      if (navigator.vibrate && active) navigator.vibrate(ms || 10);
+    } catch (e) {}
+  }
   function stagger(root) {
     if (!root || !motionOK()) return;
     Array.prototype.slice.call(root.children).forEach(function (el, i) {
@@ -1153,7 +1158,7 @@
       '<p class="sub" id="cloud-status" role="status" style="margin:0 0 6px">' + esc(cloud.statusText()) + '</p>' +
       (source === 'cloud'
         ? '<button class="demo-btn" data-act="demo-join">Add demo buddies (Zan, Chloe, Mo)</button><button class="demo-btn" data-act="reseed">Show demo data instead</button><button class="demo-btn" data-act="logout">Log out</button>'
-        : (loggedIn() ? '<button class="demo-btn" data-act="use-cloud">Back to my account</button>' : (LOGIN.configured ? '<a class="demo-btn" href="/api/auth/login" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit">Log in</a>' : '')) +
+        : (loggedIn() ? '<button class="demo-btn" data-act="use-cloud">Back to my account</button>' : (LOGIN.loginReady ? '<a class="demo-btn" href="/api/auth/login" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit">Log in</a>' : '')) +
           '<button class="demo-btn" data-act="reseed">Reset demo data</button>') +
       '<p class="sub">' + (source === 'cloud' ? 'Your log is saved to your account. Photos are never stored.' : 'Demo data lives on this phone only.') + '</p></details>';
   }
@@ -1356,6 +1361,9 @@
     function statusText() {
       if (!LOGIN.checked) return 'Checking…';
       if (!LOGIN.configured) return 'Login and database are not set up on this server, so the app uses demo data.';
+      if (!LOGIN.loginReady) return LOGIN.problem === 'callback_url'
+        ? 'Login is not switched on for this address yet. In Auth0, add ' + LOGIN.callbackUrl + ' to Allowed Callback URLs. Using demo data until then.'
+        : 'Login is not available right now. Using demo data on this phone.';
       if (!LOGIN.user) return 'Not logged in. Using demo data on this phone.';
       if (source !== 'cloud') return 'Logged in, but showing demo data.';
       return { starting: 'Connecting…', ok: 'Saved to your account' + (handle ? ' (' + handle + ')' : '') + '.', offline: 'Offline. Saved on this phone, will sync.' }[status] || status;
@@ -1445,7 +1453,9 @@
         var r = await fetch('/api/auth/me', { credentials: 'same-origin' });
         var me = r.ok ? await r.json() : { configured: false, user: null };
         LOGIN.configured = !!me.configured; LOGIN.user = me.user || null;
-      } catch (e) { LOGIN.configured = false; LOGIN.user = null; }
+        LOGIN.loginReady = !!me.configured && me.loginReady !== false;
+        LOGIN.problem = me.loginProblem || null; LOGIN.callbackUrl = me.callbackUrl || '';
+      } catch (e) { LOGIN.configured = false; LOGIN.loginReady = false; LOGIN.user = null; }
       LOGIN.checked = true;
       // Keep an invite code from the link across the login round trip.
       var code = new URLSearchParams(location.search).get('invite');
@@ -1475,7 +1485,8 @@
       setStatus('off');
       // First visit (or after logging out) on a server with login set up: show the login screen.
       var chose = null; try { chose = localStorage.getItem('plop-chose-demo'); } catch (e) {}
-      if (LOGIN.configured && (!chose || loginErr || code)) { loginError = loginErr; go('login'); }
+      // Only show the login screen when Auth0 will actually accept a login from this address.
+      if (LOGIN.loginReady && (!chose || loginErr || code)) { loginError = loginErr; go('login'); }
       else render();
     }
     // Poll buddies while the app is open (no push notifications).

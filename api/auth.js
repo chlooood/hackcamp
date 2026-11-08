@@ -28,6 +28,31 @@ function decodeJwt(token) {
   const part = String(token || '').split('.')[1];
   return JSON.parse(Buffer.from(part.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
 }
+// Ask Auth0 whether it will accept a login from this address, so the app never sends people to
+// Auth0's "Callback URL mismatch" error page. Cached for a few minutes per address.
+const loginChecks = {};
+async function loginCheck(base, fetchImpl) {
+  const hit = loginChecks[base];
+  if (hit && hit.until > Date.now()) return hit.result;
+  const c = cfg();
+  const u = new URL('https://' + c.domain + '/authorize');
+  u.search = new URLSearchParams({ response_type: 'code', client_id: c.clientId, redirect_uri: base + '/api/auth/callback', scope: 'openid', state: 'check' }).toString();
+  let result = { ready: true, problem: null };
+  try {
+    const r = await fetchImpl(u.toString(), { redirect: 'manual' });
+    if (r.status >= 400) {
+      const t = (await r.text()).toLowerCase();
+      if (t.includes('callback url mismatch')) result = { ready: false, problem: 'callback_url' };
+      else if (t.includes('unauthorized_client') || t.includes('unknown client')) result = { ready: false, problem: 'client' };
+      else result = { ready: false, problem: 'auth0_' + r.status };
+    }
+  } catch (e) {
+    result = { ready: true, problem: null }; // can't reach Auth0 from here: don't block, let the user try
+  }
+  loginChecks[base] = { result, until: Date.now() + (result.ready ? 10 : 2) * 60e3 };
+  return result;
+}
+
 function action(req) {
   const q = req.query && req.query.action;
   if (q) return String(q);
@@ -43,7 +68,12 @@ async function handler(req, res, fetchImpl = fetch) {
 
   if (a === 'me') {
     const s = configured() ? S.getSession(req) : null;
-    return res.status(200).json({ configured: configured(), user: s ? { sub: s.sub, name: s.name, picture: s.picture } : null });
+    const check = configured() && !s ? await loginCheck(base, fetchImpl) : { ready: configured(), problem: null };
+    return res.status(200).json({
+      configured: configured(), loginReady: check.ready, loginProblem: check.problem,
+      callbackUrl: base + '/api/auth/callback',
+      user: s ? { sub: s.sub, name: s.name, picture: s.picture } : null
+    });
   }
   if (!configured()) return res.status(503).json({ error: 'login_not_configured' });
 
