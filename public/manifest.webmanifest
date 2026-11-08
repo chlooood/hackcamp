@@ -1,0 +1,8 @@
+{
+  "name": "Plop",
+  "short_name": "Plop",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5efe6",
+  "theme_color": "#f5efe6"
+}

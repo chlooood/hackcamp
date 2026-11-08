@@ -12,6 +12,8 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 - Prototype scoring and leaderboard are Zan's to build. My effort-only version is in commit 72bb838 (reverted in the next commit). The spec Zan should follow is in architecture.md "Points, leagues and gentle day" (effort-only, 100 per scan photo, consistency multiplier, weekly 0 to 100 score, rank never reads scan results).
 
+- Phone demo built (not yet deployed): public/index.html (quick log, photo scan, confirm or pick, failure path, streak, scripted buddy, cached demo switch) and api/scan.js (Gemini, server-side, fixed blood wording). API logic and page flow pass local tests (mocked Gemini, jsdom). Deploy steps are in DEPLOY.md. Never run against real Gemini yet.
+
 ## In progress
 - A teammate (Zan Tian) uploaded a front-end only prototype: `prototype/plop.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
 - Prototype conflicts with logged decisions. Scoring is now settled and built in the prototype. Still open and not yet agreed with Zan: privacy copy says photos are analysed on-device (we send them to Gemini and discard); health advice cards and fixed hydration/fibre readouts (do-not-build); gender, age, conditions and medications profile fields; one log per day lock; no quick log, confirm/edit or failure path; friends rank sharing defaults on; no streak freeze, buddy invite, gentle day, habits or cycle chip.
@@ -30,6 +32,7 @@ Update this at the end of every session, whichever agent or person you are. Over
 10. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
+- Deploy to Vercel and run the 5-image Gemini spike. Verify the model name, response shape and latency with a real key (the docs could not be fetched). Gemini data-retention terms are still unchecked, and the page says the photo is sent to Google and then dropped.
 - Prize opt-in: see context/prizes.md. Best Design (needs a Figma link) and Community Impact (needs an impact statement) are open to all and were missing from rules.md. Devpost does not state an opt-in limit. Submission deadline per Devpost: Nov 8, 12:15pm MST; winners 1:00pm MST. Confirm the timezone with organizers.
 - Tell Zan the scoring change: the score-driven rating goes, effort plus a consistency multiplier replaces it. Confirm with the user that "consistency" means showing up (logging and habit streaks), not consistently healthy results.
 - Check whether "Plop" is available as a name (renamed from Gut Check on 2026-11-08; decisions.md keeps the old name in historical lines). Pitch hand-raise and stats need a teammate to re-open the research.md links.
