@@ -9,7 +9,7 @@
   :root { --teal:#0D9488; --teal-dark:#0B6E64; --ink:#1F2424; --muted:#5F6B6B; --bg:#F4F6F6; --line:#E3E8E8; --orange:#F97316; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: 'Nunito', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
-  .stage { position: relative; z-index: 1; height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4vw; padding: 4vh 6vw 13vh; }
+  .stage { position: relative; z-index: 1; height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4vw; padding: 15vh 6vw 4vh; }
   .words { display: flex; flex-direction: column; gap: 2.4vh; max-width: 54rem; }
   .words h1 { font-size: clamp(34px, 5.2vw, 88px); line-height: 1.04; font-weight: 900; margin: 0; letter-spacing: -0.01em; }
   .words p { font-size: clamp(18px, 2vw, 32px); line-height: 1.35; font-weight: 700; color: var(--muted); margin: 0; max-width: 40rem; }
@@ -19,7 +19,7 @@
   .words .big { font-size: clamp(64px, 11vw, 180px); line-height: 0.9; font-weight: 900; color: var(--teal); margin: 0; }
   .words > * { transition: opacity .35s ease, transform .35s ease; }
   .words.out > * { opacity: 0; transform: translateY(10px); }
-  .phone-wrap { position: relative; height: min(88vh, 860px); aspect-ratio: 390 / 844; }
+  .phone-wrap { position: relative; align-self: center; height: min(80vh, 820px); aspect-ratio: 390 / 844; }
   .phone { position: absolute; inset: 0; border-radius: 13% / 6%; background: #111; padding: 3.2% ; box-shadow: 0 30px 60px rgba(20,40,40,.18); }
   .screen { position: relative; width: 100%; height: 100%; border-radius: 10.5% / 4.9%; overflow: hidden; background: #fff; }
   .screen iframe { position: absolute; left: 0; top: 0; width: 390px; height: 844px; border: 0; transform-origin: 0 0; }
@@ -31,11 +31,9 @@
   .tap.on { opacity: 1; }
   /* presenter */
   /* ---------- quest world ---------- */
-  .world { position: fixed; inset: -10vh -30vw -10vh -10vw; z-index: 0; pointer-events: none; transition: transform 1.2s cubic-bezier(.5,0,.2,1); }
+  .world { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
   .world .dots { position: absolute; inset: 0; background-image: radial-gradient(#C7D3D3 1.6px, transparent 1.7px); background-size: 34px 34px; opacity: .7; }
-  .shape { position: absolute; opacity: .75; animation: drift 14s ease-in-out infinite; }
-  .shape:nth-child(odd) { animation-duration: 18s; animation-direction: reverse; }
-  @keyframes drift { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(18px,-22px) rotate(8deg); } }
+  .shape { position: absolute; opacity: .8; }
   .s-circle { width: 26vh; height: 26vh; border-radius: 50%; border: 22px solid #CCF5EF; }
   .s-square { width: 16vh; height: 16vh; border-radius: 28px; background: #E8E7FF; }
   .s-tri { width: 0; height: 0; border-left: 9vh solid transparent; border-right: 9vh solid transparent; border-bottom: 15vh solid #FFEDD5; }
@@ -44,12 +42,12 @@
   .s-ring { width: 10vh; height: 10vh; border-radius: 50%; border: 10px solid #FFD9C2; }
   .s-plus { width: 8vh; height: 8vh; background: linear-gradient(#E0DEFF,#E0DEFF) center/30% 100% no-repeat, linear-gradient(#E0DEFF,#E0DEFF) center/100% 30% no-repeat; }
   /* level wipe */
-  .wipe { position: fixed; inset: 0; z-index: 20; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(6, 1fr); pointer-events: none; }
-  .wipe i { background: var(--teal); transform: scale(0); border-radius: 22%; transition: transform .32s cubic-bezier(.5,0,.3,1.3), border-radius .32s; }
+  .wipe { position: fixed; left: 0; top: 0; bottom: 0; width: 60vw; z-index: 20; border-radius: 0 28px 28px 0; overflow: hidden; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(6, 1fr); pointer-events: none; }
+  .wipe i { background: var(--teal); transform: scale(0); border-radius: 22%; transition: transform .22s cubic-bezier(.5,0,.3,1.2), border-radius .22s; }
   .wipe i:nth-child(3n) { background: var(--teal-dark); }
   .wipe i:nth-child(7n) { background: #14A396; }
   .wipe.cover i { transform: scale(1.04); border-radius: 0; }
-  .banner { position: fixed; z-index: 21; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.6); opacity: 0; pointer-events: none; text-align: center; color: #fff; transition: transform .35s cubic-bezier(.3,1.6,.5,1), opacity .2s; display: flex; flex-direction: column; align-items: center; gap: 1vh; }
+  .banner { position: fixed; z-index: 21; left: 30vw; top: 50%; transform: translate(-50%,-50%) scale(.6); opacity: 0; pointer-events: none; text-align: center; color: #fff; transition: transform .25s cubic-bezier(.3,1.6,.5,1), opacity .15s; display: flex; flex-direction: column; align-items: center; gap: 1vh; }
   .banner.on { transform: translate(-50%,-50%) scale(1); opacity: 1; }
   .banner .ch { font-size: clamp(16px, 1.8vw, 28px); font-weight: 900; letter-spacing: .04em; color: #CCF5EF; }
   .banner .ti { font-size: clamp(44px, 6.4vw, 110px); font-weight: 900; line-height: 1; }
@@ -60,7 +58,8 @@
   @keyframes hop { 0% { opacity: 0; transform: translateX(60px) scale(.96); } 100% { opacity: 1; transform: none; } }
   .words.leave > * { transition: opacity .18s, transform .18s; opacity: 0; transform: translateX(-50px); }
   /* quest map HUD */
-  .hud { position: fixed; z-index: 5; left: 6vw; bottom: 3vh; width: min(560px, 50vw); height: 64px; }
+  .hud { position: fixed; z-index: 5; left: 6vw; top: 5vh; width: min(560px, 50vw); height: 64px; }
+  .hud .qt { position: absolute; left: calc(100% + 18px); top: 13px; font-size: 13px; font-weight: 900; color: var(--teal-dark); white-space: nowrap; }
   .hud .path { position: absolute; left: 18px; right: 18px; top: 22px; border-top: 4px dotted #B9C6C6; }
   .hud .done { position: absolute; left: 18px; top: 20px; height: 8px; border-radius: 99px; background: var(--teal); width: 0; transition: width 1s cubic-bezier(.5,0,.2,1); }
   .node { position: absolute; top: 4px; width: 40px; height: 40px; margin-left: -20px; display: grid; place-items: center; }
@@ -74,7 +73,7 @@
   .hero.hopping { animation: hopping 1s ease-in-out; }
   @keyframes hopping { 0%,100% { transform: translateY(0); } 25%,75% { transform: translateY(-14px) rotate(-6deg); } 50% { transform: translateY(0) scale(1.1,.9); } }
   /* quest complete */
-  .confetti { position: fixed; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+  .confetti { position: fixed; left: 0; top: 0; bottom: 0; width: 60vw; z-index: 4; pointer-events: none; overflow: hidden; }
   .confetti i { position: absolute; top: -40px; animation: fall linear forwards; }
   @keyframes fall { to { transform: translateY(115vh) rotate(540deg); } }
   @media (prefers-reduced-motion: reduce) { .shape, .hero.hopping, .words.enter > *, .confetti i { animation: none !important; } .world, .hud .done, .hero { transition: none; } }
@@ -85,7 +84,7 @@
   .timer { position: fixed; top: 2vh; right: 2vw; font-size: 15px; font-weight: 900; color: var(--muted); background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 4px 12px; display: none; font-variant-numeric: tabular-nums; z-index: 10; }
   .timer.on { display: block; }
   .timer.over { color: #fff; background: #C0312B; border-color: #C0312B; }
-  .help { position: fixed; top: 2vh; left: 2vw; font-size: 13px; font-weight: 800; color: var(--muted); background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; z-index: 10; display: none; line-height: 1.6; }
+  .help { position: fixed; bottom: 2vh; left: 2vw; font-size: 13px; font-weight: 800; color: var(--muted); background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; z-index: 10; display: none; line-height: 1.6; }
   .help.on { display: block; }
   .ploopy-fidget { display: flex; gap: 1vw; align-items: flex-end; }
   .ploopy-fidget button { background: none; border: 0; padding: 0; cursor: pointer; transition: transform .12s; }
@@ -110,9 +109,30 @@
   .track { position: relative; overflow: visible !important; }
   .track .fill { overflow: hidden; }
   .vbar .pl { width: 82%; margin-bottom: -10px; position: relative; z-index: 1; }
-  body.nophone .stage { grid-template-columns: minmax(0, 1fr); }
-  body.nophone .phone-wrap { display: none; }
-  body.nophone .words { max-width: 78rem; }
+  .phone-wrap { transition: opacity .3s; }
+  body.nophone.intro-done .phone-wrap { opacity: 1; transition: opacity .8s; }
+  .opener { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 3vw; }
+  .opener svg.bodyart { height: 74vh; width: auto; overflow: visible; }
+  .opener .tail { display: flex; flex-direction: column; gap: 1.6vh; opacity: 0; transform: translateY(16px); transition: opacity .5s, transform .5s cubic-bezier(.3,1.5,.5,1); }
+  .opener.done .tail { opacity: 1; transform: none; }
+  .opener .mark { font-size: clamp(72px, 11vw, 190px); font-weight: 900; color: var(--teal); line-height: .9; margin: 0; letter-spacing: -0.02em; }
+  .bodyart .food { transition: transform .15s; transform-origin: 150px 112px; }
+  .bodyart .bite { opacity: 0; } .bodyart.b1 .bite.a, .bodyart.b2 .bite.b, .bodyart.b2 .bite.a { opacity: 1; }
+  .bodyart.gone .food { transform: scale(0); transition: transform .2s; }
+  .bodyart .trail { fill: none; stroke: var(--teal); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+  .bodyart .mouth { transform-origin: 200px 124px; transition: transform .12s; }
+  .bodyart.chew .mouth { transform: scaleY(.3); }
+  .bodyart .stomach { transform-origin: 236px 288px; transition: transform .25s cubic-bezier(.3,1.6,.5,1); }
+  .bodyart.squish .stomach { transform: scale(1.12, .9); }
+  .bodyart .out { transform-origin: 200px 590px; transform: scale(0); transition: transform .5s cubic-bezier(.3,1.7,.5,1); }
+  .bodyart.born .out { transform: scale(1); }
+  .bodyart .tag { font-family: Nunito; font-weight: 900; font-size: 20px; fill: #5F6B6B; opacity: 0; transition: opacity .3s; }
+  .bodyart .tag.on { opacity: 1; }
+  body.nophone .words { gap: 1.8vh; }
+  body.nophone .words h1 { font-size: clamp(30px, 3.6vw, 60px); }
+  body.nophone .words .big { font-size: clamp(56px, 8.5vw, 150px); }
+  .words { max-height: 81vh; }
+  body.nophone .phone-wrap { opacity: .35; }
   .chart { display: flex; flex-direction: column; gap: 2.2vh; width: 100%; max-width: 64rem; margin-top: 1vh; }
   .hbar { display: grid; grid-template-columns: clamp(80px, 9vw, 150px) minmax(0, 1fr); align-items: center; gap: 1.6vw; }
   .hbar .n { font-size: clamp(36px, 4.6vw, 80px); font-weight: 900; color: var(--teal); line-height: 1; text-align: right; font-variant-numeric: tabular-nums; }
@@ -154,12 +174,11 @@
   </div>
 </div>
 <div class="world" id="world" aria-hidden="true"><div class="dots"></div>
-  <div class="shape s-circle" style="left:68%;top:6%"></div><div class="shape s-square" style="left:8%;top:64%;transform:rotate(12deg)"></div>
-  <div class="shape s-tri" style="left:44%;top:72%"></div><div class="shape s-half" style="left:86%;top:76%"></div>
-  <div class="shape s-pill" style="left:30%;top:4%"></div><div class="shape s-ring" style="left:56%;top:40%"></div>
-  <div class="shape s-plus" style="left:20%;top:30%"></div><div class="shape s-circle" style="left:104%;top:50%;width:20vh;height:20vh;border-color:#E8E7FF"></div>
-  <div class="shape s-square" style="left:120%;top:12%;background:#FFF3C4"></div><div class="shape s-tri" style="left:96%;top:20%;border-bottom-color:#D5F5F0"></div>
-  <div class="shape s-ring" style="left:118%;top:80%;border-color:#CCF5EF"></div><div class="shape s-plus" style="left:82%;top:34%"></div>
+  <div class="shape s-circle" style="left:-9vh;bottom:-9vh;top:auto"></div>
+  <div class="shape s-half" style="left:42%;bottom:-1px;top:auto"></div>
+  <div class="shape s-square" style="right:-5vh;bottom:-5vh;left:auto;top:auto;transform:rotate(14deg)"></div>
+  <div class="shape s-pill" style="left:52%;top:-3.5vh"></div>
+  <div class="shape s-tri" style="right:31vw;top:44%;left:auto;transform:rotate(-12deg)"></div>
 </div>
 <div class="hud" id="hud" aria-label="Quest progress"></div>
 <div class="wipe" id="wipe" aria-hidden="true"></div>
@@ -172,6 +191,7 @@
 <script id="app-b64" type="text/plain">__APP_B64__</script>
 <script>
 (function () {
+  try { if (window.parent !== window && window.parent.document.getElementById('app-b64')) { document.documentElement.innerHTML = ''; return; } } catch (e) {}
   var PLOOPY = __PLOOPY__;
   function pl(c, m, cls, style) { var src = (PLOOPY[c] || {})[m]; return src ? '<img class="pl ' + (cls || '') + '" alt="" src="' + src + '" style="' + (style || '') + '">' : ''; }
   // the yellow "excited" lines from the sourcebook concepts
@@ -187,7 +207,7 @@
     var b64 = document.getElementById('app-b64').textContent.trim();
     var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
     var html = new TextDecoder().decode(bytes);
-    var pre = '<script>try{localStorage.removeItem("plop-front-v2")}catch(e){}window.__PLOP_QS="?mode=cached";<\/script>';
+    var pre = '<script>try{localStorage.removeItem("plop-front-v2")}catch(e){}window.__PLOP_QS="?mode=cached";document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href^=\'#\']");if(a){e.preventDefault();location.hash=a.getAttribute("href").slice(1);}},true);<\/script>';
     html = html.replace('<head>', '<head>' + pre).replace('new URLSearchParams(location.search)', 'new URLSearchParams(window.__PLOP_QS || location.search)');
     iframe.onload = function () { appWin = iframe.contentWindow; if (route) go(route); };
     iframe.srcdoc = html;
@@ -231,6 +251,35 @@
 
   // ---------- the script (about 4 minutes) ----------
   var STEPS = [
+    { secs: 10, route: 'home', phone: false, intro: true,
+      html: '<div class="opener" id="opener">' +
+        '<svg class="bodyart" id="bodyart" viewBox="0 0 400 660" role="img" aria-label="A person eats an orange. It travels down through the stomach and gut, and comes out as Ploopy.">' +
+          // torso + head
+          '<rect x="105" y="170" width="190" height="350" rx="80" fill="#FFFFFF" stroke="#0B6E64" stroke-width="7"/>' +
+          '<rect x="178" y="140" width="44" height="40" fill="#FFFFFF" stroke="#0B6E64" stroke-width="7"/><rect x="182" y="160" width="36" height="26" fill="#FFFFFF"/>' +
+          '<circle cx="200" cy="95" r="62" fill="#D5F5F0" stroke="#0B6E64" stroke-width="7"/>' +
+          '<circle cx="180" cy="86" r="7" fill="#1F2424"/><circle cx="222" cy="86" r="7" fill="#1F2424"/>' +
+          '<ellipse class="mouth" cx="200" cy="124" rx="13" ry="9" fill="#1F2424"/>' +
+          // gut map (faint)
+          '<path d="M200 128 L200 250" fill="none" stroke="#CCF5EF" stroke-width="14" stroke-linecap="round"/>' +
+          '<path class="stomach" d="M200 250 C205 245,265 240,268 282 C271 322,228 330,212 318 C196 306,215 290,200 268 Z" fill="#FFEDD5" stroke="#F97316" stroke-width="5"/>' +
+          '<path d="M214 322 C140 322,140 362,200 362 S270 402,200 402 S130 442,200 442 S262 474,200 480 L200 528" fill="none" stroke="#E8E7FF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>' +
+          // the trail the food leaves
+          '<path class="trail" id="trail" d="M150 112 L200 124 L200 252 C222 246,262 254,258 286 C254 312,222 318,214 322 C140 322,140 362,200 362 S270 402,200 402 S130 442,200 442 S262 474,200 480 L200 560"/>' +
+          // arm + hand + orange
+          '<path d="M118 222 C78 252,82 150,140 128" fill="none" stroke="#0B6E64" stroke-width="7" stroke-linecap="round"/>' +
+          '<g class="food"><circle cx="150" cy="112" r="20" fill="#F97316"/><path d="M150 92 q8 -10 16 -4" stroke="#0D9488" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+            '<circle class="bite a" cx="168" cy="104" r="9" fill="#F4F6F6"/><circle class="bite b" cx="166" cy="120" r="9" fill="#F4F6F6"/></g>' +
+          // the travelling bite
+          '<circle id="bolus" r="11" fill="#F97316" opacity="0"><animateMotion id="travel" dur="3s" begin="indefinite" fill="freeze" calcMode="spline" keyPoints="0;1" keyTimes="0;1" keySplines=".4 0 .6 1"><mpath href="#trail"/></animateMotion></circle>' +
+          '<text class="tag" id="tag1" x="290" y="110">chomp</text><text class="tag" id="tag2" x="284" y="282">stomach</text><text class="tag" id="tag3" x="262" y="430">gut</text>' +
+          // Ploopy arrives
+          '<g class="out"><image href="' + ((PLOOPY.caramel || {}).yay || '') + '" x="128" y="520" width="144" height="117"/>' +
+            '<g stroke="#F2B705" stroke-width="7" stroke-linecap="round"><path d="M104 556h-22"/><path d="M110 532l-16-12"/><path d="M296 556h22"/><path d="M290 532l16-12"/></g></g>' +
+        '</svg>' +
+        '<div class="tail"><p class="mark">Plop.</p><h1>Everyone does it.</h1><p>Plop and its mascot Ploopy make it something you can actually talk about.</p></div>' +
+      '</div>',
+      notes: 'Let it play, about 5 seconds, say nothing over the bite. When Ploopy pops out: "Everyone does it. We built Plop so we can finally talk about it." Then next.' },
     { secs: 20, route: 'home', phone: false,
       html: '<p class="pre">More than</p><p class="big">1 in 4</p><h1>adults have a bowel disorder.</h1>' +
         '<div class="crowd" role="img" aria-label="Four Ploopys, one highlighted">' +
@@ -253,7 +302,7 @@
     { secs: 10, route: 'home',
       html: '<h1>“I plopped” should sound as normal as “I ran 5k”.</h1><p>That’s the whole mission.</p>',
       notes: 'Mission line. Hold eye contact. Then turn to the phone.' },
-    { secs: 20, route: 'home', ring: ['.chip-bar', 'streak + GP'],
+    { secs: 20, route: 'home', ring: ['.chip-bar', 'streak + Ploples'],
       html: '<h1>Meet Plop.</h1><p>A gut diary built like a game. Streaks, daily quests, and Ploopy, who gets excited when you show up.</p>',
       notes: 'Point at the streak and the three quests. This is the real app running, not a video.' },
     { secs: 25, route: 'scan', ring: ['#shutter', 'tap to scan'],
@@ -265,8 +314,8 @@
       notes: 'Scroll down on the phone to the blood row and the chips. Script: "We log, we never diagnose. The possible-blood flag only prompts a doctor visit." Then tap Check in.',
       action: async function () { if (!click('[data-act="checkin"]')) { go('home'); return; } await until('[data-act="continue"],[data-act="share"]', 4000); } },
     { secs: 15, route: null, ring: ['[data-act="continue"]', 'continue'],
-      html: '<h1>Checked in.</h1><p>GP, streak, and two small habits for tomorrow. Five seconds and you’re back to your day.</p>',
-      notes: 'Let the GP count-up play. Do not explain the formula unless asked.' },
+      html: '<h1>Checked in.</h1><p>Ploples, streak, and two small habits for tomorrow. Five seconds and you’re back to your day.</p>',
+      notes: 'Let the Ploples count-up play. Do not explain the formula unless asked.' },
     { secs: 20, route: 'ranked', ring: ['a[href="#tiers"]', 'friends ladder'],
       html: '<h1>Your friends make it a habit.</h1><p>Weekly ranks with the people you actually know, plus an opt-in global board with made-up names.</p>',
       notes: 'Scroll to the friends ladder. If asked whether a rough day costs points: answer straight, it does in this build, and the team can say whether that stays.' },
@@ -319,45 +368,53 @@
 
   // ---------- the quest ----------
   var CHAPTERS = [
-    { from: 0, title: 'The awkward silence', shape: 'circle', pl: ['caramel', 'oh'] },
-    { from: 3, title: 'Meet Ploopy', shape: 'square', pl: ['caramel', 'yay'] },
-    { from: 9, title: 'Bring receipts', shape: 'diamond', pl: ['caramel', 'focused'] },
-    { from: 11, title: 'Real talk', shape: 'hex', pl: ['blueberry', 'hehe'] },
-    { from: 13, title: 'Quest complete', shape: 'flag', pl: ['terracotta', 'proud'] }
+    { from: 0, title: 'The problem', shape: 'circle', pl: ['caramel', 'oh'] },
+    { from: 4, title: 'The app', shape: 'square', pl: ['caramel', 'yay'] },
+    { from: 10, title: 'The record', shape: 'diamond', pl: ['caramel', 'focused'] },
+    { from: 12, title: 'Real talk', shape: 'hex', pl: ['caramel', 'curious'] }
   ];
+  var GOAL = { title: 'Quest complete', pl: ['caramel', 'cheer'] };
   function chapterOf(n) { var c = 0; CHAPTERS.forEach(function (ch, k) { if (n >= ch.from) c = k; }); return c; }
   function motionOK() { return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  var LAST = STEPS.length - 1, NODES = CHAPTERS.length + 1; // 4 chapters + the goal flag
+  function nodeX(k) { return 'calc(18px + (100% - 36px) * ' + (k / (NODES - 1)) + ')'; }
   (function buildQuest() {
-    var hud = document.getElementById('hud'), html = '<div class="path"></div><div class="done" id="done"></div>';
+    var hud = document.getElementById('hud'), html = '<span class="qt">Quest: make “I plopped” normal</span><div class="path"></div><div class="done" id="done"></div>';
     CHAPTERS.forEach(function (ch, k) {
-      var x = 18 + k * (100 - 0) / (CHAPTERS.length - 1);
-      html += '<div class="node ' + ch.shape + '" id="node' + k + '" style="left:calc(18px + (100% - 36px) * ' + (k / (CHAPTERS.length - 1)) + ')"><b><span></span></b><em>' + ch.title + '</em></div>';
+      html += '<div class="node ' + ch.shape + '" id="node' + k + '" style="left:' + nodeX(k) + '"><b><span></span></b><em>' + (k + 1) + '. ' + ch.title + '</em></div>';
     });
-    html += '<div class="hero" id="hero" style="left:18px">' + pl('caramel', 'hello') + '</div>';
+    html += '<div class="node flag" id="node' + CHAPTERS.length + '" style="left:' + nodeX(CHAPTERS.length) + '"><b><span>⚑</span></b><em>Goal</em></div>';
+    html += '<div class="hero" id="hero" style="left:' + nodeX(0) + '">' + pl('caramel', 'hello') + '</div>';
     hud.innerHTML = html;
     var wipe = document.getElementById('wipe'); wipe.innerHTML = new Array(61).join('<i></i>');
-    Array.prototype.forEach.call(wipe.children, function (t, k) { var c = k % 10, r = Math.floor(k / 10); t.style.transitionDelay = ((c + r) * 22) + 'ms'; });
+    Array.prototype.forEach.call(wipe.children, function (t, k) { var c = k % 10, r = Math.floor(k / 10); t.style.transitionDelay = ((c + r) * 9) + 'ms'; });
   })();
+  // Ploopy stands on the chapter you're in. A chapter gets its check when you leave it. The last step reaches the flag.
   function updateQuest(n) {
-    var c = chapterOf(n), f = c / (CHAPTERS.length - 1);
-    CHAPTERS.forEach(function (ch, k) {
-      var node = document.getElementById('node' + k);
-      node.classList.toggle('cleared', k < c || (k === c && c === CHAPTERS.length - 1));
-      node.classList.toggle('here', k === c && c !== CHAPTERS.length - 1);
-      node.querySelector('span').textContent = (k < c || c === CHAPTERS.length - 1) ? '✓' : '';
-    });
-    var hero = document.getElementById('hero'), pos = 'calc(18px + (100% - 36px) * ' + f + ')';
+    var at = n === LAST ? CHAPTERS.length : chapterOf(n);
+    for (var k = 0; k < NODES; k++) {
+      var node = document.getElementById('node' + k), cleared = k < at || (n === LAST && k === at);
+      node.classList.toggle('cleared', cleared);
+      node.classList.toggle('here', k === at && !cleared);
+      if (k < CHAPTERS.length) node.querySelector('span').textContent = cleared ? '✓' : '';
+    }
+    var hero = document.getElementById('hero'), pos = nodeX(at);
     if (hero.style.left !== pos) { hero.style.left = pos; if (motionOK()) { hero.classList.remove('hopping'); void hero.offsetWidth; hero.classList.add('hopping'); } }
-    document.getElementById('done').style.width = 'calc((100% - 36px) * ' + f + ')';
-    document.getElementById('world').style.transform = 'translateX(' + (-n * 1.8) + 'vw)';
+    document.getElementById('done').style.width = 'calc((100% - 36px) * ' + (at / (NODES - 1)) + ')';
   }
   async function levelWipe(c) {
-    var wipe = document.getElementById('wipe'), banner = document.getElementById('banner'), ch = CHAPTERS[c];
-    banner.innerHTML = pl(ch.pl[0], ch.pl[1]) + '<span class="ch">' + (c === CHAPTERS.length - 1 ? 'You made it' : 'Chapter ' + (c + 1)) + '</span><span class="ti">' + ch.title + '</span>';
-    wipe.classList.add('cover'); await wait(520);
-    banner.classList.add('on'); await wait(850);
+    var wipe = document.getElementById('wipe'), banner = document.getElementById('banner'), ch = c < CHAPTERS.length ? CHAPTERS[c] : GOAL;
+    banner.innerHTML = pl(ch.pl[0], ch.pl[1]) + '<span class="ch">' + (c < CHAPTERS.length ? 'Chapter ' + (c + 1) + ' of ' + CHAPTERS.length : 'You made it') + '</span><span class="ti">' + ch.title + '</span>';
+    wipe.classList.add('cover'); await wait(300);
+    banner.classList.add('on'); await wait(450);
     banner.classList.remove('on');
   }
+  function sizeLeft() {
+    var r = document.getElementById('phoneWrap').getBoundingClientRect(), wv = Math.max(320, r.left - 20);
+    ['wipe', 'confetti'].forEach(function (id) { document.getElementById(id).style.width = wv + 'px'; });
+    document.getElementById('banner').style.left = (wv / 2) + 'px';
+  }
+  window.addEventListener('resize', sizeLeft); setTimeout(sizeLeft, 300);
   function levelUnwipe() { document.getElementById('wipe').classList.remove('cover'); }
   function confetti() {
     var box = document.getElementById('confetti'), cols = ['#0D9488', '#F97316', '#F2B705', '#8C93D9', '#8FA77A', '#14A396'], h = '';
@@ -378,8 +435,9 @@
     i = n;
     var s = STEPS[i];
     var w = document.getElementById('words');
-    var newCh = prev ? chapterOf(n) !== chapterOf(STEPS.indexOf(prev)) : false;
-    if (newCh && motionOK()) { await levelWipe(chapterOf(n)); }
+    var from = STEPS.indexOf(prev), stage = function (k) { return k === LAST ? CHAPTERS.length : chapterOf(k); };
+    var newCh = prev && n > from && stage(n) !== stage(from);
+    if (newCh && motionOK()) { await levelWipe(stage(n)); }
     else { w.classList.remove('enter'); w.classList.add('leave'); await wait(motionOK() ? 180 : 0); }
     w.classList.remove('leave', 'enter'); void w.offsetWidth;
     w.innerHTML = s.html; if (motionOK()) w.classList.add('enter');
@@ -391,6 +449,8 @@
     setTimeout(function () { var c = w.querySelectorAll('.chart,.vbars,.timeline'); c.forEach(function (x) { x.classList.add('go'); }); }, 120);
     if (s.route) go(s.route);
     if (s.fidget) buildFidget();
+    document.body.classList.remove('intro-done');
+    if (s.intro) playOpener();
     ringSel = null; placeRing(); if (s.phone === false) { document.getElementById('ring').classList.remove('on'); document.getElementById('tap').classList.remove('on'); }
     setTimeout(function () { if (s.ring && s.phone !== false) ringOn(s.ring[0], s.ring[1]); }, 450);
     var t = STEPS.slice(0, i).reduce(function (a, b) { return a + b.secs; }, 0);
@@ -403,6 +463,32 @@
     var el = document.getElementById('timer'), sec = started ? (Date.now() - started) / 1000 : 0;
     el.textContent = fmt(sec) + ' / 4:00'; el.classList.toggle('over', sec > 240);
   }, 500);
+
+  function playOpener() {
+    var art = document.getElementById('bodyart'), op = document.getElementById('opener');
+    if (!art) return;
+    var t = function (ms, f) { setTimeout(function () { if (document.getElementById('bodyart') === art) f(); }, motionOK() ? ms : 0); };
+    var trail = document.getElementById('trail'), len = trail.getTotalLength();
+    trail.style.strokeDasharray = len; trail.style.strokeDashoffset = len;
+    if (!motionOK()) { trail.style.strokeDashoffset = 0; art.classList.add('gone', 'born'); op.classList.add('done'); document.body.classList.add('intro-done'); return; }
+    var tag = function (id, on) { var e = document.getElementById(id); if (e) e.classList.toggle('on', on); };
+    t(300, function () { art.classList.add('b1', 'chew'); tag('tag1', true); });
+    t(450, function () { art.classList.remove('chew'); });
+    t(650, function () { art.classList.add('b2', 'chew'); });
+    t(800, function () { art.classList.remove('chew'); });
+    t(1000, function () {
+      art.classList.add('gone'); tag('tag1', false);
+      var b = document.getElementById('bolus'); b.setAttribute('opacity', '1');
+      document.getElementById('travel').beginElement();
+      trail.style.transition = 'stroke-dashoffset 3s cubic-bezier(.4,0,.6,1)'; trail.style.strokeDashoffset = 0;
+    });
+    t(1700, function () { art.classList.add('squish'); tag('tag2', true); });
+    t(2100, function () { art.classList.remove('squish'); });
+    t(2600, function () { tag('tag2', false); tag('tag3', true); });
+    t(3900, function () { tag('tag3', false); document.getElementById('bolus').setAttribute('opacity', '0'); art.classList.add('born'); });
+    t(4500, function () { op.classList.add('done'); });
+    t(5100, function () { document.body.classList.add('intro-done'); });
+  }
 
   function buildFidget() {
     var box = document.getElementById('fidget'); if (!box) return;
