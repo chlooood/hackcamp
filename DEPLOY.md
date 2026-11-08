@@ -55,5 +55,5 @@ Without `.env` the app still runs in demo mode. Without `DATABASE_URL` or the Au
 
 ## Not done yet
 - Deleting your account removes all your Plop data. The Auth0 login itself stays until someone deletes it in the Auth0 dashboard (doing it from the app needs the Auth0 Management API).
-- Rank and GP are still worked out on the phone and saved by the server, so a determined user could edit their own rank. Fine for a demo; move the maths to the server before a real launch.
+- Rank and Deuces are still worked out on the phone and saved by the server, so a determined user could edit their own rank. Fine for a demo; move the maths to the server before a real launch.
 - The global top 100 is still labelled demo data.
