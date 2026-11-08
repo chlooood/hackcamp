@@ -1,6 +1,6 @@
 # Plop design brief
 
-For Codex, Claude Code and anyone designing screens. Read `.agents/skills/anti-ai-slop/SKILL.md` first, then this. Design work goes in `design/`, not in `prototype/plop.html` (Zan owns that file).
+For Codex, Claude Code and anyone designing screens. Design work goes in `design/`, not in `prototype/plop.html` (Zan owns that file).
 
 ## The brief in one line each
 - **User:** students 18 to 25 in a friend group of about five. Not a patient, not a gamer.

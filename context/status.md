@@ -15,7 +15,7 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 - Phone demo built (not yet deployed): public/index.html (quick log, photo scan, confirm or pick, failure path, streak, scripted buddy, cached demo switch) and api/scan.js (Gemini, server-side, fixed blood wording). API logic and page flow pass local tests (mocked Gemini, jsdom). Deploy steps are in DEPLOY.md. Never run against real Gemini yet.
 
-- Anti-slop skill added for design work: Vinayak-Shukla-03/anti-ai-slop (MIT, markdown only, reviewed) in .agents/skills/ for Codex and .claude/skills/ for Claude Code. design/BRIEF.md is the design brief. CLAUDE.md and AGENTS.md point to the skill.
+- The anti-ai-slop design skill was removed on 2026-11-08 (user's call). CLAUDE.md and AGENTS.md keep the rule to render and look at UI work before calling it done. design/BRIEF.md is still the design brief, but its cobalt palette is older than the shipped teal design.
 
 ## In progress
 - 2026-11-07: db/schema.sql and db/seed.sql are now RUN on the team Supabase project (Plop tables: profiles, entries, gp_events, buddies, cheers). Zan's earlier empty tables were dropped on 2026-11-08 at the user's request; only the Plop tables remain. Seed dates use Pacific time (UBC). Login is switched off automatically until Auth0 lists the callback URL.

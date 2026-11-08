@@ -39,7 +39,7 @@ Mascot **Ploopy** cheers you on when you check in.
 ## Demo
 
 - **Interactive pitch:** open `pitch/index.html` in Chrome. It runs offline and embeds the real app in a phone frame. Press → or Space to advance, N for notes, T for the timer.
-- **Screens and flow:** [Figma file](https://www.figma.com/design/n6vlmh5saWGs1k7fOicHJ0), page "App screens & flow".
+- **Screens and flow:** [Figma file](https://www.figma.com/design/n6vlmh5saWGs1k7fOicHJ0). Read "Foundations" (colour system) first, then "App screens & flow" (13 screens in three flows).
 - **Live app:** https://plop-beryl.vercel.app (open it on a phone; the camera needs https). Add `?mode=cached` for the offline demo scan.
 
 ## How we built it
@@ -61,9 +61,14 @@ context/            decisions, research, status: our running project log
 - **Auth0** handles login. Phones never get a database key: only our server talks to the database.
 - **Tiger Data** (Tiger Cloud, Postgres with TimescaleDB) stores the structured entry, Deuces, rank, settings and buddy links. Our data is a daily time series, so `entries`, `gp_events` and `logins` are hypertables split into weekly chunks, old chunks are compressed after 90 days, and logins are dropped after 180 days. Three continuous aggregates (`weekly_deuces`, `daily_community`, `daily_logins`) keep weekly Deuces, daily check-in totals and daily logins up to date, and the global board reads `weekly_deuces`. Buddies read activity through one function that returns only "logged today", streak, rank and cheers.
 - **What Tiger does and doesn't show:** the data is tiny, a few demo accounts plus 240 seeded fake players on the board, so this shows the design and not scale. Columnstore compression can't be used with row level security, so `entries` and `gp_events` no longer have it. Only our server connects to the database, and Tiger has no public data API.
-- **Task photos** (proof you did a daily task) never leave the phone.
-- **No photo is ever stored** by Plop.
 - **Cached demo mode** (`?mode=cached`) replays known-good scans so a demo never depends on venue wifi.
+
+## Privacy, in plain terms
+
+- **The photo's path:** your phone, then our server, then Gemini to be scored. It is held in memory for that one request. Our code never saves it to disk, logs it or puts it in the database.
+- **What we keep:** the structured result only (score, stool type, colour, a possible-blood flag and your tags), never the photo.
+- **Daily-task photos** (proof you did a daily task) never leave your phone.
+- **Gemini's terms** are under "Being honest about it".
 
 ## Run it
 

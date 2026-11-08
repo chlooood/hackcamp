@@ -9,5 +9,5 @@ Rules for working in this repo:
 - When the architecture changes, update `context/architecture.md`.
 - Prefer the simplest thing that demos well. We have limited time. Cut scope before adding features.
 - Flag anything that conflicts with `context/rules.md` (judging criteria, required sponsor tech, deadlines).
-- For any UI, visual or slide work, read `.agents/skills/anti-ai-slop/SKILL.md` first (Claude Code reads the same skill from `.claude/skills/`). Render the result and look at it before calling it done.
+- For any UI, visual or slide work, render the result and look at it before calling it done.
 - At the end of every session, update `context/status.md` (done, in progress, next, blockers) and commit, so a different agent or teammate can continue without losing context.
