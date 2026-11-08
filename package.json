@@ -1,0 +1,14 @@
+{
+  "name": "plop",
+  "private": true,
+  "type": "commonjs",
+  "description": "Plop: phone front end in public/, Vercel functions in api/",
+  "scripts": {
+    "dev": "node dev-server.js",
+    "test": "node test/run.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "postgres": "3.4.4"
+  }
+}

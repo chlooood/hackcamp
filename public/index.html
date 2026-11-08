@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.webmanifest">
-<script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -72,6 +71,7 @@
   .tiles b { font-size: 22px; font-weight: 900; line-height: 1.1; }
   .tiles span { font-size: 12px; font-weight: 800; }
   .quest { display: flex; align-items: center; gap: 12px; min-height: 36px; }
+  .quest-btn { width: 100%; background: none; border: 0; padding: 4px 0; min-height: 44px; color: inherit; }
   .qbox { width: 26px; height: 26px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; font-weight: 900; color: #FFFFFF; }
 
   /* scan */
@@ -86,7 +86,13 @@
   .corner.br { bottom: 32px; right: 32px; border-left: 0; border-top: 0; border-bottom-right-radius: 14px; }
   .shutter { width: 84px; height: 84px; border-radius: 999px; border: 6px solid #FFFFFF; background: transparent; padding: 6px; align-self: center; }
   .shutter span { display: block; width: 100%; height: 100%; border-radius: 999px; background: #FFFFFF; }
-  .shutter:disabled { opacity: .5; }
+  .shutter:disabled { opacity: .45; }
+  .viewfinder img#still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .vf-msg { position: relative; z-index: 2; padding: 0 28px; line-height: 1.5; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .vf-msg button { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 2px solid #5EEAD4; background: transparent; color: #FFF; font-size: 15px; font-weight: 800; }
+  .cam-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+  .cam-side { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; min-height: 56px; background: none; border: 0; color: #FFF; font-size: 13px; font-weight: 800; }
+  .cam-side:first-child { justify-self: start; } .cam-row > :last-child, #flip { justify-self: end; }
   .reading { position: absolute; inset: 0; background: rgba(25,29,32,0.82); display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; z-index: 3; color: #FFFFFF; font-size: 18px; font-weight: 900; }
   @media (prefers-reduced-motion: no-preference) {
     .bob { animation: bob 1s ease-in-out infinite alternate; }
@@ -200,6 +206,7 @@
 <div class="app" id="app"></div>
 <nav class="main hidden" id="nav" aria-label="Main"></nav>
 <input id="file" type="file" accept="image/*" capture="environment" class="hidden" aria-hidden="true" tabindex="-1">
+<input id="upload" type="file" accept="image/*" class="hidden" aria-hidden="true" tabindex="-1">
 
 <script>
 (function () {
@@ -263,9 +270,27 @@
     'black': 'Very dark colouring.', 'unclear': "Couldn't read the colour well."
   };
   var CACHED = [
-    { usable: true, bristol: 4, colour: 'brown', confidence: 0.78, possibleBlood: false },
+    { usable: true, bristol: 4, colour: 'brown', confidence: 0.78, possibleBlood: false,
+      tips: [{ title: 'Keep your routine', detail: 'Whatever you did yesterday seems to work. Same again.', source: 'General habit' },
+             { title: 'A short walk after a meal', detail: 'Moving after eating helps digestion.', source: 'NHS: constipation' }] },
     { usable: true, bristol: 3, colour: 'light brown', confidence: 0.72, possibleBlood: false }
   ];
+  // Same fallback ideas the server uses, for the cached demo run.
+  var LOCAL_TIPS = {
+    firm: [{ title: 'Water with every meal', detail: 'A glass with each meal is an easy habit.', source: 'NHS: constipation' },
+           { title: 'Add a fruit or veg you like', detail: 'Fibre from plants helps things move.', source: 'NHS: constipation' }],
+    ideal: [{ title: 'Keep your routine', detail: 'Whatever you did yesterday seems to work. Same again.', source: 'General habit' },
+            { title: 'A short walk after a meal', detail: 'Moving after eating helps digestion.', source: 'NHS: constipation' }],
+    loose: [{ title: 'Sip fluids through the day', detail: 'Loose days use up more water than usual.', source: 'NHS: diarrhoea' },
+            { title: 'Note what you ate', detail: 'Tap a chip so your record shows it.', source: 'General habit' }]
+  };
+  function localTips(bristol) { return LOCAL_TIPS[bristol <= 2 ? 'firm' : bristol <= 4 ? 'ideal' : 'loose']; }
+  // Today's two ideas: from today's scan if there was one, otherwise the defaults.
+  function todaysTips() {
+    var t = state.todayTips && state.todayTips.day === today() ? state.todayTips.tips : null;
+    if (!t || !t.length) return TIPS;
+    return t.slice(0, 2).map(function (x, i) { return { title: x.title, source: x.source || '', icon: TIPS[i % 2].icon, bg: TIPS[i % 2].bg, ink: TIPS[i % 2].ink }; });
+  }
 
   // ---------- svg helpers ----------
   var MASCOT_BODY = 'M6 88C2 69 14 54 35 46.5C44.5 32 55.5 21 68 17.5C80 15 87 23 82 28.5C78.5 31.5 74 29 75 25C73 31 71 36 70.5 41C97 45.5 116 60 113 80C111 96 96 99 64 100C28 101 9 99 6 88Z';
@@ -351,25 +376,24 @@
       mode: 'ranked', scanMode: 'live', cacheIdx: 0, forceUnclear: false, plain: false,
       privacy: { checkin: true, streak: true, rank: true, discreet: false }, paused: false,
       globalOn: true, notes: '', mascot: '#B5764A', removed: {}, lastSlip: { day: 'Saturday', miss: 20, streak: 10, from: [3, 2], to: [3, 3] },
-      name: 'Riley'
+      name: 'Riley', leagueJoined: true
     };
   }
   function emptyState() {
     var s = seed();
     s.entries = []; s.gpLog = {}; s.tier = 0; s.div = 3; s.gp = 0; s.pendingTips = []; s.lastSlip = null; s.name = '';
-    s.globalOn = false; s.buddies = []; s.outbox = [];
+    s.globalOn = false; s.buddies = []; s.outbox = []; s.mode = 'casual'; s.leagueJoined = false;
     return s;
   }
   // Two data sources, each with its own cache so demo data never reaches the real database:
   //   'demo'  = seeded data, this phone only
-  //   'cloud' = Supabase (public/config.js), cached on the phone and synced
-  var CFG = window.PLOP_CONFIG || {};
-  var CLOUD_READY = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
+  //   'cloud' = your account: Auth0 login, saved through /api/data, cached on the phone
+  // LOGIN is filled in by /api/auth/me when the app starts.
+  var LOGIN = { checked: false, configured: false, loginReady: false, problem: null, callbackUrl: '', user: null };
+  function loggedIn() { return LOGIN.configured && !!LOGIN.user; }
   var source = (function () {
     var s = null; try { s = localStorage.getItem('plop-source'); } catch (e) {}
-    if (s === 'cloud' && CLOUD_READY) return 'cloud';
-    if (s === 'demo') return 'demo';
-    return CLOUD_READY ? 'cloud' : 'demo';
+    return s === 'cloud' ? 'cloud' : 'demo';
   })();
   function storeKey() { return source === 'cloud' ? 'plop-cloud-v1' : KEY; }
   function load() {
@@ -388,6 +412,7 @@
 
   // transient (never stored): current scan / draft entry
   var draft = null;     // { source: 'scan'|'pick'|'failed', guess, type, chips, comfort, blood }
+  var loginError = null;
   var lastCheckin = null; // { gpLines, total, promoted }
   var stream = null;
 
@@ -404,7 +429,13 @@
   function rankName(t, d) { return TIERS[t].name + ' ' + d; }
   function curRank() { return rankName(state.tier, state.div); }
   function scoreColor(s) { return s >= 85 ? '#14B8A6' : (s >= 60 ? '#FBBF24' : (s >= 40 ? '#FB923C' : '#F87171')); }
-  function scoreBonus(s) { return s >= 85 ? 6 : (s >= 60 ? 3 : (s < 40 ? -4 : 0)); }
+  // GP for a ranked photo check-in: a flat amount for showing up, plus a bonus that swings with
+  // the scan score so a great scan and a rough one land far apart (best +30, worst -5).
+  var CHECKIN_GP = 10;
+  var SCORE_GP = [[90, 20], [80, 14], [70, 8], [60, 3], [50, 0], [40, -6], [0, -15]];
+  function scoreBonus(s) { for (var i = 0; i < SCORE_GP.length; i++) if (s >= SCORE_GP[i][0]) return SCORE_GP[i][1]; return -15; }
+  function scanGp(s) { return CHECKIN_GP + scoreBonus(s); }
+  function signed(n) { return (n >= 0 ? '+' : '−') + Math.abs(n); }
   function headline(s) { return s >= 85 ? 'Great one.' : (s >= 60 ? 'Pretty good.' : (s >= 40 ? 'Off day.' : 'Rough one. Hang in there.')); }
   function sureWord(c) { return c >= 0.85 ? 'very sure' : (c >= 0.65 ? 'pretty sure' : 'not totally sure'); }
   function scoreParts(g) {
@@ -421,7 +452,7 @@
 
   // ---------- router ----------
   var NAV_SCREENS = { home: 1, ranked: 1, buddies: 1, record: 1, global: 1 };
-  var BODY_CLASS = { scan: 'dark', promoted: 'night', deranked: 'slip' };
+  var BODY_CLASS = { scan: 'dark', snap: 'dark', promoted: 'night', deranked: 'slip' };
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else render(); }
   function current() { return (location.hash || '#home').slice(1).split('?')[0]; }
   window.addEventListener('hashchange', function () { render(); });
@@ -432,7 +463,7 @@
     var name = current();
     if (!SCREENS[name]) name = 'home';
     if ((name === 'result' || name === 'checked') && !draft && !lastCheckin) name = 'home';
-    if (name !== 'scan') stopCamera();
+    if (name !== 'scan' && name !== 'snap') stopCamera();
     var entering = name !== lastScreen;
     lastScreen = name;
     document.body.className = BODY_CLASS[name] || '';
@@ -454,7 +485,12 @@
 
   // ---------- motion helpers ----------
   function motionOK() { return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-  function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch (e) {} }
+  function buzz(ms) {
+    try {
+      var active = !navigator.userActivation || navigator.userActivation.hasBeenActive;
+      if (navigator.vibrate && active) navigator.vibrate(ms || 10);
+    } catch (e) {}
+  }
   function stagger(root) {
     if (!root || !motionOK()) return;
     Array.prototype.slice.call(root.children).forEach(function (el, i) {
@@ -618,9 +654,9 @@
     var tipsDone = TIPS.filter(function (t, i) { return state.tipsDone[today() + i]; }).length;
     var cheeredToday = Object.keys(state.cheered).some(function (k) { return k.indexOf(today()) === 0; });
     var quests = [
-      { label: 'Today’s photo', done: done, gp: '+15', c: '#0D9488', soft: '#D5F5F0' },
-      { label: 'Snap 2 tips', done: tipsDone >= 2, gp: tipsDone + ' of 2', c: '#6366F1', soft: '#E8E7FF' },
-      { label: 'Cheer someone on', done: cheeredToday, gp: '+2', c: '#F97316', soft: '#FFEDD5' }
+      { label: 'Today’s photo', done: done, gp: state.mode === 'ranked' ? 'up to +30' : 'photo', c: '#0D9488', soft: '#D5F5F0', go: done ? 'record' : 'scan' },
+      { label: 'Snap 2 tasks', done: tipsDone >= 2, gp: tipsDone + ' of 2', c: '#6366F1', soft: '#E8E7FF', go: 'tasks' },
+      { label: 'Cheer someone on', done: cheeredToday, gp: '+2', c: '#F97316', soft: '#FFEDD5', go: 'buddies' }
     ];
     var n = dayNumber();
     var sub = done ? 'Done for today. Ploopy approves.' : (state.entries.length ? "Ploopy's been waiting since breakfast." : 'Day one. Ploopy is ready when you are.');
@@ -643,9 +679,55 @@
           '<div style="background:#FFEDD5;color:#9A3412"><b>' + (topType ? 'Type ' + topType : '–') + '</b><span>most often</span></div>' +
         '</div></section>' +
       '<section class="col" style="gap:10px"><h2>Today</h2>' + quests.map(function (q) {
-        return '<div class="quest"><span class="qbox" style="' + (q.done ? 'background:' + q.c : 'border:2.5px solid ' + q.c) + '">' + (q.done ? '✓' : '') + '</span>' +
-          '<span style="flex:1;font-size:15px;font-weight:800">' + q.label + '</span><span class="pill" style="background:' + q.soft + ';color:' + q.c + '">' + q.gp + '</span></div>';
+        return '<button class="quest quest-btn" data-go="' + q.go + '"><span class="qbox" style="' + (q.done ? 'background:' + q.c : 'border:2.5px solid ' + q.c) + '">' + (q.done ? '✓' : '') + '</span>' +
+          '<span style="flex:1;font-size:15px;font-weight:800;text-align:left">' + q.label + '</span><span class="pill" style="background:' + q.soft + ';color:' + q.c + '">' + q.gp + '</span></button>';
       }).join('') + '</section>' +
+    '</main>';
+  };
+
+  var LOGIN_ERRORS = {
+    access_denied: 'Login was cancelled.', expired: 'That login took too long. Try again.',
+    bad_token: "Couldn't confirm your login. Try again.", network: "Couldn't reach the login service."
+  };
+  SCREENS.login = function () {
+    var err = loginError ? (LOGIN_ERRORS[loginError] || "Login didn't work. Try again.") : '';
+    var invite = null; try { invite = localStorage.getItem('plop-invite'); } catch (e) {}
+    return '<main class="screen" style="min-height:100dvh;justify-content:center;align-items:stretch;gap:16px;text-align:center">' +
+      '<div style="align-self:center">' + mascot('hello', 150) + '</div>' +
+      '<h1 style="font-size:40px">Plop</h1>' +
+      '<p style="margin:0;font-size:17px;font-weight:700;color:#5A5A5A;line-height:1.45">' +
+        (invite ? 'A friend invited you. Log in to join their circle.' : 'Log in to keep your streak, rank and buddies on any phone.') + '</p>' +
+      (err ? '<div class="banner" role="alert" style="justify-content:center">' + esc(err) + '</div>' : '') +
+      '<a class="btn btn-teal" href="/api/auth/login" style="margin-top:8px">Log in or sign up</a>' +
+      '<button class="link" data-act="try-demo" style="font-size:16px;align-self:center;min-height:44px;text-decoration:none">Just try the demo</button>' +
+      '<p class="sub" style="margin:8px 0 0">Login by Auth0. Your photos are never stored. Buddies only see that you showed up.</p>' +
+    '</main>';
+  };
+
+  // Ranked is opt-in: the first time someone taps Ranked they see what it means.
+  SCREENS.join = function () {
+    var p = state.privacy;
+    return '<main class="screen" style="gap:16px">' +
+      '<button class="icon-btn" data-back="ranked" aria-label="Back">' + ICON.back + '</button>' +
+      '<div class="col pop" style="align-items:center;gap:6px;text-align:center">' + bigShield(120, 'Ranked emblem') +
+        '<h1 style="font-size:30px">Join ranked?</h1>' +
+        '<p style="margin:0;font-size:16px;font-weight:700;color:#5A5A5A;line-height:1.45">A weekly ladder with your buddies. You can go back to casual any time.</p></div>' +
+      '<section class="card" style="gap:10px;font-size:15px;font-weight:700;line-height:1.45">' +
+        '<div class="row" style="align-items:flex-start;gap:10px"><span class="qbox" style="background:#0D9488">1</span><span>Your scan score sets your Deuces: a great scan (90+) is worth +30, a rough one (under 40) costs 5.</span></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center;font-size:12px;font-weight:900">' +
+          SCORE_GP.map(function (t) {
+            var gp = CHECKIN_GP + t[1];
+            return '<div style="border-radius:10px;padding:6px 0;background:' + (gp >= 24 ? '#D5F5F0' : gp >= 13 ? '#FEF3C7' : gp >= 4 ? '#FFEDD5' : '#FFE4E6') + '"><div>' + signed(gp) + '</div><div style="font-size:10px;color:var(--muted)">' + (t[0] ? t[0] + '+' : '<40') + '</div></div>';
+          }).join('') + '</div>' +
+        '<div class="row" style="align-items:flex-start;gap:10px"><span class="qbox" style="background:#6366F1">2</span><span>100 Deuces moves you up a division, from Iron to Mythic.</span></div>' +
+        '<div class="row" style="align-items:flex-start;gap:10px"><span class="qbox" style="background:#F97316">3</span><span>Missing a day can cost Deuces. Two shields a week cover sick or travel days.</span></div>' +
+      '</section>' +
+      '<div class="setting"><span class="col">Show my rank to buddies<span style="font-size:13px;font-weight:700;color:var(--muted)">Only your rank, never your scores</span></span>' +
+        '<button class="toggle" data-join="rank" aria-pressed="' + !!p.rank + '" aria-label="Show my rank to buddies"><span></span></button></div>' +
+      '<div class="setting"><span class="col">Show me on the global top 100<span style="font-size:13px;font-weight:700;color:var(--muted)">Under a made-up name</span></span>' +
+        '<button class="toggle indigo" data-join="global" aria-pressed="' + !!state.globalOn + '" aria-label="Show me on the global top 100"><span></span></button></div>' +
+      '<button class="btn btn-teal" data-act="join-ranked" style="margin-top:6px">Join ranked</button>' +
+      '<button class="link" data-act="stay-casual" style="font-size:16px;align-self:center;min-height:44px;text-decoration:none">Stay casual</button>' +
     '</main>';
   };
 
@@ -655,12 +737,18 @@
       '<div class="between"><button class="icon-btn" data-go="home" aria-label="Close" style="background:#2E3437;margin-left:0">' + ICON.close('#FFF') + '</button>' +
         '<span class="pill" style="background:#2E3437;color:#FFF;font-size:14px;padding:6px 14px">' + (cached ? 'Cached demo run' : 'Live') + '</span><span style="width:44px"></span></div>' +
       '<div class="viewfinder" id="vf"><video id="video" playsinline muted autoplay class="hidden"></video>' +
+        '<img id="still" class="hidden" alt="Your photo, shown only on this phone">' +
         '<span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>' +
-        '<span id="vf-msg" style="position:relative;z-index:1">Camera preview<br>(demo: Play-Doh only)</span>' +
+        '<div id="vf-msg" class="vf-msg" role="status">' + (cached ? 'Cached demo run<br>Press the button to scan' : 'Starting camera…') + '</div>' +
         '<div class="reading hidden" id="reading"><span class="sweep"></span>' + mascot('curious', 96, 'class="bob"') + '<span>Reading it…</span><span style="font-size:13px;font-weight:700;color:#B5C0C0">Takes a few seconds.</span></div>' +
       '</div>' +
       '<p style="margin:0;text-align:center;font-size:15px;font-weight:700;color:#D0D6D6;line-height:1.45">Your photo gets scored, then deleted.<br>Nobody ever sees it. Not even us.</p>' +
-      '<button class="shutter" id="shutter" aria-label="Take the photo"><span></span></button>' +
+      '<div class="cam-row">' +
+        '<button class="cam-side" data-act="upload" aria-label="Upload a photo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-7 8"/></svg><span>Upload</span></button>' +
+        '<button class="shutter" id="shutter" aria-label="Take the photo"' + (cached ? '' : ' disabled') + '><span></span></button>' +
+        '<button class="cam-side hidden" id="flip" data-act="flip" aria-label="Switch camera"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9a8 8 0 0 1 14-3l2 2M20 15a8 8 0 0 1-14 3l-2-2"/><path d="M20 4v4h-4M4 20v-4h4"/></svg><span>Flip</span></button>' +
+        '<span class="cam-side" id="flip-spacer" aria-hidden="true"></span>' +
+      '</div>' +
       '<button class="link" data-act="skip" style="color:#FFF;font-size:16px;align-self:center;min-height:44px">Skip the photo</button>' +
     '</main></div>';
   };
@@ -668,9 +756,13 @@
 
   SCREENS.result = function () {
     var g = draft.guess;
-    var parts = scoreParts(g);
+    // The server sends the researched breakdown (shape 40, colour 30, texture 30). The cached
+    // demo run has no server, so it falls back to the same tables here.
+    var parts = g.parts && g.parts.length ? g.parts.map(function (p) { return Object.assign({ c: { shape: '#0D9488', colour: '#EA580C', texture: '#4F46E5' }[p.key] || '#0D9488' }, p); }) : scoreParts(g);
     var score = parts.reduce(function (s, p) { return s + p.got; }, 0);
     draft.score = score;
+    var tips = (g.tips && g.tips.length ? g.tips : localTips(g.bristol)).slice(0, 2);
+    draft.tips = tips;
     var bloodTitle = draft.blood ? (draft.bloodByUser ? 'You saw blood. Noted.' : 'Possible blood') : 'Blood: can’t tell';
     var bloodSub = draft.blood && !draft.bloodByUser
       ? "A photo can't confirm this. If you're worried, mention it to a doctor."
@@ -682,7 +774,8 @@
         '<div class="between" style="position:relative;align-items:flex-end"><div class="col" style="gap:2px">' +
           '<span style="font-size:72px;font-weight:900;line-height:0.9"><span data-count="' + score + '" data-dur="1100">' + score + '</span><span style="font-size:22px;font-weight:800;color:#CCF5EF">/100</span></span>' +
           '<span style="font-size:22px;font-weight:900;margin-top:4px">' + headline(score) + '</span>' +
-          '<span style="font-size:14px;font-weight:700;color:#CCF5EF">Type ' + g.bristol + ', ' + sureWord(g.confidence) + ' (' + Math.round(g.confidence * 100) + '%)</span></div>' +
+          '<span style="font-size:14px;font-weight:700;color:#CCF5EF">Type ' + g.bristol + ', ' + sureWord(g.confidence) + ' (' + Math.round(g.confidence * 100) + '%)</span>' +
+          (state.mode === 'ranked' ? '<span class="pill" style="align-self:flex-start;margin-top:8px;background:' + (scanGp(score) >= 0 ? '#FFFFFF' : '#FFE1CF') + ';color:#1B1A17">Worth ' + signed(scanGp(score)) + ' Deuces</span>' : '') + '</div>' +
           mascot(score >= 60 ? 'cheer' : 'gotthis', 116, 'style="flex-shrink:0;margin-bottom:4px"') + '</div>' +
         '<div class="col" style="position:relative;gap:6px"><div style="height:14px;background:#0B7D73;border-radius:999px;overflow:hidden"><div data-fill="' + score + '" style="height:100%;background:#FFF;border-radius:999px;width:' + score + '%"></div></div>' +
           '<div style="position:relative;height:14px;font-size:11px;font-weight:800;color:#CCF5EF"><span style="position:absolute;left:0">0</span><span style="position:absolute;left:40%;transform:translateX(-50%)">40</span><span style="position:absolute;left:60%;transform:translateX(-50%)">60</span><span style="position:absolute;left:85%;transform:translateX(-50%)">85</span><span style="position:absolute;right:0">100</span></div></div>' +
@@ -694,6 +787,16 @@
       '<div class="hr"></div>' +
       '<section class="between"><div class="col" style="gap:2px"><span style="font-size:15px;font-weight:900">' + bloodTitle + '</span><span style="font-size:13px;font-weight:600;color:var(--muted);line-height:1.4">' + bloodSub + '</span></div>' +
         '<button data-act="blood" aria-pressed="' + !!draft.blood + '" style="min-height:44px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:800;flex-shrink:0;' + (draft.blood ? 'background:#C0312B;color:#FFF;border:2px solid #C0312B' : 'background:#FFF;border:2px solid #E3E8E8') + '">' + (draft.blood ? 'Undo' : 'I saw some') + '</button></section>' +
+      '<div class="hr"></div>' +
+      '<div class="hr"></div>' +
+      '<section class="col" style="gap:10px"><h2 style="font-size:16px">Ideas for today</h2>' +
+        tips.map(function (t, i) {
+          return '<div class="row" style="align-items:flex-start;gap:12px"><span class="qbox" style="background:' + ['#0D9488', '#6366F1'][i % 2] + '">' + (i + 1) + '</span>' +
+            '<div class="col" style="gap:2px"><span style="font-size:15px;font-weight:900">' + esc(t.title) + '</span><span style="font-size:14px;font-weight:600;color:#5A5A5A;line-height:1.4">' + esc(t.detail) + '</span>' +
+            '<span style="font-size:12px;font-weight:700;color:var(--faint)">' + esc(t.source || '') + '</span></div></div>';
+        }).join('') +
+        (g.doctorNote ? '<div class="banner" style="background:#FFE1CF;color:#1B1A17;font-weight:700;font-size:14px;line-height:1.4">' + esc(g.doctorNote) + '</div>' : '') +
+        '<span style="font-size:12px;font-weight:700;color:#9AA5A5">' + esc(g.tipNote || 'General ideas, not medical advice.') + '</span></section>' +
       '<div class="hr"></div>' +
       chipsAndComfort() +
       '<p class="sub" style="margin:0">' + DISCLAIMER + '</p>' +
@@ -742,22 +845,86 @@
         '<span style="font-size:17px;font-weight:800;color:var(--muted)">Day ' + streak() + ' done. Ploopy approves.</span></div>' +
       (c.lines.length ? '<section class="col" style="gap:8px;font-size:16px;font-weight:800">' + c.lines.map(function (l) {
         return '<div class="between"><span>' + l[0] + '</span><span style="font-weight:900">' + (l[1] >= 0 ? '+' : '−') + Math.abs(l[1]) + '</span></div>';
-      }).join('') + '</section>' : '<p class="sub" style="margin:0;text-align:center;font-size:15px">No-photo days keep your streak but don\'t touch Deuces.</p>') +
+      }).join('') + '</section>' : '<p class="sub" style="margin:0;text-align:center;font-size:15px">' + (c.kind === 'pick' ? 'No-photo days keep your streak but don\'t touch Deuces.' : 'You\'re in casual mode, so no Deuces. Your streak still counts. Join ranked any time.') + '</p>') +
       '<div class="row" style="gap:10px">' + shield(TIERS[c.tierBefore[0]], 26) +
         '<div style="flex:1;height:10px;background:var(--teal);border-radius:999px;overflow:hidden"><div data-fill="' + pct + '" data-from="' + (c.fromPct || 0) + '" data-delay="500" style="height:100%;width:' + pct + '%;background:#E8BC3D;border-radius:999px"></div></div>' +
         '<span style="font-size:14px;font-weight:900;color:#0B6E64">' + (c.promoted ? rankName(c.tierAfter[0], c.tierAfter[1]) + '!' : (100 - state.gp) + ' to go') + '</span></div>' +
       '<div class="hr"></div>' +
       '<section class="col" style="gap:12px"><div class="col" style="gap:2px"><h2 style="font-size:20px">Two things for today</h2><span class="sub">Snap a pic when you\'ve done one. +4 Deuces each.</span></div>' +
-        TIPS.map(function (tip, i) {
-          var on = !!state.tipsDone[today() + i];
-          return '<div class="tip"><span class="ic" style="background:' + tip.bg + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + tip.ink + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + tip.icon + '"/></svg></span>' +
-            '<div class="col" style="flex:1"><span style="font-size:16px;font-weight:800">' + tip.title + '</span><span style="font-size:12px;font-weight:700;color:var(--muted);text-decoration:underline">' + tip.source + '</span></div>' +
-            '<button data-tip="' + i + '" aria-pressed="' + on + '">' + (on ? 'Done' : 'Snap') + '</button></div>';
-        }).join('') +
+        taskList() +
         '<span style="font-size:12px;font-weight:700;color:#9AA5A5">General ideas, not medical advice.</span></section>' +
       '<button class="btn btn-teal" data-act="continue" style="margin-top:4px">Continue</button>' +
     '</main>';
   };
+
+  // Today's two tasks with a Snap button each. Snap opens the task camera; Done can be undone.
+  function taskList() {
+    return todaysTips().map(function (tip, i) {
+      var on = !!state.tipsDone[today() + i];
+      return '<div class="tip"><span class="ic" style="background:' + tip.bg + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + tip.ink + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + tip.icon + '"/></svg></span>' +
+        '<div class="col" style="flex:1"><span style="font-size:16px;font-weight:800">' + esc(tip.title) + '</span><span style="font-size:12px;font-weight:700;color:var(--muted)">' + esc(tip.source) + '</span></div>' +
+        '<button data-tip="' + i + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Done. Tap to undo' : 'Snap a photo of this task') + '">' + (on ? 'Done' : 'Snap') + '</button></div>';
+    }).join('');
+  }
+
+  SCREENS.tasks = function () {
+    var n = TIPS.filter(function (t, i) { return state.tipsDone[today() + i]; }).length;
+    return '<main class="screen" style="gap:16px">' +
+      '<button class="icon-btn" data-back="home" aria-label="Back">' + ICON.back + '</button>' +
+      '<div class="col" style="gap:4px"><h1>Today\'s tasks</h1><span class="sub" style="font-size:15px">Done one? Snap a photo of it. ' + (state.mode === 'ranked' ? '+4 Deuces each.' : 'Counts toward your day.') + '</span></div>' +
+      '<section class="col" style="gap:12px">' + taskList() + '</section>' +
+      '<span style="font-size:13px;font-weight:700;color:var(--muted)">' + n + ' of 2 done. Task photos stay on your phone and are deleted right away.</span>' +
+      '<span style="font-size:12px;font-weight:700;color:#9AA5A5">General ideas, not medical advice.</span>' +
+    '</main>';
+  };
+
+  // Task camera: same camera as the scan, but the photo never leaves the phone.
+  var snapTask = null; // { i, back }
+  SCREENS.snap = function () {
+    if (!snapTask) return SCREENS.tasks();
+    var tip = todaysTips()[snapTask.i] || TIPS[0];
+    return '<div class="scan"><main class="screen" style="gap:18px">' +
+      '<div class="between"><button class="icon-btn" data-act="snap-cancel" aria-label="Close" style="background:#2E3437;margin-left:0">' + ICON.close('#FFF') + '</button>' +
+        '<span class="pill" style="background:#2E3437;color:#FFF;font-size:14px;padding:6px 14px">Snap a task</span><span style="width:44px"></span></div>' +
+      '<div class="col" style="align-items:center;gap:2px;text-align:center"><span style="font-size:22px;font-weight:900">' + esc(tip.title) + '</span>' +
+        '<span style="font-size:14px;font-weight:700;color:#B5C0C0">Show it done: your glass, your shoes, your plate.</span></div>' +
+      '<div class="viewfinder" id="vf" style="aspect-ratio:350/420"><video id="video" playsinline muted autoplay class="hidden"></video>' +
+        '<img id="still" class="hidden" alt="Your task photo, shown only on this phone">' +
+        '<span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>' +
+        '<div id="vf-msg" class="vf-msg" role="status">Starting camera…</div>' +
+        '<div class="reading hidden" id="snap-done">' + mascot('cheer', 110, 'class="hop"') + '<span style="font-size:26px">Nice one!</span>' +
+          '<span id="snap-gp" style="font-size:16px;color:#5EEAD4"></span></div>' +
+      '</div>' +
+      '<p style="margin:0;text-align:center;font-size:14px;font-weight:700;color:#D0D6D6;line-height:1.45">This photo stays on your phone and is deleted right away.</p>' +
+      '<div class="cam-row">' +
+        '<button class="cam-side" data-act="upload" aria-label="Upload a photo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-7 8"/></svg><span>Upload</span></button>' +
+        '<button class="shutter" id="shutter" aria-label="Take the photo" disabled><span></span></button>' +
+        '<button class="cam-side hidden" id="flip" data-act="flip" aria-label="Switch camera"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9a8 8 0 0 1 14-3l2 2M20 15a8 8 0 0 1-14 3l-2-2"/><path d="M20 4v4h-4M4 20v-4h4"/></svg><span>Flip</span></button>' +
+        '<span class="cam-side" id="flip-spacer" aria-hidden="true"></span>' +
+      '</div>' +
+    '</main></div>';
+  };
+  AFTER.snap = function () { startCamera(); };
+
+  // A task photo was taken: mark the task done, celebrate, then drop the photo.
+  function completeSnap() {
+    if (!snapTask) return;
+    var i = snapTask.i, back = snapTask.back, k = today() + i;
+    var ranked = state.mode === 'ranked';
+    if (!state.tipsDone[k]) {
+      state.tipsDone[k] = true;
+      if (ranked) { applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; cloud.gp(today(), 4, 'task photo'); cloud.rank(); }
+      save();
+    }
+    var done = document.getElementById('snap-done'), gp = document.getElementById('snap-gp');
+    if (gp) gp.textContent = ranked ? '+4 Deuces' : 'Task done';
+    if (done) done.classList.remove('hidden');
+    buzz([12, 40, 12]); confetti(30, 0.35);
+    setTimeout(function () {
+      var still = document.getElementById('still'); if (still) still.removeAttribute('src');  // photo gone
+      snapTask = null; go(back);
+    }, 1500);
+  }
 
   SCREENS.promoted = function () {
     var r = rankName(state.tier, state.div);
@@ -860,7 +1027,7 @@
             '<span class="pill" style="background:#FBBF24;color:#3C2A00;font-size:15px;padding:6px 14px">Top 8%</span></div>' +
             '<div class="col" style="gap:6px"><div style="position:relative;height:12px;background:#6D66F0;border-radius:999px"><div data-fill="92" style="width:92%;height:100%;background:#FFF;border-radius:999px"></div><div style="position:absolute;left:92%;top:-5px;width:22px;height:22px;margin-left:-11px;border-radius:999px;background:#FBBF24;border:3px solid #4F46E5"></div></div>' +
             '<div class="between" style="font-size:11px;font-weight:800;color:#C7C4FF"><span>everyone</span><span>top 100</span></div></div>' +
-            '<span style="font-size:14px;font-weight:700;color:#E0DEFF">12 more Deuces passes about 300 people.</span></section>'
+            '<span style="font-size:14px;font-weight:700;color:#E0DEFF">12 more Deuces pass about 300 people.</span></section>'
         : '<section class="card"><h2>You\'re hidden</h2><span class="sub">Turn the switch on below to get a made-up name and a place on the board.</span></section>') +
       '<section aria-label="Top three" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end">' + pod.map(function (p) {
         return '<div class="col" style="align-items:center;gap:6px"><span style="width:34px;height:34px;border-radius:999px;background:' + p.c + ';color:#FFF;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900">' + p.pos + '</span>' +
@@ -1063,41 +1230,120 @@
       }).join('') + '</div>' +
       '<button class="demo-btn" data-act="slip">Simulate a missed day</button>' +
       '<button class="demo-btn" data-act="promote-demo">Show the promotion screen</button>' +
-      '<div style="padding:8px 0 4px;font-weight:900">Database</div>' +
+      '<div style="padding:8px 0 4px;font-weight:900">Account</div>' +
+      (LOGIN.user ? '<p class="sub" style="margin:0">Logged in as ' + esc(LOGIN.user.name || 'you') + '</p>' : '') +
       '<p class="sub" id="cloud-status" role="status" style="margin:0 0 6px">' + esc(cloud.statusText()) + '</p>' +
       (source === 'cloud'
-        ? '<button class="demo-btn" data-act="reseed">Switch to demo data</button>'
-        : (CLOUD_READY ? '<button class="demo-btn" data-act="use-cloud">Use the real database</button>' : '') + '<button class="demo-btn" data-act="reseed">Reset demo data</button>') +
-      '<p class="sub">' + (source === 'cloud' ? 'Your log is saved to the database. Photos are never stored.' : 'Demo data lives on this phone only.') + '</p></details>';
+        ? '<button class="demo-btn" data-act="demo-join">Add demo buddies (Zan, Chloe, Mo)</button><button class="demo-btn" data-act="reseed">Show demo data instead</button><button class="demo-btn" data-act="logout">Log out</button>'
+        : (loggedIn() ? '<button class="demo-btn" data-act="use-cloud">Back to my account</button>' : (LOGIN.loginReady ? '<a class="demo-btn" href="/api/auth/login" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit">Log in</a>' : '')) +
+          '<button class="demo-btn" data-act="reseed">Reset demo data</button>') +
+      '<p class="sub">' + (source === 'cloud' ? 'Your log is saved to your account. Photos are never stored.' : 'Demo data lives on this phone only.') + '</p></details>';
   }
 
   // ---------- camera ----------
-  function startCamera() {
-    var video = document.getElementById('video');
-    if (state.scanMode === 'cached' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(function (s) {
-      if (current() !== 'scan') { s.getTracks().forEach(function (t) { t.stop(); }); return; }
-      stream = s; video.srcObject = s; video.classList.remove('hidden');
-      document.getElementById('vf-msg').classList.add('hidden');
-    }).catch(function () { /* no camera: shutter falls back to the file picker */ });
+  // Live preview with getUserMedia. Phones only allow it on https (or localhost), so on a plain
+  // http link we explain that and offer the phone's own camera or an upload instead.
+  var camFacing = 'environment', camReady = false;
+  function camMsg(html) {
+    var m = document.getElementById('vf-msg'); if (!m) return;
+    m.innerHTML = html; m.classList.toggle('hidden', !html);
   }
-  function stopCamera() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } }
+  function setShutter(enabled, label) {
+    var b = document.getElementById('shutter'); if (!b) return;
+    b.disabled = !enabled; if (label) b.setAttribute('aria-label', label);
+  }
+  function startCamera() {
+    camReady = false;
+    if (state.scanMode === 'cached') { setShutter(true); return; }
+    var video = document.getElementById('video');
+    if (!window.isSecureContext) {
+      camMsg('The live camera needs a secure (https) link.<br>Use your phone\'s camera or upload a photo instead.<button data-act="native-cam">Open phone camera</button>');
+      setShutter(true, 'Open the phone camera'); return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      camMsg('This browser can\'t show a live camera.<br>Upload a photo instead.');
+      setShutter(true, 'Open the phone camera'); return;
+    }
+    camMsg('Starting camera…');
+    setShutter(false);
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: camFacing }, width: { ideal: 1280 }, height: { ideal: 1280 } }, audio: false }).then(function (s) {
+      if (current() !== 'scan') { s.getTracks().forEach(function (t) { t.stop(); }); return; }
+      stopCamera();
+      stream = s; video.srcObject = s;
+      video.style.transform = camFacing === 'user' ? 'scaleX(-1)' : '';
+      var ready = function () {
+        if (!video.videoWidth) return;
+        camReady = true; video.classList.remove('hidden'); camMsg(''); setShutter(true, 'Take the photo');
+      };
+      video.onloadedmetadata = function () { video.play().catch(function () {}); ready(); };
+      video.onplaying = ready;
+      // Show a flip button when there is more than one camera.
+      navigator.mediaDevices.enumerateDevices().then(function (d) {
+        var cams = d.filter(function (x) { return x.kind === 'videoinput'; }).length;
+        var f = document.getElementById('flip'), sp = document.getElementById('flip-spacer');
+        if (f && cams > 1) { f.classList.remove('hidden'); if (sp) sp.classList.add('hidden'); }
+      }).catch(function () {});
+    }).catch(function (err) {
+      var name = err && err.name;
+      if (name === 'NotAllowedError' || name === 'SecurityError') {
+        camMsg('Camera is blocked.<br>Allow it in your browser\'s site settings, or upload a photo.<button data-act="retry-cam">Try again</button>');
+      } else if (name === 'NotFoundError' || name === 'OverconstrainedError') {
+        camMsg('No camera found.<br>Upload a photo instead.');
+      } else if (name === 'NotReadableError') {
+        camMsg('Another app is using the camera.<br>Close it and try again, or upload a photo.<button data-act="retry-cam">Try again</button>');
+      } else {
+        camMsg('Couldn\'t start the camera.<br>Upload a photo instead.<button data-act="retry-cam">Try again</button>');
+      }
+      setShutter(true, 'Open the phone camera');
+    });
+  }
+  function stopCamera() { camReady = false; if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } }
+  // Freeze the photo in the viewfinder while it is read. It stays on this phone only.
+  function showStill(dataUrl) {
+    var img = document.getElementById('still'), video = document.getElementById('video');
+    if (!img) return;
+    img.src = dataUrl; img.classList.remove('hidden');
+    if (video) video.classList.add('hidden');
+    camMsg('');
+  }
   function grabFrame() {
     var video = document.getElementById('video');
-    if (!stream || !video || !video.videoWidth) return null;
-    var s = Math.min(1, 800 / Math.max(video.videoWidth, video.videoHeight));
+    if (!stream || !camReady || !video || !video.videoWidth) return null;
+    var s = Math.min(1, 1024 / Math.max(video.videoWidth, video.videoHeight));
     var c = document.createElement('canvas'); c.width = Math.round(video.videoWidth * s); c.height = Math.round(video.videoHeight * s);
     c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
-    return c.toDataURL('image/jpeg', 0.8).split(',')[1];
+    var url = c.toDataURL('image/jpeg', 0.85);
+    showStill(url);
+    stopCamera();
+    return url.split(',')[1];
   }
   // Resize in the browser so uploads stay small. Held in memory only.
+  // createImageBitmap first; an <img> fallback covers formats like iPhone HEIC in Safari.
+  function decodeImage(file) {
+    if (window.createImageBitmap) {
+      return createImageBitmap(file).catch(function () { return decodeWithImg(file); });
+    }
+    return decodeWithImg(file);
+  }
+  function decodeWithImg(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () { res(img); setTimeout(function () { URL.revokeObjectURL(url); }, 1000); };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('decode')); };
+      img.src = url;
+    });
+  }
   async function fileToJpeg(file) {
-    var bmp = await createImageBitmap(file);
-    var s = Math.min(1, 800 / Math.max(bmp.width, bmp.height));
-    var c = document.createElement('canvas'); c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+    var bmp = await decodeImage(file);
+    var w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+    var s = Math.min(1, 1024 / Math.max(w, h));
+    var c = document.createElement('canvas'); c.width = Math.round(w * s); c.height = Math.round(h * s);
     c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
     if (bmp.close) bmp.close();
-    return c.toDataURL('image/jpeg', 0.8).split(',')[1];
+    var url = c.toDataURL('image/jpeg', 0.85);
+    showStill(url);
+    stopCamera();
+    return url.split(',')[1];
   }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -1113,7 +1359,7 @@
         var ctrl = new AbortController(); var t = setTimeout(function () { ctrl.abort(); }, 25000);
         try {
           var res = await fetch('/api/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ image: b64, mime: 'image/jpeg' }), signal: ctrl.signal });
-          if (!res.ok) throw new Error('http_' + res.status);
+          if (!res.ok) { var he = new Error('http_' + res.status); he.status = res.status; throw he; }
           r = await res.json();
         } finally { clearTimeout(t); }
       }
@@ -1121,11 +1367,22 @@
         draft = { source: 'scan', guess: r, chips: [], comfort: 0, blood: !!r.possibleBlood, bloodByUser: false };
         go('result');
       } else {
-        draft = { source: 'failed', reason: "Couldn't make that one out.", chips: [], comfort: 0, type: 0 };
+        var why = {
+          too_blurry: 'Too blurry to read. Hold still and try again.', too_dark: 'Too dark to read. Try more light.',
+          too_far: 'Too far away. Move a bit closer.', not_a_sample: "That doesn't look like a sample.",
+          low_confidence: "Not sure about that one. You pick."
+        }[r && r.reason] || "Couldn't make that one out.";
+        draft = { source: 'failed', reason: why, chips: [], comfort: 0, type: 0 };
         go('pick');
       }
     } catch (e) {
-      draft = { source: 'failed', reason: "Scan isn't available right now. Photo not kept.", chips: [], comfort: 0, type: 0 };
+      var st = e && e.status;
+      var msg = (st === 404 || st === 405 || st === 501) ? "The scan server isn't running on this link. Pick by hand for now."
+        : st === 413 ? 'That photo is too big. Try again.'
+        : st === 400 ? "Couldn't read that photo file."
+        : st ? "The scan service is busy. Pick by hand, or try again."
+        : 'No connection right now. Pick by hand. Photo not kept.';
+      draft = { source: 'failed', reason: msg, chips: [], comfort: 0, type: 0 };
       go('pick');
     }
   }
@@ -1153,7 +1410,7 @@
     state.entries.push(entry);
     var lines = [], total = 0, gpBefore = state.gp;
     if (entry.kind === 'scan' && state.mode === 'ranked') {
-      lines.push(['Photo check-in', 15]);
+      lines.push(['Photo check-in', CHECKIN_GP]);
       var b = scoreBonus(entry.score); if (b) lines.push(['Scored ' + entry.score, b]);
       state.pendingTips.forEach(function (t) { lines.push([t.label, t.gp]); });
       state.pendingTips = [];
@@ -1161,7 +1418,7 @@
     }
     var res = applyGp(total);
     state.gpLog[d] = (state.gpLog[d] || 0) + total;
-    lastCheckin = { fromPct: gpBefore, lines: lines, total: total, promoted: res.promoted, tierBefore: res.before, tierAfter: [state.tier, state.div], barPct: res.promoted ? 100 : state.gp };
+    lastCheckin = { kind: entry.kind, fromPct: gpBefore, lines: lines, total: total, promoted: res.promoted, tierBefore: res.before, tierAfter: [state.tier, state.div], barPct: res.promoted ? 100 : state.gp };
     cloud.entry(entry);
     if (total) cloud.gp(d, total, 'check-in');
     cloud.rank();
@@ -1170,62 +1427,57 @@
     go('checked');
   }
 
-  // ---------- cloud (Supabase) ----------
+  // ---------- cloud (your account) ----------
   // Every write goes to state first (so the app never waits on the network), then into an
-  // outbox that is sent in order. If the phone is offline the outbox waits and retries.
-  // Photos never come through here: only the structured entry is sent.
+  // outbox that is sent to /api/data in order. If the phone is offline the outbox waits and
+  // retries. Photos never come through here: only the structured entry is sent.
   var cloud = (function () {
-    var sb = null, status = CLOUD_READY ? 'starting' : 'off', handle = '', flushing = false, warned = false;
-    var on = function () { return source === 'cloud' && CLOUD_READY; };
-    function loadLib() {
-      if (window.supabase) return Promise.resolve();
-      return new Promise(function (res, rej) {
-        var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
-        s.onload = res; s.onerror = function () { rej(new Error('lib')); };
-        document.head.appendChild(s);
-      });
-    }
-    function must(r) { if (r && r.error) throw r.error; return r ? r.data : null; }
+    var status = 'off', handle = '', flushing = false, warned = false;
+    var on = function () { return source === 'cloud' && loggedIn(); };
     function setStatus(s) { status = s; var el = document.getElementById('cloud-status'); if (el) el.textContent = statusText(); }
     function statusText() {
-      if (!CLOUD_READY) return 'Not set up. Add your Supabase URL and key to public/config.js.';
-      if (source !== 'cloud') return 'Off. Using demo data on this phone.';
-      return { starting: 'Connecting…', ok: 'Connected as ' + (handle || 'you') + '. Saved to the database.', offline: 'Offline. Saved on this phone, will sync.' }[status] || status;
+      if (!LOGIN.checked) return 'Checking…';
+      if (!LOGIN.configured) return 'Login and database are not set up on this server, so the app uses demo data.';
+      if (!LOGIN.loginReady) return LOGIN.problem === 'callback_url'
+        ? 'Login is not switched on for this address yet. In Auth0, add ' + LOGIN.callbackUrl + ' to Allowed Callback URLs. Using demo data until then.'
+        : 'Login is not available right now. Using demo data on this phone.';
+      if (!LOGIN.user) return 'Not logged in. Using demo data on this phone.';
+      if (source !== 'cloud') return 'Logged in, but showing demo data.';
+      return { starting: 'Connecting…', ok: 'Saved to your account' + (handle ? ' (' + handle + ')' : '') + '.', offline: 'Offline. Saved on this phone, will sync.' }[status] || status;
+    }
+    async function api(body) {
+      var ctrl = new AbortController(), t = setTimeout(function () { ctrl.abort(); }, 15000);
+      try {
+        var r = await fetch('/api/data', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(body), signal: ctrl.signal });
+        var j = await r.json().catch(function () { return {}; });
+        if (r.status === 401) { LOGIN.user = null; var e1 = new Error('logged_out'); e1.status = 401; throw e1; }
+        if (!r.ok) { var e2 = new Error(j.error || ('http_' + r.status)); e2.status = r.status; throw e2; }
+        return j;
+      } finally { clearTimeout(t); }
     }
     function queue(op) {
       if (!on()) return;
       state.outbox = state.outbox || [];
-      if (op.t === 'profile') { // merge profile patches into one pending op
-        var last = state.outbox.slice(flushing ? 1 : 0).filter(function (o) { return o.t === 'profile'; })[0];
+      if (op.op === 'profile') { // merge profile patches into one pending op (never into the one in flight)
+        var last = state.outbox.slice(flushing ? 1 : 0).filter(function (o) { return o.op === 'profile'; })[0];
         if (last) { Object.assign(last.patch, op.patch); save(); flush(); return; }
       }
       state.outbox.push(op); save(); flush();
     }
-    async function send(op) {
-      if (op.t === 'entry') return must(await sb.from('entries').upsert(op.row, { onConflict: 'user_id,day' }));
-      if (op.t === 'delEntry') return must(await sb.from('entries').delete().eq('day', op.day));
-      if (op.t === 'gp') return must(await sb.from('gp_events').insert(op.row));
-      if (op.t === 'profile') { var me = (await sb.auth.getUser()).data.user; return must(await sb.from('profiles').update(op.patch).eq('id', me.id)); }
-      if (op.t === 'cheer') {
-        if (op.on) return must(await sb.from('cheers').upsert({ to_id: op.to, day: op.day }, { onConflict: 'from_id,to_id,day', ignoreDuplicates: true }));
-        return must(await sb.from('cheers').delete().eq('to_id', op.to).eq('day', op.day));
-      }
-    }
     async function flush() {
-      if (!on() || !sb || flushing) return;
+      if (!on() || flushing) return;
       flushing = true;
       try {
         while (state.outbox && state.outbox.length) {
-          await send(state.outbox[0]);
+          try { await api(state.outbox[0]); }
+          catch (e) { if (e.status === 400) { /* the server rejected this one: drop it so it can't block */ } else throw e; }
           state.outbox.shift(); save();
         }
         setStatus('ok');
       } catch (e) {
-        // A row the database rejects (bad data) is dropped so it can't block the queue forever.
-        if (e && e.code && /^(22|23|42)/.test(e.code)) { state.outbox.shift(); save(); }
         setStatus('offline');
-        if (!warned) { warned = true; toast("Couldn't reach the database. Saved on this phone."); }
+        if (e.status === 401) { toast('Please log in again'); go('login'); }
+        else if (!warned) { warned = true; toast("Couldn't reach your account. Saved on this phone."); }
       } finally { flushing = false; }
     }
     function entryRow(e) {
@@ -1242,60 +1494,81 @@
         streak: b.streak, rank: b.tier == null ? null : [b.tier, b.div], cheeredMe: b.cheered_me, iCheered: b.i_cheered
       };
     }
-    async function refreshBuddies() {
-      if (!on() || !sb) return;
-      var rows = must(await sb.rpc('buddy_activity', { p_today: today() })) || [];
-      state.buddies = rows.map(mapBuddy);
+    function setBuddies(rows) {
+      state.buddies = (rows || []).map(mapBuddy);
       state.buddies.forEach(function (b) { if (b.iCheered) state.cheered[today() + b.id] = true; });
       save();
     }
+    async function refreshBuddies() {
+      if (!on()) return;
+      setBuddies((await api({ op: 'buddies', today: today() })).buddies);
+    }
     async function pull() {
-      var p = must(await sb.rpc('ensure_profile'));
+      var d = await api({ op: 'load', today: today() }), p = d.profile;
       handle = p.handle;
-      var since = dayStr(addDays(new Date(), -60));
-      var rows = must(await sb.from('entries').select('day,kind,score,bristol,colour,confidence,comfort,chips,blood').gte('day', since).order('day'));
-      var ev = must(await sb.from('gp_events').select('day,delta').gte('day', dayStr(addDays(new Date(), -14))));
       Object.assign(state, {
-        name: p.display_name, mascot: p.mascot, tier: p.tier, div: p.div, gp: p.gp, shields: p.shields, mode: p.mode,
+        name: p.display_name, mascot: p.mascot, tier: p.tier, div: p.div, gp: p.gp, shields: p.shields, mode: p.mode, leagueJoined: p.league_joined,
         privacy: { checkin: p.share_checkin, streak: p.share_streak, rank: p.share_rank, discreet: p.discreet },
         paused: p.paused, globalOn: p.global_on, plain: p.plain_names, notes: p.notes, inviteCode: p.invite_code, handle: p.handle,
-        entries: rows.map(function (r) { return { date: r.day, kind: r.kind, score: r.score, type: r.bristol, colour: r.colour, confidence: r.confidence, comfort: r.comfort, chips: r.chips || [], blood: r.blood }; }),
-        gpLog: ev.reduce(function (m, x) { m[x.day] = (m[x.day] || 0) + x.delta; return m; }, {})
+        entries: d.entries.map(function (r) { return { date: r.day, kind: r.kind, score: r.score, type: r.bristol, colour: r.colour, confidence: r.confidence, comfort: r.comfort, chips: r.chips || [], blood: r.blood }; }),
+        gpLog: d.gp.reduce(function (m, x) { m[x.day] = x.delta; return m; }, {})
       });
-      await refreshBuddies();
-      save();
-    }
-    async function boot() {
-      if (!on()) { setStatus(status); return; }
-      try {
-        await loadLib();
-        sb = sb || window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'plop-auth' } });
-        var sess = (await sb.auth.getSession()).data.session;
-        if (!sess) must(await sb.auth.signInAnonymously());
-        await flush();           // send anything saved while offline first
-        await pull();            // then take the database as the truth
-        var code = new URLSearchParams(location.search).get('invite');
-        if (code) await acceptInvite(code);
-        setStatus('ok');
-        render();
-      } catch (e) {
-        setStatus('offline');
-        if (!warned) { warned = true; toast("Couldn't reach the database. Using what's on this phone."); }
-      }
+      setBuddies(d.buddies);
     }
     async function acceptInvite(code) {
       try {
-        var who = must(await sb.rpc('accept_invite', { p_code: code }));
-        await refreshBuddies();
-        toast('You and ' + (who || 'your friend') + ' are buddies now');
+        var r = await api({ op: 'invite', code: code, today: today() });
+        setBuddies(r.buddies);
+        toast('You and ' + (r.name || 'your friend') + ' are buddies now');
       } catch (e) {
-        toast(/own invite/.test(e.message) ? "That's your own invite link" : "That invite link didn't work");
+        toast(e.message === 'own_invite' ? "That's your own invite link" : "That invite link didn't work");
       }
-      history.replaceState(null, '', location.pathname + location.hash);
+    }
+    // Called once at start-up: who is logged in, then load their account.
+    async function boot() {
+      try {
+        var r = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        var me = r.ok ? await r.json() : { configured: false, user: null };
+        LOGIN.configured = !!me.configured; LOGIN.user = me.user || null;
+        LOGIN.loginReady = !!me.configured && me.loginReady !== false;
+        LOGIN.problem = me.loginProblem || null; LOGIN.callbackUrl = me.callbackUrl || '';
+      } catch (e) { LOGIN.configured = false; LOGIN.loginReady = false; LOGIN.user = null; }
+      LOGIN.checked = true;
+      // Keep an invite code from the link across the login round trip.
+      var code = new URLSearchParams(location.search).get('invite');
+      if (code) { try { localStorage.setItem('plop-invite', code); } catch (e) {} history.replaceState(null, '', location.pathname + location.hash); }
+      var loginErr = new URLSearchParams(location.search).get('login');
+      if (loginErr) history.replaceState(null, '', location.pathname + location.hash);
+
+      if (loggedIn()) {
+        if (source !== 'cloud') setSource('cloud');
+        if (state.owner && state.owner !== LOGIN.user.sub) { state = emptyState(); } // different person on this phone
+        state.owner = LOGIN.user.sub; save();
+        setStatus('starting');
+        try {
+          await flush();     // send anything saved while offline first
+          await pull();      // then take the server as the truth
+          var pending = null; try { pending = localStorage.getItem('plop-invite'); localStorage.removeItem('plop-invite'); } catch (e) {}
+          if (pending) await acceptInvite(pending);
+          setStatus('ok');
+        } catch (e) {
+          setStatus('offline');
+          if (!warned) { warned = true; toast("Couldn't reach your account. Using what's on this phone."); }
+        }
+        render();
+        return;
+      }
+      if (source === 'cloud') setSource('demo');
+      setStatus('off');
+      // First visit (or after logging out) on a server with login set up: show the login screen.
+      var chose = null; try { chose = localStorage.getItem('plop-chose-demo'); } catch (e) {}
+      // Only show the login screen when Auth0 will actually accept a login from this address.
+      if (LOGIN.loginReady && (!chose || loginErr || code)) { loginError = loginErr; go('login'); }
+      else render();
     }
     // Poll buddies while the app is open (no push notifications).
     setInterval(function () {
-      if (!on() || !sb || document.hidden || status !== 'ok') return;
+      if (!on() || document.hidden || status !== 'ok') return;
       var cur = current();
       if (cur !== 'buddies' && cur !== 'home' && cur !== 'ranked') return;
       refreshBuddies().then(function () { if (current() === cur && !draft) render(); }).catch(function () {});
@@ -1303,14 +1576,15 @@
     window.addEventListener('online', flush);
     return {
       on: on, boot: boot, flush: flush, statusText: statusText, refreshBuddies: refreshBuddies,
-      entry: function (e) { queue({ t: 'entry', row: entryRow(e) }); },
-      delEntry: function (day) { queue({ t: 'delEntry', day: day }); },
-      gp: function (day, delta, reason) { queue({ t: 'gp', row: { day: day, delta: delta, reason: reason } }); },
-      rank: function () { queue({ t: 'profile', patch: { tier: state.tier, div: state.div, gp: state.gp } }); },
-      profile: function (patch) { queue({ t: 'profile', patch: patch }); },
-      cheer: function (to, isOn) { queue({ t: 'cheer', to: to, day: today(), on: isOn }); },
-      removeBuddy: async function (id) { must(await sb.rpc('remove_buddy', { p_buddy: id })); await refreshBuddies(); },
-      deleteMe: async function () { must(await sb.rpc('delete_me')); await sb.auth.signOut(); },
+      entry: function (e) { queue({ op: 'entry', row: entryRow(e) }); },
+      delEntry: function (day) { queue({ op: 'delEntry', day: day }); },
+      gp: function (day, delta, reason) { queue({ op: 'gp', row: { day: day, delta: delta, reason: reason } }); },
+      rank: function () { queue({ op: 'profile', patch: { tier: state.tier, div: state.div, gp: state.gp } }); },
+      profile: function (patch) { queue({ op: 'profile', patch: patch }); },
+      cheer: function (to, isOn) { queue({ op: 'cheer', to: to, day: today(), on: isOn }); },
+      demoJoin: async function () { var r = await api({ op: 'demoJoin', today: today() }); setBuddies(r.buddies); return r.added; },
+      removeBuddy: async function (id) { var r = await api({ op: 'remove', buddy: id, today: today() }); setBuddies(r.buddies); },
+      deleteMe: async function () { await api({ op: 'deleteMe' }); },
       inviteLink: function () { return state.inviteCode ? location.origin + location.pathname + '?invite=' + state.inviteCode : null; }
     };
   })();
@@ -1337,10 +1611,15 @@
     if (ds.comfort) { draft.comfort = Number(ds.comfort); buzz(6); render('[data-comfort="' + ds.comfort + '"]'); return; }
     if (ds.type) { draft.type = Number(ds.type); buzz(6); render('[data-type="' + ds.type + '"]'); return; }
     if (ds.tip) {
-      var k = today() + ds.tip, tipRect = rectOf(el);
-      if (state.tipsDone[k]) { delete state.tipsDone[k]; applyGp(-4); state.gpLog[today()] = (state.gpLog[today()] || 0) - 4; cloud.gp(today(), -4, 'tip undone'); }
-      else { state.tipsDone[k] = true; applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; cloud.gp(today(), 4, 'tip'); buzz(12); floatFrom(tipRect, ['+4 Deuces'], { size: 18 }); }
-      cloud.rank(); save(); render('[data-tip="' + ds.tip + '"]'); return;
+      var k = today() + ds.tip;
+      if (state.tipsDone[k]) {
+        if (!confirm('Mark this task as not done?')) return;
+        delete state.tipsDone[k];
+        if (state.mode === 'ranked') { applyGp(-4); state.gpLog[today()] = (state.gpLog[today()] || 0) - 4; cloud.gp(today(), -4, 'task undone'); cloud.rank(); }
+        save(); render('[data-tip="' + ds.tip + '"]'); return;
+      }
+      snapTask = { i: Number(ds.tip), back: current() === 'checked' ? 'checked' : 'tasks' };
+      go('snap'); return;
     }
     if (ds.cheer) {
       var ck = today() + ds.cheer, cheerRect = rectOf(el);
@@ -1351,7 +1630,15 @@
       if (who && !who.demo) cloud.cheer(who.id, nowOn);
       save(); render('[data-cheer="' + ds.cheer + '"]'); return;
     }
-    if (ds.mode) { state.mode = ds.mode; cloud.profile({ mode: ds.mode }); save(); render(); return; }
+    if (ds.mode) {
+      if (ds.mode === 'ranked' && !state.leagueJoined) { go('join'); return; }
+      state.mode = ds.mode; cloud.profile({ mode: ds.mode }); save(); render(); return;
+    }
+    if (ds.join) {
+      if (ds.join === 'rank') { state.privacy.rank = !state.privacy.rank; cloud.profile({ share_rank: state.privacy.rank }); el.setAttribute('aria-pressed', String(state.privacy.rank)); }
+      else { state.globalOn = !state.globalOn; cloud.profile({ global_on: state.globalOn }); el.setAttribute('aria-pressed', String(state.globalOn)); }
+      save(); buzz(6); return;
+    }
     if (ds.cal) { recordMode = ds.cal; var y3 = window.scrollY; render(); window.scrollTo(0, y3); return; }
     if (ds.priv) {
       state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); buzz(6);
@@ -1372,6 +1659,11 @@
     if (el.id === 'shutter') { onShutter(); return; }
     switch (ds.act) {
       case 'skip': draft = { source: 'pick', chips: [], comfort: 0, type: 0 }; go('pick'); break;
+      case 'upload': document.getElementById('upload').click(); break;
+      case 'snap-cancel': var bk = snapTask ? snapTask.back : 'tasks'; snapTask = null; go(bk); break;
+      case 'native-cam': document.getElementById('file').click(); break;
+      case 'retry-cam': startCamera(); break;
+      case 'flip': camFacing = camFacing === 'environment' ? 'user' : 'environment'; stopCamera(); startCamera(); break;
       case 'cancel': draft = null; go('home'); break;
       case 'plain': state.plain = !state.plain; cloud.profile({ plain_names: state.plain }); save(); render(); break;
       case 'savename':
@@ -1383,6 +1675,7 @@
       case 'blood': draft.blood = !draft.blood; draft.bloodByUser = draft.blood; buzz(10); render('[data-act="blood"]'); break;
       case 'poke': poke(); break;
       case 'checkin':
+        state.todayTips = { day: today(), tips: draft.tips || [] };
         commit({ date: today(), kind: 'scan', score: draft.score, type: draft.guess.bristol, colour: draft.guess.colour, confidence: draft.guess.confidence, comfort: draft.comfort, chips: draft.chips.slice(), blood: !!draft.blood });
         break;
       case 'logpick':
@@ -1418,8 +1711,10 @@
           toast('Everything deleted'); go('home');
         };
         if (cloud.on()) {
-          cloud.deleteMe().then(function () { wipeLocal(); cloud.boot(); })
-            .catch(function () { toast("Couldn't reach the database, so nothing was deleted. Try again with signal."); });
+          cloud.deleteMe().then(function () {
+            try { localStorage.removeItem(storeKey()); localStorage.setItem('plop-source', 'demo'); } catch (e) {}
+            location.href = '/api/auth/logout';   // also ends the Auth0 session
+          }).catch(function () { toast("Couldn't reach your account, so nothing was deleted. Try again with signal."); });
         } else wipeLocal();
         break;
       case 'widget': toast('Use your browser\'s Share menu, then Add to Home Screen'); break;
@@ -1430,8 +1725,23 @@
         if (source === 'cloud') { setSource('demo'); }
         else { state = seed(); }
         save(); toast('Demo data on this phone'); render(); break;
+      case 'demo-join':
+        cloud.demoJoin().then(function (n) { toast(n ? 'Zan, Chloe and Mo are your buddies now' : 'They are already your buddies'); render(); })
+          .catch(function (e) { toast(e.message === 'seed_missing' ? 'Run db/seed.sql in Supabase first' : "Couldn't reach your account"); });
+        break;
       case 'use-cloud':
-        setSource('cloud'); render(); toast('Connecting to the database…'); cloud.boot(); break;
+        setSource('cloud'); render(); cloud.boot(); break;
+      case 'logout':
+        try { localStorage.setItem('plop-source', 'demo'); localStorage.setItem('plop-chose-demo', ''); } catch (e) {}
+        location.href = '/api/auth/logout'; break;
+      case 'try-demo':
+        try { localStorage.setItem('plop-chose-demo', '1'); } catch (e) {}
+        setSource('demo'); loginError = null; go('home'); break;
+      case 'join-ranked':
+        state.leagueJoined = true; state.mode = 'ranked';
+        cloud.profile({ league_joined: true, mode: 'ranked' }); save(); buzz([15, 40, 15]);
+        go('ranked'); setTimeout(function () { confetti(40, 0.25); }, 300); toast("You're in. Good luck this week."); break;
+      case 'stay-casual': go('ranked'); break;
     }
   });
   document.addEventListener('change', function (ev) {
@@ -1439,10 +1749,19 @@
     if (t.name === 'scanmode') { state.scanMode = t.value; save(); }
     if (t.id === 'force-unclear') { state.forceUnclear = t.checked; save(); }
   });
-  document.getElementById('file').addEventListener('change', async function (e) {
-    var f = e.target.files && e.target.files[0]; e.target.value = '';
-    if (!f) return;
-    try { runScan(await fileToJpeg(f)); } catch (err) { draft = { source: 'failed', reason: "Couldn't open that photo.", chips: [], comfort: 0, type: 0 }; go('pick'); }
+  // Both the phone-camera input and the gallery upload end up here.
+  ['file', 'upload'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', async function (e) {
+      var f = e.target.files && e.target.files[0]; e.target.value = '';
+      if (!f) return;
+      if (current() === 'snap') {
+        try { await fileToJpeg(f); shutterFlash(); completeSnap(); } catch (err) { toast("Couldn't open that photo. Try a JPG or PNG."); }
+        return;
+      }
+      if (current() !== 'scan') go('scan');
+      try { var b64 = await fileToJpeg(f); shutterFlash(); runScan(b64); }
+      catch (err) { draft = { source: 'failed', reason: "Couldn't open that photo. Try a JPG or PNG.", chips: [], comfort: 0, type: 0 }; go('pick'); }
+    });
   });
   function shutterFlash() {
     buzz(20);
@@ -1452,9 +1771,14 @@
     setTimeout(function () { f.remove(); }, 400);
   }
   function onShutter() {
+    if (current() === 'snap') {
+      if (grabFrame()) { shutterFlash(); completeSnap(); return; }
+      document.getElementById('file').click(); return;
+    }
     if (state.scanMode === 'cached' || state.forceUnclear) { shutterFlash(); runScan(null); return; }
     var b64 = grabFrame();
     if (b64) { shutterFlash(); runScan(b64); return; }
+    // No live camera (blocked, http link, none found): use the phone's own camera app instead.
     document.getElementById('file').click();
   }
   var POKES = ['Hey, that tickles.', 'Everybody plops.', 'No judgement here.', 'Ready when you are.', 'Psst. Zan checked in.', 'Photo time?', 'Still here. Still round.'];

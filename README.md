@@ -46,15 +46,19 @@ Mascot **Ploopy** cheers you on when you check in.
 
 ```
 public/index.html   the phone app: plain HTML, CSS and JS, hash routing, no framework
-api/scan.js         Vercel serverless function that calls Gemini (server-side key)
-db/schema.sql       Supabase Postgres: tables, row level security, buddy functions
-public/config.js    Supabase URL and anon key (empty = demo data only)
+api/scan.js         Gemini scan: score out of 100 and two ideas for the day (server-side key)
+api/auth.js         Auth0 login on the server (code flow with PKCE, encrypted session cookie)
+api/data.js         the only code that touches the database, always as the logged-in user
+db/schema.sql       Supabase Postgres tables and buddy functions; db/seed.sql = fake demo data
+dev-server.js       runs the app and all three functions locally (npm run dev)
 pitch/              the interactive pitch: src.html + build.py -> index.html
 context/            decisions, research, status: our running project log
 ```
 
-- **Gemini** reads the photo in memory on the server and returns structured fields only (usable, Bristol type, colour, possible blood, confidence). The app writes the blood wording itself, so the model can never tell someone "no blood".
-- **Supabase** stores the structured entry, Deuces, rank, settings and buddy links. Every table has row level security. Buddies read activity through one function that returns only "logged today", streak, rank and cheers.
+- **Gemini** reads the photo in memory on the server and returns structured fields only (usable, Bristol type, colour, possible blood, confidence, three texture ratings, short notes, two ideas). The score is fixed tables plus those ratings: shape 40 (Bristol type), colour 30, texture 30. The server filters every sentence and writes the blood wording itself, so the model can never tell someone "no blood".
+- **Auth0** handles login. Phones never get a database key: only our server talks to Supabase.
+- **Supabase** stores the structured entry, Deuces, rank, settings and buddy links. Row level security is on with no public access. Buddies read activity through one function that returns only "logged today", streak, rank and cheers.
+- **Task photos** (proof you did a daily task) never leave the phone.
 - **No photo is ever stored** by Plop.
 - **Cached demo mode** (`?mode=cached`) replays known-good scans so a demo never depends on venue wifi.
 
@@ -62,10 +66,9 @@ context/            decisions, research, status: our running project log
 
 ```bash
 # 1. Just look at it: open public/index.html, add ?mode=cached
-# 2. Deploy (camera needs HTTPS): import the repo on Vercel, output directory "public",
-#    set GEMINI_API_KEY (and optionally GEMINI_MODEL). See DEPLOY.md.
-# 3. Optional database: run db/schema.sql in Supabase, turn on anonymous sign-ins,
-#    put the project URL and anon key in public/config.js.
+# 2. Run everything locally: npm install, cp .env.example .env (fill it in), npm run dev
+# 3. Deploy (camera needs HTTPS): import the repo on Vercel and add the variables from
+#    .env.example. Database: run db/schema.sql (and db/seed.sql) in Supabase. See DEPLOY.md.
 # Rebuild the pitch after changing the app:
 python3 pitch/build.py
 ```
