@@ -92,6 +92,8 @@ end $$;
 -- The database and phones can disagree about the local date (time-zone rules differ, and the
 -- demo can run past midnight). The server calls this with the phone's date, and every fake
 -- log, GP event and cheer slides so Zan's latest check-in lands on that day.
+-- Rows are copied, deleted and re-inserted (not updated in place) so this also works on Tiger,
+-- where a row's day decides which chunk it lives in.
 create or replace function public.demo_shift_to(p_today date) returns int
 language plpgsql as $$
 declare cur date; d int;
@@ -100,12 +102,20 @@ begin
   if cur is null then return 0; end if;
   d := p_today - cur;
   if d = 0 then return 0; end if;
-  -- two steps so a uniform shift never collides with the unique (user, day) keys mid-update
-  update public.entries set day = day + 10000 where user_id like 'demo|%';
-  update public.entries set day = day - 10000 + d, created_at = created_at + make_interval(days => d) where user_id like 'demo|%';
-  update public.gp_events set day = day + d where user_id like 'demo|%';
-  update public.cheers set day = day + 10000 where from_id like 'demo|%';
-  update public.cheers set day = day - 10000 + d where from_id like 'demo|%';
+  create temp table _e on commit drop as
+    select user_id, day + d as day, kind, score, bristol, colour, confidence, comfort, chips, blood,
+           created_at + make_interval(days => d) as created_at
+    from public.entries where user_id like 'demo|%';
+  create temp table _g on commit drop as
+    select user_id, day + d as day, delta, reason, created_at from public.gp_events where user_id like 'demo|%';
+  create temp table _c on commit drop as
+    select from_id, to_id, day + d as day, created_at from public.cheers where from_id like 'demo|%';
+  delete from public.entries   where user_id like 'demo|%';
+  delete from public.gp_events where user_id like 'demo|%';
+  delete from public.cheers    where from_id like 'demo|%';
+  insert into public.entries (user_id, day, kind, score, bristol, colour, confidence, comfort, chips, blood, created_at) select * from _e;
+  insert into public.gp_events (user_id, day, delta, reason, created_at) select * from _g;
+  insert into public.cheers (from_id, to_id, day, created_at) select * from _c;
   return d;
 end $$;
 

@@ -1,5 +1,5 @@
-// One Postgres connection pool per server instance. DATABASE_URL is the Supabase
-// "Transaction pooler" connection string (port 6543), which needs prepare: false.
+// One Postgres connection pool per server instance. DATABASE_URL is the Tiger Cloud (or Supabase
+// pooler) connection string. prepare: false keeps it working through poolers.
 const postgres = require('postgres');
 
 let sql = null;
