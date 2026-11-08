@@ -12,6 +12,21 @@ For Codex, Claude Code and anyone designing screens. Read `.agents/skills/anti-a
 ## Watch out for our own palette trap
 "Warm neutral" can slide into cream paper + serif + terracotta, which the anti-slop skill lists as the new default. Warm neutral is still the decision. Pick the ground, one ownable accent and the type pairing on purpose, and say why. No purple, no pink, no Duolingo green.
 
+## Palette (decided 2026-11-08)
+Cobalt is the primary action and the brand ground for splash and share-card moments. Tangerine is the one pop accent. Cocoa and mocha are the warm neutrals and the first mascot colourway. No lemon, no green, no purple, no pink.
+
+| Role | Name | Hex |
+|---|---|---|
+| Primary action, brand ground | Cobalt | #1747E6 |
+| Text and outlines | Ink | #1B1A17 |
+| Reading surface | Paper | #FFFBEA |
+| Secondary text, lines, mascot | Cocoa | #7A5A48 |
+| Soft fills, secondary buttons | Mocha | #C9A58C |
+| Pop accent (badges, small highlights) | Tangerine | #FF7A3D |
+| Possible-blood note background | Note tint | #FFE1CF |
+
+Contrast rules: ink on mocha, tangerine and the note tint only. White on cobalt is fine. Never cocoa text on mocha (2.7:1), never cobalt text on mocha (3.0:1), never tangerine text on paper. Mascot colourways: cocoa, cobalt, and one more the designer proposes (not pink). The streak marker must not be a flame, since orange flames are Duolingo's. Pair paper with a sans-serif, never a serif. Red is not in the brand; it is reserved for real alerts.
+
 ## Screens to design (one Figma frame each, phone size)
 1. Home and log (one primary action, quick log and nothing to report within thumb reach)
 2. Scan reading (waiting state)
