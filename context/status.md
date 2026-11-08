@@ -10,7 +10,7 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 - Mission set 2026-11-08: destigmatize poo (see architecture.md "Mission" and decisions.md). Scoring set to effort plus consistency, with Zan's prototype as the UI base.
 
-- Prototype (prototype/plop.html) now scores effort only: 100 per log, 100 per photo, consistency multiplier, a 0 to 100 weekly score on the League screen that updates after each photo, no demotions, copy says "Rank shows effort, not health". Syntax-checked with esbuild, not clicked through in a browser.
+- Prototype scoring and leaderboard are Zan's to build. My effort-only version is in commit 72bb838 (reverted in the next commit). The spec Zan should follow is in architecture.md "Points, leagues and gentle day" (effort-only, 100 per scan photo, consistency multiplier, weekly 0 to 100 score, rank never reads scan results).
 
 ## In progress
 - A teammate (Zan Tian) uploaded a front-end only prototype: `prototype/plop.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
