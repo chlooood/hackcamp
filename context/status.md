@@ -10,9 +10,11 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 - Mission set 2026-11-08: destigmatize poo (see architecture.md "Mission" and decisions.md). Scoring set to effort plus consistency, with Zan's prototype as the UI base.
 
+- Prototype (prototype/plop.html) now scores effort only: 100 per log, 100 per photo, consistency multiplier, a 0 to 100 weekly score on the League screen that updates after each photo, no demotions, copy says "Rank shows effort, not health". Syntax-checked with esbuild, not clicked through in a browser.
+
 ## In progress
 - A teammate (Zan Tian) uploaded a front-end only prototype: `prototype/plop.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
-- Prototype conflicts with logged decisions. Scoring is now settled (rating replaced by effort plus consistency). Still open and not yet agreed with Zan: privacy copy says photos are analysed on-device (we send them to Gemini and discard); health advice cards and fixed hydration/fibre readouts (do-not-build); gender, age, conditions and medications profile fields; one log per day lock; no quick log, confirm/edit or failure path; friends rank sharing defaults on; no streak freeze, buddy invite, gentle day, habits or cycle chip.
+- Prototype conflicts with logged decisions. Scoring is now settled and built in the prototype. Still open and not yet agreed with Zan: privacy copy says photos are analysed on-device (we send them to Gemini and discard); health advice cards and fixed hydration/fibre readouts (do-not-build); gender, age, conditions and medications profile fields; one log per day lock; no quick log, confirm/edit or failure path; friends rank sharing defaults on; no streak freeze, buddy invite, gentle day, habits or cycle chip.
 - Entire is installed and enabled on the user's laptop (v0.13.1, Claude Code hooks, push_sessions false, settings committed in 3b03f2a). The agent sandbox could not install it, so each teammate installs it on their own laptop. Steps are in sponsors.md.
 
 ## Next (in order)

@@ -237,16 +237,14 @@ function scoreScan() {
   };
 }
 
-function ratingChange(score, competitiveMode) {
-  if (!competitiveMode) {
-    // CASUAL: flat gain, logging is what matters, never goes down
-    return 15; // ~every log earns 15 rating in casual
-  }
-  // COMPETITIVE: score-driven, can go negative
-  // Formula: Math.round(score * 0.5 - 20)
-  // Score 100 → +30, 80 → +20, 60 → +10, 40 → 0, 20 → -10, 0 → -20
-  return Math.round(score * 0.5 - 20);
-}
+/* EFFORT SCORING (decided 2026-11-08): points only for showing up.
+   Nothing here reads the scan result (Bristol type, colour, confidence). */
+const POINTS = { LOG: 100, PHOTO: 100 };
+const DAILY_BASE = POINTS.LOG + POINTS.PHOTO;   // 200 per day with a photo
+const WEEK_BASE = DAILY_BASE * 7;               // denominator for the 0-100 weekly score
+function consistencyMultiplier(days) { return days >= 7 ? 1.5 : days >= 3 ? 1.25 : 1; } // consecutive days logged
+function effortPoints(days) { return Math.round(DAILY_BASE * consistencyMultiplier(days)); }
+function weekScore(weekPoints) { return Math.min(100, Math.round(weekPoints / WEEK_BASE * 100)); }
 
 function daysBetween(a, b) {
   if (!a || !b) return 0;
@@ -271,11 +269,11 @@ const seedHistory = [
 ];
 
 const seedFriends = [
-  { name: 'Priya', rating: 820, streak: 21, tier: tierFromRating(820) },
-  { name: 'Mei',   rating: 480, streak: 12, tier: tierFromRating(480) },
+  { name: 'Priya', rating: 820, streak: 21, weekScore: 88, tier: tierFromRating(820) },
+  { name: 'Mei',   rating: 480, streak: 12, weekScore: 61, tier: tierFromRating(480) },
   { name: 'You',   rating: 520, streak: 6,  tier: tierFromRating(520), isYou: true },
-  { name: 'Theo',  rating: 180, streak: 4,  tier: tierFromRating(180) },
-  { name: 'Jake',  rating: 45,  streak: 2,  tier: tierFromRating(45) }
+  { name: 'Theo',  rating: 180, streak: 4,  weekScore: 35, tier: tierFromRating(180) },
+  { name: 'Jake',  rating: 45,  streak: 2,  weekScore: 12, tier: tierFromRating(45) }
 ];
 
 /* ============================================================
@@ -403,6 +401,7 @@ function App() {
 
   const [rating, setRating] = useState(520);
   const [streak, setStreak] = useState(6);
+  const [weekPoints, setWeekPoints] = useState(600); // seeded demo value, resets weekly
   const [lastLogDate, setLastLogDate] = useState(dayStr(yesterday));
   const [history, setHistory] = useState(seedHistory);
   const [competitiveMode, setCompetitiveMode] = useState(false); // OFF by default
@@ -425,15 +424,18 @@ function App() {
   function recordLog() {
     const result = scoreScan();
     const prevTier = tierFromRating(rating);
-    const delta = ratingChange(result.score, competitiveMode);
-    const newRating = Math.max(0, rating + delta);
+    const delta = effortPoints(streak + 1); // effort only, ignores result.score and result.bristol
+    const newRating = rating + delta;
+    const prevWeek = weekScore(weekPoints);
+    const newWeek = weekScore(weekPoints + delta);
+    setWeekPoints(weekPoints + delta);
     const newTier = tierFromRating(newRating);
 
     setRating(newRating);
     setStreak(streak + 1);
     setLastLogDate(dayStr(today));
     setHistory([...history, { date: dayStr(today), bristol: result.bristol, score: result.score, ratingChange: delta, note: '' }].slice(-14));
-    setLastResult({ ...result, delta });
+    setLastResult({ ...result, delta, prevWeek, newWeek });
 
     let rankChange = null;
     if (newTier.full !== prevTier.full) {
@@ -450,7 +452,7 @@ function App() {
   }
 
   function resetDemo() {
-    setRating(520); setStreak(6); setLastLogDate(dayStr(yesterday));
+    setRating(520); setStreak(6); setWeekPoints(600); setLastLogDate(dayStr(yesterday));
     setHistory(seedHistory); setCameraStage('idle');
   }
 
@@ -466,7 +468,8 @@ function App() {
     tier, rating, streak, history, profile, setProfile,
     competitiveMode, setCompetitiveMode: enableCompetitiveWithOnboard,
     competitiveOnboarded, setCompetitiveOnboarded,
-    loggedToday, friends: seedFriends, setTab
+    loggedToday, setTab, weekPoints,
+    friends: seedFriends.map(f => f.isYou ? { ...f, rating, streak, tier, weekScore: weekScore(weekPoints) } : f)
   };
 
   return (
@@ -489,7 +492,7 @@ function App() {
 /* ============================================================
    COMPETITIVE SCREEN
    ============================================================ */
-function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, setCompetitiveMode, setTab, history }) {
+function CompetitiveScreen({ tier, rating, streak, weekPoints, friends, competitiveMode, setCompetitiveMode, setTab, history }) {
   // When competitive mode is OFF, show an opt-in CTA instead of the ranking screen
   if (!competitiveMode) {
     return (
@@ -509,7 +512,7 @@ function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, set
             <div className="text-5xl mb-3">🏆</div>
             <div className="font-display text-2xl">Want to compete?</div>
             <div className="text-sm text-neutral-600 mt-2 leading-relaxed">
-              Rank up (and down) based on your scan scores. Compete with friends. Climb from Bronze to Diamond.
+              Earn points by logging and adding photos. Keep a streak for a bonus. Compete with friends. Climb from Bronze to Diamond.
             </div>
           </div>
 
@@ -518,7 +521,7 @@ function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, set
               <div className="text-xl">⚠️</div>
               <div className="text-xs leading-relaxed text-amber-900">
                 <strong className="block mb-1">Heads up: this is a game.</strong>
-                Your rank does NOT reflect your health. Bad scores happen for lots of reasons that aren't your fault — stress, illness, medication, diet changes. Turn competitive mode off any time in Settings.
+                Rank shows effort, not health. Points only count that you logged and added a photo, never what the log says. Turn competitive mode off any time in Settings.
               </div>
             </div>
           </div>
@@ -589,28 +592,36 @@ function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, set
         </div>
       </div>
 
+      {/* Weekly effort score 0-100 */}
+      <div className="mt-6 card">
+        <div className="flex justify-between items-end">
+          <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">This week</div>
+          <div className="font-display text-4xl" style={{ color: tier.dark }}>{weekScore(weekPoints)}<span className="text-base text-neutral-500"> / 100</span></div>
+        </div>
+        <div className="progress-track mt-3">
+          <div className="progress-fill" style={{ width: `${weekScore(weekPoints)}%`, background: `linear-gradient(90deg, ${tier.color}, ${tier.glow})`, transition: 'width 0.8s cubic-bezier(.17,.67,.21,1.19)' }}></div>
+        </div>
+        <div className="mt-2 text-[11px] text-neutral-500">Moves up every time you log or add a photo. Effort only.</div>
+      </div>
+
       {/* Stats row */}
       <div className="mt-6 grid grid-cols-3 gap-3">
         <StatBlock icon="🔥" label="Streak" value={streak} />
         <StatBlock icon="⭐" label="Rating" value={rating} />
-        <StatBlock icon="🎯" label="Avg Score" value={(() => {
-          const last7 = history.slice(-7);
-          return last7.length ? Math.round(last7.reduce((a,h)=>a+h.score,0)/last7.length) : 0;
-        })()} />
+        <StatBlock icon="🎯" label="Weekly" value={weekScore(weekPoints)} />
       </div>
 
       {/* Scoring key */}
       <div className="mt-6 card">
-        <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3">Scoring Guide</div>
+        <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-3">How points work</div>
         <div className="space-y-2 text-sm">
-          <ScoreKeyRow score="90–100" change="+25 to +30" color="#58cc02" />
-          <ScoreKeyRow score="60–89"  change="+10 to +24" color="#1cb0f6" />
-          <ScoreKeyRow score="40–59"  change="0 to +9"    color="#ffc800" />
-          <ScoreKeyRow score="20–39"  change="-10 to -1"  color="#ff8c42" />
-          <ScoreKeyRow score="1–19"   change="-20 to -11" color="#ff4b4b" />
+          <ScoreKeyRow score="Log a poo, or nothing to report" change="+100" color="#58cc02" />
+          <ScoreKeyRow score="Add a photo" change="+100" color="#1cb0f6" />
+          <ScoreKeyRow score="3 days in a row" change="x1.25" color="#ffc800" />
+          <ScoreKeyRow score="7 days in a row" change="x1.5" color="#ff8c42" />
         </div>
         <div className="mt-3 text-[11px] text-neutral-500 leading-relaxed">
-          Casual mode gives a flat +15 per log, no penalty. Competitive mode uses the scale above.
+          Points are never taken away. A missed day only resets the streak bonus. Rank shows effort, not health.
         </div>
       </div>
 
@@ -621,7 +632,7 @@ function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, set
           <button className="text-xs font-bold" style={{ color: 'var(--blue)' }}>See all →</button>
         </div>
         <div className="space-y-2">
-          {[...friends].sort((a,b) => b.rating - a.rating).slice(0, 5).map((f, i) => (
+          {[...friends].sort((a,b) => b.weekScore - a.weekScore).slice(0, 5).map((f, i) => (
             <div key={f.name} className="card flex items-center gap-3 p-3" style={{ background: f.isYou ? '#ddf4ff' : 'white', borderColor: f.isYou ? 'var(--blue)' : 'var(--border)' }}>
               <div className="w-8 text-center font-display text-xl" style={{ color: i === 0 ? 'var(--gold)' : i === 1 ? '#9fa0a8' : i === 2 ? '#cd7f32' : '#aaa' }}>
                 {i+1}
@@ -631,7 +642,7 @@ function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, set
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-bold truncate">{f.name}{f.isYou && <span className="text-xs font-normal text-neutral-500 ml-1">(you)</span>}</div>
-                <div className="text-xs text-neutral-500">{f.tier.full} · {f.rating} pts · 🔥 {f.streak}</div>
+                <div className="text-xs text-neutral-500">{f.weekScore} / 100 this week · {f.tier.full} · 🔥 {f.streak}</div>
               </div>
             </div>
           ))}
@@ -644,7 +655,7 @@ function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, set
           <div className="text-xl">🛡️</div>
           <div className="text-xs text-neutral-600 leading-relaxed">
             <strong className="block mb-0.5 text-neutral-800">Just for fun.</strong>
-            Your rank does not reflect your health. Toggle off any time in Settings.
+            Rank shows effort, not health. Toggle off any time in Settings.
           </div>
         </div>
       </div>
@@ -655,8 +666,8 @@ function CompetitiveScreen({ tier, rating, streak, friends, competitiveMode, set
 function ScoreKeyRow({ score, change, color }) {
   return (
     <div className="flex items-center justify-between">
-      <div className="font-bold" style={{ color }}>Score {score}</div>
-      <div className="text-neutral-600 font-semibold">{change} pts</div>
+      <div className="font-bold" style={{ color }}>{score}</div>
+      <div className="text-neutral-600 font-semibold">{change}</div>
     </div>
   );
 }
@@ -690,13 +701,13 @@ function CompetitiveOnboard({ setMode, onBack }) {
 
       <div className="mt-8 space-y-4">
         <DisclaimerBullet icon="🎮" title="This is a game.">
-          Competitive mode is for fun. It turns your scan scores into a rating that can go up or down, like a video game ranking system.
+          Competitive mode is for fun. Your rating comes from points for logging, adding photos and keeping a streak. Points are never taken away.
         </DisclaimerBullet>
-        <DisclaimerBullet icon="🧠" title="Your rank does NOT reflect your health.">
-          A low score does not mean you're failing. Bad days happen — stress, illness, medication, travel, the week before your period, a surprise burrito. None of that makes you a worse person or a worse pooper.
+        <DisclaimerBullet icon="🧠" title="Rank shows effort, not health.">
+          Nothing in the rating reads what you log. A rough day, stress, illness, travel or a surprise burrito never lowers your points.
         </DisclaimerBullet>
-        <DisclaimerBullet icon="🏥" title="Especially if you have a condition.">
-          If you have IBS, IBD, Crohn's, celiac, or anything else that affects your gut, competitive mode will unfairly penalize you for symptoms you can't control. We recommend staying in casual mode.
+        <DisclaimerBullet icon="🏥" title="Safe if you have a condition.">
+          If you have IBS, IBD, Crohn's, celiac, or anything else that affects your gut, your rank is not affected by symptoms. Only showing up counts.
         </DisclaimerBullet>
         <DisclaimerBullet icon="🛑" title="You can turn it off any time.">
           One tap in Settings disables competitive mode. Your streak and health tracking continue uninterrupted.
@@ -815,6 +826,7 @@ function CameraScreen({ loggedToday, stage, setStage, onLog, result, rankChange,
             {result.score}
           </div>
           <div className="text-sm text-neutral-500">out of 100</div>
+          <div className="text-[11px] text-neutral-500 mt-1">Only you see this. It never changes your points or rank.</div>
 
           <div className="mt-4 h-3 bg-gray-200 rounded-full overflow-hidden mx-6">
             <div
@@ -837,15 +849,14 @@ function CameraScreen({ loggedToday, stage, setStage, onLog, result, rankChange,
         <div className="mt-4 card flex items-center justify-between">
           <div>
             <div className="text-xs uppercase tracking-widest text-neutral-500 font-bold">
-              {competitiveMode ? 'Competitive Rating' : 'Casual Points'}
+              Effort points
             </div>
             <div className="font-display text-3xl mt-1" style={{ color: deltaColor }}>
-              {result.delta >= 0 ? '+' : ''}{result.delta}
+              +{result.delta}
             </div>
+            <div className="text-xs text-neutral-500 mt-1">Weekly score {result.prevWeek} → {result.newWeek} / 100</div>
           </div>
-          <div className="text-4xl">
-            {result.delta > 15 ? '🚀' : result.delta > 0 ? '⭐' : result.delta === 0 ? '😐' : '📉'}
-          </div>
+          <div className="text-4xl">⭐</div>
         </div>
 
         {/* Note */}
@@ -1339,14 +1350,14 @@ function SettingsScreen({ competitiveMode, setCompetitiveMode }) {
       <SettingsGroup title="Competitive Mode">
         <Toggle
           label="Enable competitive ranking"
-          sub="Scan scores change your rating. Can go up or down. Just for fun — does not reflect your health."
+          sub="Points for logging, photos and streaks. Never taken away. Rank shows effort, not health."
           value={competitiveMode}
           onChange={setCompetitiveMode}
         />
         {competitiveMode && (
           <div className="p-3 rounded-xl text-xs text-amber-900 leading-relaxed" style={{ background: '#fff5e0', border: '2px solid #ffc800' }}>
             <strong className="block mb-1">⚠️ Competitive mode is ON.</strong>
-            Your scan scores affect your rating. Low scores can drop your rank. Toggle off any time.
+            Only logging, photos and streaks count. What you log never changes your rank. Toggle off any time.
           </div>
         )}
       </SettingsGroup>
