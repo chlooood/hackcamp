@@ -167,6 +167,14 @@
   .list-row { display: flex; align-items: center; gap: 12px; min-height: 64px; border-bottom: 1px solid var(--line); }
   .list-row:last-child { border-bottom: 0; }
   .avatar { width: 44px; height: 44px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 17px; color: #FFFFFF; flex-shrink: 0; }
+  .avatar svg { margin-top: 6px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pal { display: block; }
+    .pal-a { animation: palA 2.8s ease-in-out infinite; }
+    .pal-b { animation: palB 2.8s ease-in-out infinite; }
+    @keyframes palA { 0%,100% { transform: translateY(0) rotate(0) } 50% { transform: translateY(-4px) rotate(-3deg) } }
+    @keyframes palB { 0%,100% { transform: translateY(-4px) rotate(2deg) } 50% { transform: translateY(0) rotate(0) } }
+  }
   .setting { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 62px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 800; width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; padding: 0; }
 
   /* record */
@@ -232,9 +240,9 @@
     { title: '10-minute walk after dinner', source: 'Source: [link]', icon: 'M13 4a1.5 1.5 0 1 0 0 .01M10 21l2-6 3 3v3M9 12l3-4 3 2 2 3M12 8l-1 5', bg: '#E6F7F5', ink: '#0B6E64' }
   ];
   var BUDDIES = [
-    { name: 'Zan', time: '8:12', streak: 23, color: '#14B8A6', soft: '#D5F5F0', ink: '#0B6E64', rank: [4, 1] },
-    { name: 'Chloe', time: '10:40', streak: 6, color: '#6366F1', soft: '#E8E7FF', ink: '#4338CA', rank: [3, 3] },
-    { name: 'Mo', time: null, streak: 4, color: '#F97316', soft: '#FFEDD5', ink: '#9A3412', rank: [2, 1] }
+    { name: 'Zan', time: '8:12', streak: 23, color: '#14B8A6', soft: '#D5F5F0', ink: '#0B6E64', poop: '#B5764A', tint: '#F3E7DD', face: 'peek', rank: [4, 1] },
+    { name: 'Chloe', time: '10:40', streak: 6, color: '#6366F1', soft: '#E8E7FF', ink: '#4338CA', poop: '#8E9CCB', tint: '#E9ECF7', face: 'content', rank: [3, 3] },
+    { name: 'Mo', time: null, streak: 4, color: '#F97316', soft: '#FFEDD5', ink: '#9A3412', poop: '#8DB08F', tint: '#E6F0E6', face: 'eyes', rank: [2, 1] }
   ];
   // Placeholder scoring, tune with the team. Shape 40 + colour 30 + texture 30.
   var SHAPE = { 1: 14, 2: 24, 3: 33, 4: 37, 5: 30, 6: 20, 7: 10 };
@@ -266,11 +274,15 @@
     cheer: { pupils: null, mouth: '<path d="M52 75h16c0 8-3.5 12-8 12s-8-4-8-12z" fill="#1E1E1E"/>' },
     curious: { pupils: [50, 57, 78, 57], mouth: '<path d="M57 81c2 2 5 2 7 0" stroke="#1E1E1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>' },
     proud: { pupils: [50, 59, 78, 59], mouth: '<path d="M50 77c5 6 15 6 20 0" stroke="#1E1E1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>' },
+    peek: { pupils: [43, 59, 71, 59], mouth: '' },
+    eyes: { pupils: [48, 63, 76, 63], mouth: '' },
+    content: { pupils: null, mouth: '' },
+    smile: { pupils: null, mouth: '<path d="M54 78c3 3 9 3 12 0" stroke="#1E1E1E" stroke-width="3.4" fill="none" stroke-linecap="round"/>' },
     gotthis: { pupils: [49, 62, 77, 62], mouth: '<path d="M50 77c5 6 15 6 20 0" stroke="#1E1E1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>' }
   };
-  var FACE_LABEL = { hello: 'Ploopy saying hello', cheer: 'Ploopy cheering', curious: 'Ploopy looking curious', proud: 'Ploopy looking proud', gotthis: 'Ploopy saying you got this' };
+  var FACE_LABEL = { smile: 'Ploopy smiling', peek: 'Ploopy peeking', eyes: 'Ploopy looking', content: 'Ploopy content', hello: 'Ploopy saying hello', cheer: 'Ploopy cheering', curious: 'Ploopy looking curious', proud: 'Ploopy looking proud', gotthis: 'Ploopy saying you got this' };
   // Ploopy is built in layers so it can breathe (p-body), blink (p-eyes) and look around (p-pupils).
-  function mascot(face, w, extra) {
+  function mascot(face, w, extra, color) {
     var h = Math.round(w * 106 / 120), f = FACES[face];
     var breathe = (-Math.random() * 3).toFixed(2), blink = (-Math.random() * 5).toFixed(2);
     var eyes = f.pupils
@@ -278,7 +290,7 @@
         '<g class="p-pupils"><circle cx="' + f.pupils[0] + '" cy="' + f.pupils[1] + '" r="5.5" fill="#1E1E1E"/><circle cx="' + f.pupils[2] + '" cy="' + f.pupils[3] + '" r="5.5" fill="#1E1E1E"/></g></g>'
       : '<path class="p-happy" d="M37 64c3-6 11-6 14 0M69 64c3-6 11-6 14 0" stroke="#1E1E1E" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 106" role="img" aria-label="' + FACE_LABEL[face] + '" ' + (extra || '') + ' style="overflow:visible">' +
-      '<g class="p-body" style="animation-delay:' + breathe + 's"><path d="' + MASCOT_BODY + '" fill="' + state.mascot + '"/>' + eyes + '<g class="p-mouth">' + f.mouth + '</g></g></svg>';
+      '<g class="p-body" style="animation-delay:' + breathe + 's"><path d="' + MASCOT_BODY + '" fill="' + (color || state.mascot) + '"/>' + eyes + '<g class="p-mouth">' + f.mouth + '</g></g></svg>';
   }
   function shield(t, size) {
     return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4l24 10v18c0 14-10 24-24 28C18 56 8 46 8 32V14z" fill="' + t.c2 + '"/><path d="M32 18l10 11-10 15-10-15z" fill="' + t.c3 + '"/></svg>';
@@ -846,12 +858,19 @@
 
   SCREENS.buddies = function () {
     var list = BUDDIES.filter(function (b) { return !state.removed[b.name]; });
+    var loggedCount = list.filter(function (b) { return b.time; }).length;
     return '<main class="screen with-nav" style="gap:8px">' +
       '<div class="between" style="margin-bottom:8px"><h1>Buddies</h1><button data-act="invite" style="min-height:44px;padding:0 18px;border-radius:999px;border:0;background:var(--indigo);color:#FFF;font-size:16px;font-weight:900">Invite</button></div>' +
+      // the two poop buddies, styled like Home's hero card
+      '<section class="hero buddy-duo" style="margin-bottom:6px"><div class="row" style="gap:8px"><div class="col" style="flex:1;gap:4px">' +
+        '<span style="font-size:24px;font-weight:900;line-height:1.1;color:#0B6E64">' + loggedCount + ' of ' + list.length + ' plopped today</span>' +
+        '<span style="font-size:15px;font-weight:700;color:#3F5F5B;line-height:1.35">Everybody plops. Send a cheer.</span></div>' +
+        '<div class="row" style="gap:0;flex-shrink:0" aria-hidden="true"><span class="pal pal-a">' + mascot('smile', 64, '', '#8E9CCB') + '</span><span class="pal pal-b" style="margin-left:-6px">' + mascot('peek', 64, '', '#B5764A') + '</span></div>' +
+      '</div></section>' +
       '<div class="col">' + list.map(function (b) {
         var sent = !!state.cheered[today() + b.name];
         var line = (b.time ? 'Checked in at ' + b.time : 'Not yet today') + ' · ' + b.streak + '-day streak';
-        return '<div class="list-row"><span class="avatar" style="background:' + b.color + '">' + b.name.charAt(0) + '</span>' +
+        return '<div class="list-row"><span class="avatar" style="background:' + b.tint + '">' + mascot(b.face, 34, '', b.poop) + '</span>' +
           '<div class="col" style="flex:1"><span style="font-size:17px;font-weight:900">' + b.name + '</span><span style="font-size:14px;font-weight:700;color:var(--muted)">' + line + '</span></div>' +
           '<button data-cheer="' + b.name + '" aria-pressed="' + sent + '" style="min-height:38px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:800;flex-shrink:0;' + (sent ? 'background:' + b.color + ';color:#FFF;border:2px solid ' + b.color : 'background:' + b.soft + ';color:' + b.ink + ';border:2px solid ' + b.soft) + '">' + (sent ? 'Sent' : 'Cheer') + '</button></div>';
       }).join('') +
