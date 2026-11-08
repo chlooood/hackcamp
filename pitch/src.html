@@ -112,19 +112,20 @@
   .phone-wrap { transition: opacity .3s; }
   body.nophone.intro-done .phone-wrap { opacity: 1; transition: opacity .8s; }
   .opener { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 3vw; }
-  .opener svg.bodyart { height: 74vh; width: auto; overflow: visible; }
+  .opener svg.bodyart { height: 76vh; filter: drop-shadow(0 18px 30px rgba(20,60,60,.10)); width: auto; overflow: visible; }
   .opener .tail { display: flex; flex-direction: column; gap: 1.6vh; opacity: 0; transform: translateY(16px); transition: opacity .5s, transform .5s cubic-bezier(.3,1.5,.5,1); }
   .opener.done .tail { opacity: 1; transform: none; }
+  .opener .tail h1 { font-size: clamp(28px, 3vw, 54px); white-space: nowrap; }
   .opener .mark { font-size: clamp(72px, 11vw, 190px); font-weight: 900; color: var(--teal); line-height: .9; margin: 0; letter-spacing: -0.02em; }
-  .bodyart .food { transition: transform .15s; transform-origin: 150px 112px; }
+  .bodyart .food { transition: transform .15s; transform-origin: 128px 150px; }
   .bodyart .bite { opacity: 0; } .bodyart.b1 .bite.a, .bodyart.b2 .bite.b, .bodyart.b2 .bite.a { opacity: 1; }
   .bodyart.gone .food { transform: scale(0); transition: transform .2s; }
-  .bodyart .trail { fill: none; stroke: var(--teal); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
-  .bodyart .mouth { transform-origin: 200px 124px; transition: transform .12s; }
-  .bodyart.chew .mouth { transform: scaleY(.3); }
-  .bodyart .stomach { transform-origin: 236px 288px; transition: transform .25s cubic-bezier(.3,1.6,.5,1); }
+  .bodyart .trail { fill: none; stroke: #0D9488; stroke-width: 5; stroke-dasharray: none; opacity: .9; stroke-linecap: round; stroke-linejoin: round; }
+  .bodyart .mouth { transform-origin: 189px 151px; transition: transform .12s; }
+  .bodyart.chew .mouth { transform: scale(1.3, 2.2); }
+  .bodyart .stomach { transform-origin: 290px 356px; transition: transform .25s cubic-bezier(.3,1.6,.5,1); }
   .bodyart.squish .stomach { transform: scale(1.12, .9); }
-  .bodyart .out { transform-origin: 200px 590px; transform: scale(0); transition: transform .5s cubic-bezier(.3,1.7,.5,1); }
+  .bodyart .out { transform-origin: 256px 660px; transform: scale(0); transition: transform .5s cubic-bezier(.3,1.7,.5,1); }
   .bodyart.born .out { transform: scale(1); }
   .bodyart .tag { font-family: Nunito; font-weight: 900; font-size: 20px; fill: #5F6B6B; opacity: 0; transition: opacity .3s; }
   .bodyart .tag.on { opacity: 1; }
@@ -253,29 +254,49 @@
   var STEPS = [
     { secs: 10, route: 'home', phone: false, intro: true,
       html: '<div class="opener" id="opener">' +
-        '<svg class="bodyart" id="bodyart" viewBox="0 0 400 660" role="img" aria-label="A person eats an orange. It travels down through the stomach and gut, and comes out as Ploopy.">' +
-          // torso + head
-          '<rect x="105" y="170" width="190" height="350" rx="80" fill="#FFFFFF" stroke="#0B6E64" stroke-width="7"/>' +
-          '<rect x="178" y="140" width="44" height="40" fill="#FFFFFF" stroke="#0B6E64" stroke-width="7"/><rect x="182" y="160" width="36" height="26" fill="#FFFFFF"/>' +
-          '<circle cx="200" cy="95" r="62" fill="#D5F5F0" stroke="#0B6E64" stroke-width="7"/>' +
-          '<circle cx="180" cy="86" r="7" fill="#1F2424"/><circle cx="222" cy="86" r="7" fill="#1F2424"/>' +
-          '<ellipse class="mouth" cx="200" cy="124" rx="13" ry="9" fill="#1F2424"/>' +
-          // gut map (faint)
-          '<path d="M200 128 L200 250" fill="none" stroke="#CCF5EF" stroke-width="14" stroke-linecap="round"/>' +
-          '<path class="stomach" d="M200 250 C205 245,265 240,268 282 C271 322,228 330,212 318 C196 306,215 290,200 268 Z" fill="#FFEDD5" stroke="#F97316" stroke-width="5"/>' +
-          '<path d="M214 322 C140 322,140 362,200 362 S270 402,200 402 S130 442,200 442 S262 474,200 480 L200 528" fill="none" stroke="#E8E7FF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>' +
-          // the trail the food leaves
-          '<path class="trail" id="trail" d="M150 112 L200 124 L200 252 C222 246,262 254,258 286 C254 312,222 318,214 322 C140 322,140 362,200 362 S270 402,200 402 S130 442,200 442 S262 474,200 480 L200 560"/>' +
-          // arm + hand + orange
-          '<path d="M118 222 C78 252,82 150,140 128" fill="none" stroke="#0B6E64" stroke-width="7" stroke-linecap="round"/>' +
-          '<g class="food"><circle cx="150" cy="112" r="20" fill="#F97316"/><path d="M150 92 q8 -10 16 -4" stroke="#0D9488" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-            '<circle class="bite a" cx="168" cy="104" r="9" fill="#F4F6F6"/><circle class="bite b" cx="166" cy="120" r="9" fill="#F4F6F6"/></g>' +
-          // the travelling bite
-          '<circle id="bolus" r="11" fill="#F97316" opacity="0"><animateMotion id="travel" dur="3s" begin="indefinite" fill="freeze" calcMode="spline" keyPoints="0;1" keyTimes="0;1" keySplines=".4 0 .6 1"><mpath href="#trail"/></animateMotion></circle>' +
-          '<text class="tag" id="tag1" x="290" y="110">chomp</text><text class="tag" id="tag2" x="284" y="282">stomach</text><text class="tag" id="tag3" x="262" y="430">gut</text>' +
+        '<svg class="bodyart" id="bodyart" viewBox="0 0 500 720" role="img" aria-label="Fig. 1: a person bites an orange. It travels down the oesophagus, through the stomach, small and large intestine, and comes out as Ploopy.">' +
+          '<defs>' +
+            '<pattern id="grain" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1" fill="#E9DCC0"/></pattern>' +
+            '<pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="6" stroke="#FFFFFF" stroke-width="1.6" opacity=".55"/></pattern>' +
+            '<pattern id="stip" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r="1" fill="#C28A12" opacity=".45"/></pattern>' +
+            '<linearGradient id="fadeBody" x1="0" y1="0" x2="0" y2="1"><stop offset=".78" stop-color="#0B6E64"/><stop offset="1" stop-color="#0B6E64" stop-opacity="0"/></linearGradient>' +
+          '</defs>' +
+          // paper plate
+          '<rect x="8" y="8" width="484" height="636" rx="30" fill="#FFFBEA"/><rect x="8" y="8" width="484" height="636" rx="30" fill="url(#grain)"/>' +
+          '<text x="470" y="58" text-anchor="end" font-family="Nunito" font-weight="900" font-size="26" fill="#0B6E64">fig. 1</text>' +
+          '<line x1="392" y1="70" x2="470" y2="70" stroke="#0B6E64" stroke-width="3" stroke-linecap="round"/>' +
+          '<text x="470" y="92" text-anchor="end" font-family="Nunito" font-weight="800" font-size="15" fill="#5F6B6B">where lunch goes</text>' +
+          // body: one continuous line, profile facing left
+          '<path d="M282 206 C318 186,330 120,306 82 C284 46,226 40,200 68 C186 84,186 102,188 112 L172 132 L188 138 L184 148 L192 152 L186 160 L194 168 L192 178 C204 188,218 190,226 194 L224 214 C200 236,128 236,108 262 C96 280,92 330,90 640" fill="none" stroke="url(#fadeBody)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="M282 206 L284 222 C304 240,372 236,392 262 C404 280,408 330,410 640" fill="none" stroke="url(#fadeBody)" stroke-width="5" stroke-linecap="round"/>' +
+          '<path d="M132 330 C136 420,136 540,138 640 M368 330 C364 420,364 540,362 640" fill="none" stroke="url(#fadeBody)" stroke-width="4" stroke-linecap="round" opacity=".6"/>' +
+          '<path d="M206 98 q8 -6 16 0 q-8 6 -16 0 Z" fill="#0B6E64"/><circle cx="214" cy="98" r="2.6" fill="#FFFBEA"/>' +
+          '<path class="mouth" d="M184 150 q6 4 10 1" fill="none" stroke="#0B6E64" stroke-width="4" stroke-linecap="round"/>' +
+          // liver (stippled)
+          '<path d="M150 318 C170 292,248 290,262 312 C270 330,246 352,214 366 C186 378,152 384,144 364 C138 348,140 330,150 318 Z" fill="#F7D27A"/>' +
+          '<path d="M150 318 C170 292,248 290,262 312 C270 330,246 352,214 366 C186 378,152 384,144 364 C138 348,140 330,150 318 Z" fill="url(#stip)" stroke="#C28A12" stroke-width="2.5"/>' +
+          // oesophagus
+          '<path d="M194 162 C218 170,240 196,244 230 L250 318" fill="none" stroke="#F4A27A" stroke-width="16" stroke-linecap="round"/>' +
+          // stomach (J)
+          '<g class="stomach"><path d="M244 312 C262 298,330 300,334 344 C338 384,306 410,272 406 C252 404,244 392,252 380 C262 366,292 374,296 352 C300 334,266 334,250 336 Z" fill="#FF9F6B"/>' +
+            '<path d="M244 312 C262 298,330 300,334 344 C338 384,306 410,272 406 C252 404,244 392,252 380 C262 366,292 374,296 352 C300 334,266 334,250 336 Z" fill="url(#hatch)" stroke="#E0632A" stroke-width="2.5"/></g>' +
+          // large intestine frame (soft, segmented)
+          '<path d="M178 552 L172 440 C172 430,178 426,188 426 L328 426 C338 426,344 432,344 442 L347 540 C347 562,302 562,280 576 L258 594 L256 612" fill="none" stroke="#7C83D1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="M178 552 L172 440 C172 430,178 426,188 426 L328 426 C338 426,344 432,344 442 L347 540 C347 562,302 562,280 576 L258 594 L256 612" fill="none" stroke="#B7BBEE" stroke-width="21" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="M178 552 L172 440 C172 430,178 426,188 426 L328 426 C338 426,344 432,344 442 L347 540 C347 562,302 562,280 576 L258 594 L256 612" fill="none" stroke="#7C83D1" stroke-width="21" stroke-dasharray="2 14" stroke-linejoin="round" opacity=".55"/>' +
+          // small intestine coils
+          '<path d="M270 448 C330 452,322 478,292 474 S220 452,206 474 S232 502,266 494 S332 492,316 516 S244 534,206 524 C190 518,196 500,214 498" fill="none" stroke="#E0632A" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="M270 448 C330 452,322 478,292 474 S220 452,206 474 S232 502,266 494 S332 492,316 516 S244 534,206 524 C190 518,196 500,214 498" fill="none" stroke="#FFC9A8" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>' +
+          // the path lunch takes (drawn as it travels)
+          '<path class="trail" id="trail" d="M150 150 L188 154 C216 164,240 192,244 230 L250 318 C272 328,318 330,316 362 C314 390,282 404,264 398 C246 404,246 440,270 448 C330 452,322 478,292 474 S220 452,206 474 S232 502,266 494 S332 492,316 516 S244 534,206 524 C186 530,176 520,176 508 L172 440 C172 430,178 426,188 426 L328 426 C338 426,344 432,344 442 L347 540 C347 562,302 562,280 576 L258 594 L256 650"/>' +
+          // the orange
+          '<g class="food"><circle cx="128" cy="150" r="24" fill="#F97316"/><circle cx="120" cy="142" r="7" fill="#FFB27A" opacity=".8"/><path d="M128 126 q10 -14 22 -6 q-10 10 -22 6 Z" fill="#0D9488"/>' +
+            '<circle class="bite a" cx="150" cy="140" r="10" fill="#FFFBEA"/><circle class="bite b" cx="149" cy="160" r="10" fill="#FFFBEA"/></g>' +
+          '<circle id="bolus" r="10" fill="#F97316" stroke="#FFFBEA" stroke-width="3" opacity="0"><animateMotion id="travel" dur="3.4s" begin="indefinite" fill="freeze" calcMode="spline" keyPoints="0;1" keyTimes="0;1" keySplines=".35 0 .65 1"><mpath href="#trail"/></animateMotion></circle>' +
+          '<text class="tag" id="tag1" x="64" y="208">chomp</text><text class="tag" id="tag2" x="350" y="350">stomach</text><text class="tag" id="tag3" x="364" y="488">gut</text>' +
           // Ploopy arrives
-          '<g class="out"><image href="' + ((PLOOPY.caramel || {}).yay || '') + '" x="128" y="520" width="144" height="117"/>' +
-            '<g stroke="#F2B705" stroke-width="7" stroke-linecap="round"><path d="M104 556h-22"/><path d="M110 532l-16-12"/><path d="M296 556h22"/><path d="M290 532l16-12"/></g></g>' +
+          '<g class="out"><image href="' + ((PLOOPY.caramel || {}).yay || '') + '" x="190" y="600" width="132" height="108"/>' +
+            '<g stroke="#F2B705" stroke-width="7" stroke-linecap="round"><path d="M170 640h-22"/><path d="M176 616l-16-12"/><path d="M342 640h22"/><path d="M336 616l16-12"/></g></g>' +
         '</svg>' +
         '<div class="tail"><p class="mark">Plop.</p><h1>Everyone does it.</h1><p>Plop and its mascot Ploopy make it something you can actually talk about.</p></div>' +
       '</div>',
@@ -302,7 +323,7 @@
     { secs: 10, route: 'home',
       html: '<h1>“I plopped” should sound as normal as “I ran 5k”.</h1><p>That’s the whole mission.</p>',
       notes: 'Mission line. Hold eye contact. Then turn to the phone.' },
-    { secs: 20, route: 'home', ring: ['.chip-bar', 'streak + Ploples'],
+    { secs: 20, route: 'home', ring: ['.chip-bar', 'streak + Deuces'],
       html: '<h1>Meet Plop.</h1><p>A gut diary built like a game. Streaks, daily quests, and Ploopy, who gets excited when you show up.</p>',
       notes: 'Point at the streak and the three quests. This is the real app running, not a video.' },
     { secs: 25, route: 'scan', ring: ['#shutter', 'tap to scan'],
@@ -314,8 +335,8 @@
       notes: 'Scroll down on the phone to the blood row and the chips. Script: "We log, we never diagnose. The possible-blood flag only prompts a doctor visit." Then tap Check in.',
       action: async function () { if (!click('[data-act="checkin"]')) { go('home'); return; } await until('[data-act="continue"],[data-act="share"]', 4000); } },
     { secs: 15, route: null, ring: ['[data-act="continue"]', 'continue'],
-      html: '<h1>Checked in.</h1><p>Ploples, streak, and two small habits for tomorrow. Five seconds and you’re back to your day.</p>',
-      notes: 'Let the Ploples count-up play. Do not explain the formula unless asked.' },
+      html: '<h1>Checked in.</h1><p>Deuces, streak, and two small habits for tomorrow. Five seconds and you’re back to your day.</p>',
+      notes: 'Let the Deuces count-up play. Do not explain the formula unless asked.' },
     { secs: 20, route: 'ranked', ring: ['a[href="#tiers"]', 'friends ladder'],
       html: '<h1>Your friends make it a habit.</h1><p>Weekly ranks with the people you actually know, plus an opt-in global board with made-up names.</p>',
       notes: 'Scroll to the friends ladder. If asked whether a rough day costs points: answer straight, it does in this build, and the team can say whether that stays.' },
@@ -480,14 +501,14 @@
       art.classList.add('gone'); tag('tag1', false);
       var b = document.getElementById('bolus'); b.setAttribute('opacity', '1');
       document.getElementById('travel').beginElement();
-      trail.style.transition = 'stroke-dashoffset 3s cubic-bezier(.4,0,.6,1)'; trail.style.strokeDashoffset = 0;
+      trail.style.transition = 'stroke-dashoffset 3.4s cubic-bezier(.35,0,.65,1)'; trail.style.strokeDashoffset = 0;
     });
-    t(1700, function () { art.classList.add('squish'); tag('tag2', true); });
-    t(2100, function () { art.classList.remove('squish'); });
-    t(2600, function () { tag('tag2', false); tag('tag3', true); });
-    t(3900, function () { tag('tag3', false); document.getElementById('bolus').setAttribute('opacity', '0'); art.classList.add('born'); });
-    t(4500, function () { op.classList.add('done'); });
-    t(5100, function () { document.body.classList.add('intro-done'); });
+    t(1900, function () { art.classList.add('squish'); tag('tag2', true); });
+    t(2300, function () { art.classList.remove('squish'); });
+    t(2700, function () { tag('tag2', false); tag('tag3', true); });
+    t(4300, function () { tag('tag3', false); document.getElementById('bolus').setAttribute('opacity', '0'); art.classList.add('born'); });
+    t(4900, function () { op.classList.add('done'); });
+    t(5500, function () { document.body.classList.add('intro-done'); });
   }
 
   function buildFidget() {

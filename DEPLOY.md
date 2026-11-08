@@ -1,6 +1,6 @@
 # Deploying the Plop phone demo
 
-What is here: `public/index.html` is the phone page built from the Front End Ploopy design (home, photo scan, score result, quick pick, check-in Ploples, ranks, buddies, privacy, record). Demo switches live under Record > Demo settings. `api/scan.js` is the Gemini route. Zan's `prototype/plop.html` is separate and is not deployed by this.
+What is here: `public/index.html` is the phone page built from the Front End Ploopy design (home, photo scan, score result, quick pick, check-in Deuces, ranks, buddies, privacy, record). Demo switches live under Record > Demo settings. `api/scan.js` is the Gemini route. Zan's `prototype/plop.html` is separate and is not deployed by this.
 
 ## Host it on Vercel (about 10 minutes, free, gives you HTTPS)
 Camera access on a phone needs HTTPS, so open the page from a Vercel link, not a file.
