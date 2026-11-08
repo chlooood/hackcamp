@@ -53,3 +53,5 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 ## How to run it
 - TODO once code exists.
+
+- Figma file n6vlmh5saWGs1k7fOicHJ0: colour variables and specimen done (page Foundations). No screens built there yet; designer builds them via Codex.
