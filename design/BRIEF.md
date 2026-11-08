@@ -25,7 +25,7 @@ Cobalt is the primary action and the brand ground for splash and share-card mome
 | Pop accent (badges, small highlights) | Tangerine | #FF7A3D |
 | Possible-blood note background | Note tint | #FFE1CF |
 
-Contrast rules: ink on mocha, tangerine and the note tint only. White on cobalt is fine. Never cocoa text on mocha (2.7:1), never cobalt text on mocha (3.0:1), never tangerine text on paper. Mascot colourways: cocoa, cobalt, and one more the designer proposes (not pink). The streak marker must not be a flame, since orange flames are Duolingo's. Pair paper with a sans-serif, never a serif. Red is not in the brand; it is reserved for real alerts.
+Contrast rules: ink on mocha, tangerine and the note tint only. White on cobalt is fine. Never cocoa text on mocha (2.7:1), never cobalt text on mocha (3.0:1), never tangerine text on paper (2.5:1) or on cobalt (2.6:1), and never white on tangerine (2.6:1). Tangerine is for fills and shapes, with ink on top. Mascot colourways: cocoa, cobalt, and one more the designer proposes (not pink). The streak marker must not be a flame, since orange flames are Duolingo's. Pair paper with a sans-serif, never a serif. Red is not in the brand; it is reserved for real alerts.
 
 ## Screens to design (one Figma frame each, phone size)
 1. Home and log (one primary action, quick log and nothing to report within thumb reach)
