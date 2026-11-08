@@ -1,5 +1,7 @@
 # Deploying Plop
 
+Live: https://plop-beryl.vercel.app (Vercel project `plop` on Riley's account, deployed from this folder with `npx vercel deploy --prod`; not connected to GitHub, so pushes do not auto-deploy).
+
 What is here:
 - `public/index.html`: the phone app (scan, score, ranks, buddies, record).
 - `api/scan.js`: Gemini scan route. Scores out of 100 and writes two ideas for the day.

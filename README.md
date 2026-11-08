@@ -40,7 +40,7 @@ Mascot **Ploopy** cheers you on when you check in.
 
 - **Interactive pitch:** open `pitch/index.html` in Chrome. It runs offline and embeds the real app in a phone frame. Press → or Space to advance, N for notes, T for the timer.
 - **Screens and flow:** [Figma file](https://www.figma.com/design/n6vlmh5saWGs1k7fOicHJ0), page "App screens & flow".
-- **Live app:** _add the Vercel link here._
+- **Live app:** https://plop-beryl.vercel.app (open it on a phone; the camera needs https). Add `?mode=cached` for the offline demo scan.
 
 ## How we built it
 

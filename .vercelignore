@@ -1,0 +1,9 @@
+# Never upload local secrets or tooling to Vercel
+.env
+.env.*
+!.env.example
+node_modules
+.entire
+.claude
+.agents
+.vercel
