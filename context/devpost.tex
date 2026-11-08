@@ -1,0 +1,134 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+\setlist{itemsep=0.3em, topsep=0.3em}
+\newcommand{\todo}[1]{\colorbox{yellow!40}{\parbox{0.92\linewidth}{\textbf{[FILL IN BEFORE SUBMITTING]} #1}}}
+
+\title{\textbf{Plop}\\[0.2em]\large Devpost project post, HackCamp 2026}
+\date{}
+\begin{document}
+\maketitle
+
+\textbf{Tagline:} Everyone does it. A private gut diary that says so.
+
+\textbf{Try it out:} Live app \url{https://plop-beryl.vercel.app} (add \texttt{?mode=cached} for the offline demo scan) \quad GitHub \url{https://github.com/chlooood/hackcamp} \quad Figma \url{https://www.figma.com/design/n6vlmh5saWGs1k7fOicHJ0}
+
+\section*{Inspiration}
+
+Everyone poops. Somehow, talking about it is still awkward.
+
+We track our steps, sleep and workouts, but when a doctor asks about our bowel habits, we often have to piece together weeks of symptoms from memory. We wanted to make keeping that record easier, and make people actually want to return to it.
+
+So we built \textbf{Plop}, a gut diary with quick check-ins, optional social features and Ploopy, a little mascot who is excited that you showed up.
+
+Our mission: \textbf{``I plopped'' should sound as normal as ``I ran 5K.''}
+
+\section*{What it does}
+
+Plop makes an everyday bathroom visit a quick check-in.
+
+Users can log manually using the Bristol Stool Scale or scan a photo with Gemini to get suggested fields, then review and confirm their entry. Their history helps them keep track of changes over time instead of relying entirely on memory.
+
+Streaks, daily quests and our in-app currency, \textbf{Deuces}, add encouragement. Ploopy supplies the enthusiasm.
+
+For people who enjoy a little friendly motivation, optional buddy features share activity such as check-ins and streaks. \textbf{Friends do not see the photo, stool type or colour.} People who prefer to keep things private can use the diary on their own.
+
+Plop is a tracking tool, not a diagnostic tool. Scan results acknowledge uncertainty rather than presenting a photo as proof that everything is fine.
+
+\section*{How we built it}
+
+We built the app with \textbf{HTML, CSS and JavaScript}, deployed on \textbf{Vercel}, with \textbf{Auth0} for authentication and \textbf{Tiger Data} (Tiger Cloud, Postgres with TimescaleDB) for the database.
+
+We integrated \textbf{Gemini} to turn a photo into structured entry suggestions, including shape and colour. The server writes the safety wording, not the model. We designed the flow around user review: the scan suggests an entry, and the user confirms or edits it.
+
+We used \textbf{Figma} to develop the screens, teal visual identity and Ploopy's character. We also built an interactive HTML pitch with an embedded app, animated storytelling and a cached scan demonstration so our presentation would not depend on venue Wi-Fi. Our stage samples use Play-Doh and illustrations.
+
+\section*{How we used Tiger Data}
+
+\todo{Write 3 to 5 sentences with only what Riley confirms is live on the deployed app. The repo (db/tiger.sql) sets up: hypertables for entries, gp\_events and logins; compression of chunks older than 90 days; a 180-day retention policy on logins; and continuous aggregates weekly\_deuces, daily\_community and daily\_logins. The global board reads weekly\_deuces. Say plainly that the data is a few demo accounts plus 240 seeded fake players, so this shows the design and not scale. Do not claim anything that has not been run.}
+
+\section*{Challenges we ran into}
+
+\subsection*{Making it playful while respecting the topic}
+
+A poop app practically invites jokes, but someone tracking digestive symptoms also needs a useful record. Finding that balance shaped our mascot, interface and writing. We wanted the humour to make logging easier without making someone's concerns feel trivial.
+
+\subsection*{Explaining privacy precisely}
+
+We learned quickly that reassuring language can overpromise. ``Plop does not save your photo'' and ``nobody ever sees your photo'' mean different things when an external AI service processes the scan. We revised our wording to explain that distinction.
+
+\subsection*{Handling uncertainty}
+
+Getting a consistent AI response was only part of the challenge. We also had to decide how to display uncertainty. We worked on structured fields and cautious wording, including ``possible blood'' or ``can't tell from a photo'', rather than claiming a scan could rule something out.
+
+\subsection*{Making social features optional for a reason}
+
+Some people welcomed buddy streaks. Others wanted absolutely no updates about their friends' bathroom habits. That feedback reminded us that the private diary needs to be useful on its own.
+
+\subsection*{Fitting a time-series database to a small app}
+
+\todo{Optional. One or two true sentences about what was hard in the move to Tiger, for example hypertable keys needing the time column, or compression not working with row level security. Delete this subsection if there is nothing to say.}
+
+\section*{Accomplishments that we're proud of}
+
+\begin{itemize}
+  \item Bringing together manual logging, AI-assisted entry suggestions and a personal history in one approachable experience.
+  \item Creating Ploopy and a visual identity that makes a sensitive topic feel more welcoming.
+  \item Designing buddy sharing around participation while keeping entry details private.
+  \item Building an interactive pitch that demonstrates the app instead of relying only on screenshots.
+  \item Asking people for feedback and letting their answers challenge our assumptions.
+\end{itemize}
+
+\section*{What we learned}
+
+We informally polled \textbf{11 fellow hackathon participants}. It was a small convenience sample, but it helped us check our direction.
+
+Five said they had delayed seeing a doctor because it felt embarrassing. Eight welcomed a friend seeing only a check-in and streak, one said maybe, and two said no. Those two still welcomed health analytics; they simply did not want the social updates.
+
+That taught us to separate \textbf{interest in tracking} from \textbf{interest in sharing}.
+
+We also learned that product copy is part of the engineering. Explaining where a photo goes, what is retained and what friends can see requires the same precision as building those boundaries.
+
+Working with Gemini taught us that structured output makes an interface more predictable, but it does not make an interpretation certain. User review and honest wording remain essential.
+
+And we learned that even a small mascot has a big design job: Ploopy needs to make showing up feel good without making health feel like a score to win.
+
+\section*{Who we asked}
+
+We asked 11 fellow hackathon participants in person, one minute each, with no names or health details recorded. It is a small convenience sample, so it is a pulse check and not a study.
+
+\begin{itemize}
+  \item Hearing about a friend's stomach trouble (1 fine to 10 awkward): ten of eleven said 4 or lower.
+  \item Put off a doctor visit because it felt embarrassing: 5 yes, 6 no.
+  \item Describing changes to a doctor today: from memory was the most common answer (5 of the 8 who answered).
+  \item A friend seeing only ``logged today'' and a streak: 8 yes, 1 maybe, 2 no.
+  \item Photo sent to Gemini and not saved by Plop: 8 yes, 2 did not mind, 1 no.
+  \item Trust: they would trust it if photos are deleted right away, and stop if entries became public, if there were ads, or if it felt gimmicky.
+\end{itemize}
+
+\section*{Community impact statement}
+
+Many people avoid talking about bowel health, and some delay seeing a doctor because it feels embarrassing. By the figures we found, more than 1 in 4 adults meet the criteria for a functional bowel disorder (Palsson et al., online survey, $n = 5{,}931$), and 25\% of people have put off a doctor visit out of embarrassment (BUPA, UK, 2019, covering any embarrassing symptom). In our own small poll of 11 hackathon participants, 5 had put off a visit because it felt embarrassing, and most relied on memory to describe changes to a doctor.
+
+Plop is a 5-second private log and a record to bring to an appointment. Buddy sharing is limited to activity and is optional. It is not a medical device and does not diagnose. We have not studied whether it helps anyone, and we make no claim about how many people it will help.
+
+\section*{What's next for Plop}
+
+We want to complete a concise doctor-facing export, make rewards consistently recognize participation rather than bodily outcomes, and test with people beyond the hackathon, including people who already track digestive symptoms.
+
+We also want clinician feedback on health-related wording and a thorough review of privacy controls and accessibility.
+
+Ultimately, we want Plop to become an easy habit: \textbf{log it, learn about your patterns, and get on with your day.}
+
+\section*{Built with}
+
+gemini-api, tiger-data, timescaledb, postgresql, auth0, vercel, javascript, html, css, figma
+
+\end{document}

@@ -1,0 +1,110 @@
+# Plop
+
+**Tagline:** Everyone does it. A private gut diary that says so.
+
+**Try it out:** Live app https://plop-beryl.vercel.app (add `?mode=cached` for the offline demo scan) · GitHub https://github.com/chlooood/hackcamp · Figma https://www.figma.com/design/n6vlmh5saWGs1k7fOicHJ0
+
+## Inspiration
+
+Everyone poops. Somehow, talking about it is still awkward.
+
+We track our steps, sleep and workouts, but when a doctor asks about our bowel habits, we often have to piece together weeks of symptoms from memory. We wanted to make keeping that record easier, and make people actually want to return to it.
+
+So we built **Plop**, a gut diary with quick check-ins, optional social features and Ploopy, a little mascot who is excited that you showed up.
+
+Our mission: **"I plopped" should sound as normal as "I ran 5K."**
+
+## What it does
+
+Plop makes an everyday bathroom visit a quick check-in.
+
+Users can log manually using the Bristol Stool Scale or scan a photo with Gemini to get suggested fields, then review and confirm their entry. Their history helps them keep track of changes over time instead of relying entirely on memory.
+
+Streaks, daily quests and our in-app currency, **Deuces**, add encouragement. Ploopy supplies the enthusiasm.
+
+For people who enjoy a little friendly motivation, optional buddy features share activity such as check-ins and streaks. **Friends do not see the photo, stool type or colour.** People who prefer to keep things private can use the diary on their own.
+
+Plop is a tracking tool, not a diagnostic tool. Scan results acknowledge uncertainty rather than presenting a photo as proof that everything is fine.
+
+## How we built it
+
+We built the app with **HTML, CSS and JavaScript**, deployed on **Vercel**, with **Auth0** for authentication and **Tiger Data** (Tiger Cloud, Postgres with TimescaleDB) for the database.
+
+We integrated **Gemini** to turn a photo into structured entry suggestions, including shape and colour. The server writes the safety wording, not the model. We designed the flow around user review: the scan suggests an entry, and the user confirms or edits it.
+
+We used **Figma** to develop the screens, teal visual identity and Ploopy's character. We also built an interactive HTML pitch with an embedded app, animated storytelling and a cached scan demonstration so our presentation would not depend on venue Wi-Fi. Our stage samples use Play-Doh and illustrations.
+
+## How we used Tiger Data
+
+> **[FILL IN BEFORE SUBMITTING]** Write 3 to 5 sentences with only what Riley confirms is live on the deployed app. The repo (db/tiger.sql) sets up: hypertables for entries, gp_events and logins; compression of chunks older than 90 days; a 180-day retention policy on logins; and continuous aggregates weekly_deuces, daily_community and daily_logins. The global board reads weekly_deuces. Say plainly that the data is a few demo accounts plus 240 seeded fake players, so this shows the design and not scale. Do not claim anything that has not been run.
+
+## Challenges we ran into
+
+### Making it playful while respecting the topic
+
+A poop app practically invites jokes, but someone tracking digestive symptoms also needs a useful record. Finding that balance shaped our mascot, interface and writing. We wanted the humour to make logging easier without making someone's concerns feel trivial.
+
+### Explaining privacy precisely
+
+We learned quickly that reassuring language can overpromise. "Plop does not save your photo" and "nobody ever sees your photo" mean different things when an external AI service processes the scan. We revised our wording to explain that distinction.
+
+### Handling uncertainty
+
+Getting a consistent AI response was only part of the challenge. We also had to decide how to display uncertainty. We worked on structured fields and cautious wording, including "possible blood" or "can't tell from a photo", rather than claiming a scan could rule something out.
+
+### Making social features optional for a reason
+
+Some people welcomed buddy streaks. Others wanted absolutely no updates about their friends' bathroom habits. That feedback reminded us that the private diary needs to be useful on its own.
+
+### Fitting a time-series database to a small app
+
+> **[FILL IN BEFORE SUBMITTING]** Optional. One or two true sentences about what was hard in the move to Tiger, for example hypertable keys needing the time column, or compression not working with row level security. Delete this subsection if there is nothing to say.
+
+## Accomplishments that we're proud of
+- Bringing together manual logging, AI-assisted entry suggestions and a personal history in one approachable experience.
+- Creating Ploopy and a visual identity that makes a sensitive topic feel more welcoming.
+- Designing buddy sharing around participation while keeping entry details private.
+- Building an interactive pitch that demonstrates the app instead of relying only on screenshots.
+- Asking people for feedback and letting their answers challenge our assumptions.
+
+## What we learned
+
+We informally polled **11 fellow hackathon participants**. It was a small convenience sample, but it helped us check our direction.
+
+Five said they had delayed seeing a doctor because it felt embarrassing. Eight welcomed a friend seeing only a check-in and streak, one said maybe, and two said no. Those two still welcomed health analytics; they simply did not want the social updates.
+
+That taught us to separate **interest in tracking** from **interest in sharing**.
+
+We also learned that product copy is part of the engineering. Explaining where a photo goes, what is retained and what friends can see requires the same precision as building those boundaries.
+
+Working with Gemini taught us that structured output makes an interface more predictable, but it does not make an interpretation certain. User review and honest wording remain essential.
+
+And we learned that even a small mascot has a big design job: Ploopy needs to make showing up feel good without making health feel like a score to win.
+
+## Who we asked
+
+We asked 11 fellow hackathon participants in person, one minute each, with no names or health details recorded. It is a small convenience sample, so it is a pulse check and not a study.
+- Hearing about a friend's stomach trouble (1 fine to 10 awkward): ten of eleven said 4 or lower.
+- Put off a doctor visit because it felt embarrassing: 5 yes, 6 no.
+- Describing changes to a doctor today: from memory was the most common answer (5 of the 8 who answered).
+- A friend seeing only "logged today" and a streak: 8 yes, 1 maybe, 2 no.
+- Photo sent to Gemini and not saved by Plop: 8 yes, 2 did not mind, 1 no.
+- Trust: they would trust it if photos are deleted right away, and stop if entries became public, if there were ads, or if it felt gimmicky.
+
+## Community impact statement
+
+Many people avoid talking about bowel health, and some delay seeing a doctor because it feels embarrassing. By the figures we found, more than 1 in 4 adults meet the criteria for a functional bowel disorder (Palsson et al., online survey, n = 5,931), and 25% of people have put off a doctor visit out of embarrassment (BUPA, UK, 2019, covering any embarrassing symptom). In our own small poll of 11 hackathon participants, 5 had put off a visit because it felt embarrassing, and most relied on memory to describe changes to a doctor.
+
+Plop is a 5-second private log and a record to bring to an appointment. Buddy sharing is limited to activity and is optional. It is not a medical device and does not diagnose. We have not studied whether it helps anyone, and we make no claim about how many people it will help.
+
+## What's next for Plop
+
+We want to complete a concise doctor-facing export, make rewards consistently recognize participation rather than bodily outcomes, and test with people beyond the hackathon, including people who already track digestive symptoms.
+
+We also want clinician feedback on health-related wording and a thorough review of privacy controls and accessibility.
+
+Ultimately, we want Plop to become an easy habit: **log it, learn about your patterns, and get on with your day.**
+
+## Built with
+
+gemini-api, tiger-data, timescaledb, postgresql, auth0, vercel, javascript, html, css, figma
