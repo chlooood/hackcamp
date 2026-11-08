@@ -85,6 +85,6 @@ python3 pitch/build.py
 
 ## Team
 
-Chloë Dacey · Riley So · Zan Tian · _add the fourth member if any_
+Chloë Dacey · Riley So · Zan Tian 
 
 Design guardrails came from the [anti-ai-slop](https://github.com/Vinayak-Shukla-03/anti-ai-slop) skill (MIT).
