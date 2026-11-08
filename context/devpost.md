@@ -100,27 +100,21 @@ What to look at in the screens:
 
 ## What we learned
 
-We informally polled **11 fellow hackathon participants**. It was a small convenience sample, but it helped us check our direction.
+We polled **11 fellow hackathon participants** in person, one minute each, with no names or health details recorded. It is a small convenience sample, so it is a pulse check and not a study.
 
-Five said they had delayed seeing a doctor because it felt embarrassing. Eight welcomed a friend seeing only a check-in and streak, one said maybe, and two said no. Those two still welcomed health analytics; they simply did not want the social updates.
+- **Hearing about a friend's stomach trouble** (1 fine to 10 awkward): ten of eleven said 4 or lower.
+- **Put off a doctor visit because it felt embarrassing:** 5 yes, 6 no.
+- **Describing changes to a doctor today:** from memory was the most common answer (5 of the 8 who answered).
+- **A friend seeing only "logged today" and a streak:** 8 yes, 1 maybe, 2 no. The two "no" answers were still fine with the photo scan. They just did not want the social updates.
+- **Photo sent to Gemini and not saved by Plop:** 8 yes, 2 did not mind, 1 no.
+- **Trust:** knowing the photo is not kept would build it. Entries becoming public, ads or feeling gimmicky would end it.
 
-That taught us to separate **interest in tracking** from **interest in sharing**.
+What we took from it:
 
-We also learned that product copy is part of engineering. Explaining where a photo goes, what is retained and what friends can see requires the same precision as building those boundaries.
-
-Working with Gemini taught us that structured output makes an interface more predictable, but it does not make an interpretation certain. User review and honest wording remain essential.
-
-And we learned that even a small mascot has a big design job: Ploopy needs to make showing up feel good without making health feel like a score to win.
-
-## Who we asked
-
-We asked 11 fellow hackathon participants in person, one minute each, with no names or health details recorded. It is a small convenience sample, so it is a pulse check and not a study.
-- Hearing about a friend's stomach trouble (1 fine to 10 awkward): ten of eleven said 4 or lower.
-- Put off a doctor visit because it felt embarrassing: 5 yes, 6 no.
-- Describing changes to a doctor today: from memory was the most common answer (5 of the 8 who answered).
-- A friend seeing only "logged today" and a streak: 8 yes, 1 maybe, 2 no.
-- Photo sent to Gemini and not saved by Plop: 8 yes, 2 did not mind, 1 no.
-- Trust: they would trust it if photos are deleted right away, and stop if entries became public, if there were ads, or if it felt gimmicky.
+- **Interest in tracking is different from interest in sharing.** The private diary has to work on its own, and sharing stays optional.
+- **Product copy is part of the engineering.** Explaining where a photo goes, what we keep and what friends see takes the same precision as building those boundaries.
+- **Structured output makes an interface predictable, not an interpretation certain.** User review and honest wording stay essential.
+- **A small mascot has a big design job.** Ploopy should make showing up feel good without making health feel like a score to win.
 
 ## Community impact statement
 
