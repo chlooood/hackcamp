@@ -1,75 +1,45 @@
 # Status (handoff file)
 
-Update this at the end of every session, whichever agent or person you are. Overwrite, do not append.
+Update this at the end of every session, whichever agent or person you are. Overwrite, do not append. Last updated 2026-11-08, about 2am Pacific.
 
 ## Done
-- 2026-11-08 ~10:50 MST: DATABASE IS NOW TIGER CLOUD (Postgres 18 + TimescaleDB 2.31), live on https://plop-beryl.vercel.app (Vercel DATABASE_URL switched, redeployed, live API tested). db/tiger.sql: hypertables for entries and gp_events, compression after 90 days, weekly_deuces and daily_community continuous aggregates, global_board(). The Global top 100 screen shows the real weekly board when logged in (demo board otherwise). Handoff tests in context/tiger-switch.md all passed. Supabase left intact as fallback (its string is commented in the local .env). Auth0 callback URLs for plop-beryl.vercel.app are still NOT added, so live login stays off.
-- Repo set up with CLAUDE.md, AGENTS.md, and the context/ folder.
-- Idea: Plop, a gamified, social gut diary with Gemini photo scan (the user's call, 2026-11-07). Final. Reaffirmed after Senate run 10 and a competitor check of its alternatives: every alternative has shipped competitors too. Wave V2, Paper Trail and the run 10 ideas are shelved, not deleted. See decisions.md and research.md.
-- Architecture, cut order, hour-8 gate, honesty rules and a gut-health research section are written.
-- context/sponsors.md now has an Entire section (what it is, install steps, what `entire enable` changes, the public-repo transcript warning).
-
-- Mission set 2026-11-08: destigmatize poo (see architecture.md "Mission" and decisions.md). Scoring set to effort plus consistency, with Zan's prototype as the UI base.
-
-- Prototype scoring and leaderboard are Zan's to build. My effort-only version is in commit 72bb838 (reverted in the next commit). The spec Zan should follow is in architecture.md "Points, leagues and gentle day" (effort-only, 100 per scan photo, consistency multiplier, weekly 0 to 100 score, rank never reads scan results).
-
-- Phone demo built (not yet deployed): public/index.html (quick log, photo scan, confirm or pick, failure path, streak, scripted buddy, cached demo switch) and api/scan.js (Gemini, server-side, fixed blood wording). API logic and page flow pass local tests (mocked Gemini, jsdom). Deploy steps are in DEPLOY.md. Never run against real Gemini yet.
-
-- The anti-ai-slop design skill was removed on 2026-11-08 (user's call). CLAUDE.md and AGENTS.md keep the rule to render and look at UI work before calling it done. design/BRIEF.md is still the design brief, but its cobalt palette is older than the shipped teal design.
+- Idea and mission: Plop, a gamified, privacy-first gut diary with a Gemini photo scan. Mission: make "I plopped" as ordinary as "I ran 5k". Final, no more re-deciding.
+- App is live at https://plop-beryl.vercel.app (README link): plain HTML/JS front end, Vercel functions (api/scan.js Gemini, api/auth.js Auth0, api/data.js), Ploopy design (teal, Nunito). `?mode=cached` replays known-good scans.
+- Database moved to Tiger Cloud (merged in d7c704a): hypertables, compression, continuous aggregates, 240 seeded demo players. Handoff notes are in context/tiger-switch.md; architecture.md already describes it.
+- Scan tested locally on 7 illustrated samples with real Gemini. Server writes the blood wording ("possible blood" or "can't tell from a photo"), never "no blood".
+- Privacy copy fixed on the scan screen ("Your photo is sent to Google's Gemini to be read. Plop doesn't save it."). api/scan.js writes and logs nothing of the photo.
+- Interactive pitch (pitch/index.html, about 4:10, offline). Rebuild with `python3 pitch/build.py` after changing the app.
+- Research: desk surveys re-opened and corrected (research.md); our own poll of 11 hackathon participants is in the README.
+- Senate run 11 done (context/senate-result-11.md). Simulated opinion, no consensus. Main advice: no claim ships unverified, deploy then freeze at 3:00am, early Devpost submission, Best Design as the single opt-in.
+- Devpost post drafted: context/devpost.md (Tiger section, Privacy section, Best Design Figma guide, community impact statement, tags). README rewritten to match.
+- Entire: sessions push to a private repo (chlooood/hackcamp-checkpoints), first checkpoint confirmed, automatic policy. Only sessions on the user's laptop are recorded. Graph and Brain are not set up.
+- Anti-ai-slop skill removed (user's call). design/BRIEF.md rewritten for the shipped teal design.
 
 ## In progress
-- 2026-11-07: db/schema.sql and db/seed.sql are now RUN on the team Supabase project (Plop tables: profiles, entries, gp_events, buddies, cheers). Zan's earlier empty tables were dropped on 2026-11-08 at the user's request; only the Plop tables remain. Seed dates use Pacific time (UBC). Login is switched off automatically until Auth0 lists the callback URL.
-- Branch supabase-db (PR #3): Auth0 login, server data API, Supabase schema for Auth0 ids, Gemini 3.8 Flash scan with a researched 0-100 score and AI ideas, Join ranked opt-in. Tested locally end to end (real Gemini on 7 illustrated samples, data API as two users, simulated Auth0 callback including tampered tokens, browser flow on local Postgres). NOT yet run against the real Supabase project (the user's SQL run failed; waiting for the Transaction pooler connection string so the schema can be run directly) and real Auth0 login not tried (Auth0 needs the callback URLs in DEPLOY.md). Next: run schema and seed on Supabase, add Auth0 URLs, set Vercel env vars, two-phone test.
-- Interactive pitch (branch interactive-pitch): pitch/index.html, one file, works offline. Edit pitch/src.html, then run `python3 pitch/build.py` to rebuild; it embeds the current public/index.html and every PNG in pitch/ploopy/. 14 steps, about 4:10 (cut the IBS slide first if long). Keys: right arrow or Space next (also drives the phone), left back, N notes, T timer, R reset app, ? help.
-  - Structure: animated opener, a "fig. 1" anatomical plate in the style of the sourcebook references (a person in profile bites an orange; it travels down the oesophagus, through stomach, small and large intestine with a drawn trail; Ploopy pops out; "Plop. Everyone does it."), then 4 chapters on a quest map at the top left ("Quest: make 'I plopped' normal"): 1 The problem, 2 The app, 3 The record, 4 Real talk, then a Goal flag with confetti and squishable Ploopys.
-  - Transitions: a 1-second teal tile wipe with a chapter card, only when moving forward into a new chapter, only over the left side. The phone never moves; on data slides it dims.
-  - Data slides: more than 1 in 4 adults with a bowel disorder (Palsson, Rome IV, n 5,931); 71% would rather do something unpleasant than talk about poop and 35% google it out of embarrassment (Oshi Health / Harris Poll 2026, vendor, marked Secondary); 25% delayed a doctor out of embarrassment, average over two months (BUPA n 1,245, marked Secondary); IBS women 6.1% vs men 3.2% (Palsson) and endometriosis IBS odds ratio 3.26, CI 1.97 to 5.39 (PubMed 32949284). Nobody has re-opened these links yet; do that before saying them on stage.
-  - Removed: the "What we didn't do" slide (user's call). Play-Doh and "not a diagnosis" are still said on the scan and result slides.
-  - Built on the merged scoring as designed (the scan score moves Deuces). The pitch does not claim effort-only scoring; the notes give a straight answer if judges ask.
-  - Fixed: links inside the phone (href="#...") used to load the pitch inside the phone.
-- Points renamed from GP to Deuces everywhere users see them (public/index.html and the pitch). Code names (state.gp, gpLog) are unchanged.
-- Supabase database built on branch supabase-db: db/schema.sql (tables, RLS, buddy functions, tested on local Postgres 15 with stubbed Supabase auth) and a sync layer in public/index.html (tested in the browser with a stand-in Supabase client: sign-in, load, check-in, cheers, invites, offline queue, remove buddy, delete everything). Not yet run against a real Supabase project. Next: create the project, enable anonymous sign-ins, run the schema, fill public/config.js (steps in DEPLOY.md), then the two-phone test.
-- public/index.html now follows the user's "Front End Ploopy" design (13 screens, teal, Nunito, mascot Ploopy). Scan still goes to api/scan.js; cached demo, forced-unclear scan, simulate missed day, promotion screen and mascot colour are under Record > Demo settings. Tested in a browser in cached mode, not yet on a phone or against real Gemini. The design conflicts with several logged decisions (see the last line of decisions.md); the team needs to confirm them.
-- A teammate (Zan Tian) uploaded a front-end only prototype: `prototype/plop.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
-- Prototype conflicts with logged decisions. Scoring is now settled and built in the prototype. Still open and not yet agreed with Zan: privacy copy says photos are analysed on-device (we send them to Gemini and discard); health advice cards and fixed hydration/fibre readouts (do-not-build); gender, age, conditions and medications profile fields; one log per day lock; no quick log, confirm/edit or failure path; friends rank sharing defaults on; no streak freeze, buddy invite, gentle day, habits or cycle chip.
-- Entire is installed and enabled on the user's laptop (v0.13.1, Claude Code hooks, push_sessions false, settings committed in 3b03f2a). The agent sandbox could not install it, so each teammate installs it on their own laptop. Steps are in sponsors.md.
+- Two VERIFY lines in context/devpost.md: Gemini paid tier (confirm the Vercel key is billed, re-read Google's terms) and the Figma Foundations page (still shows the old cobalt palette; the app is teal).
+- Devpost still says Auth0 login is deployed. Nobody has confirmed a real login on the live link.
+- Figma MCP hit its Starter plan call limit, so Figma pages and names could not be checked from the agent.
 
-- Research links re-opened 2026-11-08: Palsson (more than 1 in 4, n 5,931, IBS 6.1% vs 3.2%) and PubMed 32949284 (OR 3.26) confirmed. Oshi/Harris: 71% confirmed; the 35% is "often rely on the internet" because too embarrassed to talk to a healthcare provider (US, n 2,091, Jan 2026, sponsor is a GI care company). BUPA (via DJS Research): 25% and "over two months" confirmed but it covers any embarrassing symptom, UK, 2019; bowel or bladder averaged nearly 10 weeks. Pitch wording updated to match.
-- Gemini terms read 2026-11-08: free tier = Google may use inputs to improve products and human reviewers may read them, and says not to send sensitive or personal data. Paid tier = not used for training, logged for a limited time for abuse monitoring. API is 18+ only, not for medical advice, and EEA/UK/Swiss users require the paid tier. Demo must use a billed key; the app's scan copy ("Nobody ever sees it. Not even us.") overclaims and should change.
-- Figma: page "App screens & flow" in file n6vlmh5saWGs1k7fOicHJ0 has all 13 screens as editable layers (Nunito), laid out as 3 flows with arrows.
-- README.md written (problem with sources, features, architecture, run steps, honesty section, team).
 ## Next (in order)
-0. Before judging (deadline 12:00pm MST per the Devpost overview; the schedule says 12:15, treat 12:00 as real): deploy to Vercel and run one live Gemini scan on the demo phone, else present with the cached scan; decide whether to merge Riley's supabase-db branch (if merged, rebuild the pitch and check it loads); merge interactive-pitch; ask organizers how many prize opt-ins are allowed; start the Devpost submission; write a README; rehearse to 4:00 plus Q and A; re-open the research links; optional 4-minute video (screen-record the pitch).
-1. Teammates: `git pull`, install Entire (Scoop `entire/entire` on Windows), run `entire enable --agent claude-code --skip-push-sessions`, then `entire status`. The user's laptop is done.
-2. Confirm stack and hosting (public URL, works on two phones).
-3. Hour-1 Gemini spike: five test images (Play-Doh, illustrations). Check refusals, latency, JSON validity. Pass: usable type on at least 4 of 5, a sensible low-confidence answer on a bad photo, a reply in about 3 seconds. Fail: the manual picker is the main path and the scan is a bonus.
-4. Login working on one phone.
-5. The log loop: quick log first, then photo scan, confirm, entry saved, streak ticks.
-6. Buddy invite and accept, activity-only feed ("logged today", streak, cheers).
-7. Mascot and design pass (the user leads).
-8. Hour-8 gate on two real phones (see architecture.md).
-9. After the gate, add points and habit check-ins, the friends league and gentle day, then in this order if time allows (Senate run 9, plus the cycle ribbon): doctor summary on screen, demo-safe mode and scan-failure states, context chips and the opt-in cycle ribbon with discreet mode, privacy ledger (read-only, revoke, true delete), pause and streak-off, PWA manifest, accessibility pass, nothing-to-report, doctor-summary notes. Quests, weekly recap, mascot cosmetics and the cycle-overlay chart are roadmap slides.
-10. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
+1. Ask organizers on Discord: real deadline (Devpost says 12:00pm MST, which is 11:00am Pacific), how many superlative prizes a team can opt into, what counts as a Beginner team.
+2. Run one real scan on a phone on the live link (hotspot or cellular), with a Play-Doh sample. Write down the result, failures included. Technical stays rated a 5 until this passes.
+3. Verify privacy facts: Vercel log settings, Gemini billing and current paid-tier terms. Delete the VERIFY lines.
+4. Check Auth0 login on the live link. Confirm Tiger policies (compression, retention, aggregates) are applied on the deployed database.
+5. Update the Figma Foundations page to the teal palette. Fix contrast in the app (white on teal buttons is 3.7:1, faint text is 2.5:1, see design/BRIEF.md).
+6. Decide the departures in design/BRIEF.md: indigo and a purple tier, the flame streak icon, metal-style tiers.
+7. Decide whether the scan score still moves Deuces. It conflicts with the effort-only rule. Fix it, or say so plainly in the Devpost and in Q&A.
+8. Cut the pitch to 4:00 (cut the 71% stat first, cap the opener at 20 seconds), rehearse once with the timer.
+9. Opt-in pick: Best Design if the limit is one. Add Gemini, Community Impact and, if beginner status is confirmed, Best Problem-Solution Fit if there is no limit.
+10. Submit a complete Devpost entry early (target 9:30am Pacific): repo, Figma link, README, optional cached-mode video up to 4 minutes.
 
 ## Blockers and open questions
-- Deploy to Vercel and run the 5-image Gemini spike. Verify the model name, response shape and latency with a real key (the docs could not be fetched). Gemini data-retention terms are still unchecked, and the page says the photo is sent to Google and then dropped.
-- Prize opt-in: see context/prizes.md. Best Design (needs a Figma link) and Community Impact (needs an impact statement) are open to all and were missing from rules.md. Devpost does not state an opt-in limit. Submission deadline per Devpost: Nov 8, 12:00pm MST on the overview page (12:15pm on the schedule page); winners 1:00pm MST. Confirm the timezone with organizers.
-- Tell Zan the scoring change: the score-driven rating goes, effort plus a consistency multiplier replaces it. Confirm with the user that "consistency" means showing up (logging and habit streaks), not consistently healthy results.
-- Check whether "Plop" is available as a name (renamed from Gut Check on 2026-11-08; decisions.md keeps the old name in historical lines). Pitch hand-raise and stats need a teammate to re-open the research.md links.
-- Points, friends league, global leaderboard and gentle day were decided on 2026-11-07 (see architecture.md and decisions.md). Starter habits need a source link each, and ideally a clinician's read, before the demo. The habit-photo bonus on food photos carries a nudge-to-food-logging risk; mitigations are in decisions.md.
-- Ask organizers: how many superlative prizes can a team opt into (rules.md says one, the user was told several may be allowed, no source found), is judging by peers or a panel, and when must the opt-in be declared. Then update rules.md.
-- Prize opt-in is open: Gemini (recommended) or Auth0. Entire (a projector) is a third option only if the team wants to build a measured token-savings story, which is not planned. Decide by about hour 3.
-- Entire: decide whether session transcripts get pushed to the public repo. Default is no. Read a transcript for emails, keys or personal details before ever pushing.
-- Make a cached known-good demo run behind a live/cached switch before hour 8.
-- Check Gemini latency, quota, accuracy and data-retention terms, and PIPEDA and BC privacy rules for health-adjacent data, before the pitch.
-- No signposting copy (phone numbers) near the possible-blood flag until a clinician reviews it.
-- Senate run 9 hours are guesses and the result was unratified. The builder re-estimates before committing to the added scope.
-- Confirm all three teammates are comfortable pitching this to judges.
-- Competitor research is stopped (hackathon, best idea). The pitch just never says "first".
-- Female-accessible UI: design lead sketches the cycle onboarding question, cycle ribbon, 3 mascot colourways and discreet mode early. Ask at least two people who track a cycle to read the wording.
-- Someone on the team must open each link in context/research.md and confirm the numbers before they go on a slide.
+- Deadline timezone, opt-in limit and beginner definition are unconfirmed (see rules.md and prizes.md).
+- Prototype conflicts (prototype/plop.html, Zan's): privacy copy, health advice cards, profile fields. Not merged into the app. Do not submit it as the product.
+- Name availability for "Plop" has not been checked.
+- Starter habits need sources and ideally a clinician's read. No signposting copy near the possible-blood flag until a clinician reviews it.
+- Teammates' Entire adoption is unverified. Graph and Brain are not set up; there is no measured token saving, so Entire is not a prize target.
+- Research links should be re-opened by someone on the team before the numbers go on a slide.
+- No cancer-detection or "first" claims anywhere. Stage demo uses Play-Doh or illustrations.
 
 ## How to run it
-- TODO once code exists.
-
-- Figma file n6vlmh5saWGs1k7fOicHJ0: colour variables and specimen done (page Foundations). No screens built there yet; designer builds them via Codex.
+- Locally: `npm install`, copy `.env.example` to `.env` and fill it in, `npm run dev`. Database: `TIGER_URL=... npm run db:tiger`. Deploy steps are in DEPLOY.md.
