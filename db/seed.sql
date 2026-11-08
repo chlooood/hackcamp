@@ -64,7 +64,7 @@ begin
               (array['brown','brown','light brown','dark brown'])[1 + floor(random() * 4)::int],
               round((0.65 + random() * 0.3)::numeric, 2), case when sc >= 80 then 0 when sc >= 60 then 1 else 2 end,
               case when random() < 0.2 then array[chip_pool[1 + floor(random() * 6)::int]] else '{}' end, false,
-              ((d + coalesce((p->>9)::time, time '09:00')) at time zone 'America/Vancouver'));
+              least(now() - interval '5 minutes', (d + coalesce((p->>9)::time, time '09:00')) at time zone 'America/Vancouver'));
       insert into public.gp_events (user_id, day, delta, reason)
       values (uid, d, 10 + case when sc >= 90 then 20 when sc >= 80 then 14 when sc >= 70 then 8 when sc >= 60 then 3 when sc >= 50 then 0 when sc >= 40 then -6 else -15 end, 'check-in');
     end loop;

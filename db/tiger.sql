@@ -89,10 +89,10 @@ select create_hypertable('public.logins', by_range('at', interval '7 days'));
 create index logins_user_at on public.logins (user_id, at desc);
 select add_retention_policy('public.logins', interval '180 days');
 
--- Daily active players, kept up to date by Tiger.
+-- Daily active players, kept up to date by Tiger. Days are Vancouver days, not UTC.
 create materialized view public.daily_logins
 with (timescaledb.continuous, timescaledb.materialized_only = false) as
-select time_bucket(interval '1 day', at) as day, count(distinct user_id)::int as players, count(*)::int as logins
+select time_bucket(interval '1 day', at, 'America/Vancouver') as day, count(distinct user_id)::int as players, count(*)::int as logins
 from public.logins
 group by 1
 with no data;
