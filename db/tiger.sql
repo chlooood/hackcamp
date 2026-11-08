@@ -74,3 +74,36 @@ language sql stable as $$
   where r.pos <= p_limit or r.id = p_user
   order by r.pos;
 $$;
+
+-- ---------- logins (written by api/auth.js after each successful Auth0 login) ----------
+-- One row per login: who (Auth0 sub), when, and which provider (google-oauth2, auth0, ...).
+-- No email, no IP, no tokens. Rows older than 180 days are dropped automatically, and deleting
+-- your account removes yours at once (cascade from profiles).
+drop table if exists public.logins cascade;
+create table public.logins (
+  user_id   text not null references public.profiles (id) on delete cascade,
+  at        timestamptz not null default now(),
+  provider  text not null default '' check (char_length(provider) <= 40)
+);
+select create_hypertable('public.logins', by_range('at', interval '7 days'));
+create index logins_user_at on public.logins (user_id, at desc);
+select add_retention_policy('public.logins', interval '180 days');
+
+-- Daily active players, kept up to date by Tiger.
+create materialized view public.daily_logins
+with (timescaledb.continuous, timescaledb.materialized_only = false) as
+select time_bucket(interval '1 day', at) as day, count(distinct user_id)::int as players, count(*)::int as logins
+from public.logins
+group by 1
+with no data;
+select add_continuous_aggregate_policy('public.daily_logins', start_offset => interval '30 days', end_offset => interval '1 hour', schedule_interval => interval '15 minutes');
+
+-- Called once per login: make sure the profile exists, record the login, return the profile.
+create or replace function public.record_login(p_user text, p_name text, p_provider text)
+returns public.profiles language plpgsql as $$
+declare p public.profiles;
+begin
+  p := public.ensure_profile(p_user, p_name);
+  insert into public.logins (user_id, provider) values (p_user, left(coalesce(p_provider, ''), 40));
+  return p;
+end $$;
