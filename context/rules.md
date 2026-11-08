@@ -1,11 +1,13 @@
 # Hackathon rules
 
-Source: event page, pasted by the team. Dates and team size still to fill in.
+Source: event page, pasted by the team, plus the Devpost page and rules read 2026-11-08. See prizes.md for the full prize list.
 
 ## Event
 - Name: HackCamp
-- Dates / submission deadline: TODO
-- Team size limit: TODO
+- Dates: Nov 7 to 8, 2026, in person at UBC Vancouver, hosted by nwPlus.
+- Devpost schedule (times shown in MST, which looks odd for Vancouver, confirm with organizers): submissions open Nov 7 12:00pm, deadline Nov 8 12:15pm, winners announced Nov 8 1:00pm.
+- Team size: 1 to 4 members, all registered and present. One team only, one submission per team, no collaboration between teams.
+- Submission needs: GitHub repo link (required), Figma link (needed for Best Design and Most Accessible Design), demo video up to 4 minutes (optional).
 - Demo format: live presentation at an assigned judging table. 4 min pitch, 4 min Q&A. Video not required. Bring your own laptop and materials. Arrive 5 min early at the designated entrance. Table and time are posted on Discord.
 
 ## Theme
@@ -19,9 +21,9 @@ Identify a problem facing a community and build a solution that makes a meaningf
 - Pitch: clarity, preparedness, communication of the problem and solution
 
 ## Prize rules
-- Each team can opt in to ONE superlative prize maximum. Treat every "Best Use of..." and "Best Domain Name" prize as a superlative. Using a sponsor's tech without opting in is allowed.
+- Earlier note from the event page: each team can opt in to ONE superlative prize maximum. The Devpost page and rules do NOT state a limit, so this is unconfirmed; ask organizers. Treat every "Best Use of..." and "Best Domain Name" prize as a superlative. Using a sponsor's tech without opting in is allowed.
 
-## Superlatives available
+## Superlatives available (Best Design, Community Impact and the beginner superlatives are also open, see prizes.md)
 - Best Use of Gemini API (MLH swag kits)
 - Best Use of Entire (mini portable projector). Wants Sessions, Graph, Brain, Trails, with measurable token savings.
 - Best Use of Solana (unruggable hardware wallets)
@@ -31,7 +33,7 @@ Identify a problem facing a community and build a solution that makes a meaningf
 - Best Domain Name from GoDaddy Registry (digital gift card)
 
 ## Our pick
-Auth0 (decided 2026-11-07, see decisions.md). Confirm with organizers when the single opt-in must be declared.
+Logged pick is still Auth0 (decided 2026-11-07, see decisions.md), but it is under review: Community Impact, Best Design and Gemini fit the product better (see prizes.md). Confirm with organizers when the single opt-in must be declared.
 
 ## Submission checklist
 - [ ] Public repo

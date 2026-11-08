@@ -4,14 +4,14 @@ Update this at the end of every session, whichever agent or person you are. Over
 
 ## Done
 - Repo set up with CLAUDE.md, AGENTS.md, and the context/ folder.
-- Idea: Gut Check, a gamified, social gut diary with Gemini photo scan (the user's call, 2026-11-07). Final. Reaffirmed after Senate run 10 and a competitor check of its alternatives: every alternative has shipped competitors too. Wave V2, Paper Trail and the run 10 ideas are shelved, not deleted. See decisions.md and research.md.
+- Idea: Plop, a gamified, social gut diary with Gemini photo scan (the user's call, 2026-11-07). Final. Reaffirmed after Senate run 10 and a competitor check of its alternatives: every alternative has shipped competitors too. Wave V2, Paper Trail and the run 10 ideas are shelved, not deleted. See decisions.md and research.md.
 - Architecture, cut order, hour-8 gate, honesty rules and a gut-health research section are written.
 - context/sponsors.md now has an Entire section (what it is, install steps, what `entire enable` changes, the public-repo transcript warning).
 
 - Mission set 2026-11-08: destigmatize poo (see architecture.md "Mission" and decisions.md). Scoring set to effort plus consistency, with Zan's prototype as the UI base.
 
 ## In progress
-- A teammate (Zan Tian) uploaded a front-end only prototype: `GutCheck — working prototype.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
+- A teammate (Zan Tian) uploaded a front-end only prototype: `prototype/plop.html` (commit 512002a). Single file, React and Tailwind from CDNs, no backend, mock random scan (no Gemini call). Screens: Profile, Health, Log, League, Settings. Stack not confirmed; no real backend yet.
 - Prototype conflicts with logged decisions. Scoring is now settled (rating replaced by effort plus consistency). Still open and not yet agreed with Zan: privacy copy says photos are analysed on-device (we send them to Gemini and discard); health advice cards and fixed hydration/fibre readouts (do-not-build); gender, age, conditions and medications profile fields; one log per day lock; no quick log, confirm/edit or failure path; friends rank sharing defaults on; no streak freeze, buddy invite, gentle day, habits or cycle chip.
 - Entire is installed and enabled on the user's laptop (v0.13.1, Claude Code hooks, push_sessions false, settings committed in 3b03f2a). The agent sandbox could not install it, so each teammate installs it on their own laptop. Steps are in sponsors.md.
 
@@ -28,8 +28,9 @@ Update this at the end of every session, whichever agent or person you are. Over
 10. Lock the demo script by hour 10. Final hours: rehearse the 4-minute pitch and Q and A. No new features.
 
 ## Blockers and open questions
+- Prize opt-in: see context/prizes.md. Best Design (needs a Figma link) and Community Impact (needs an impact statement) are open to all and were missing from rules.md. Devpost does not state an opt-in limit. Submission deadline per Devpost: Nov 8, 12:15pm MST; winners 1:00pm MST. Confirm the timezone with organizers.
 - Tell Zan the scoring change: the score-driven rating goes, effort plus a consistency multiplier replaces it. Confirm with the user that "consistency" means showing up (logging and habit streaks), not consistently healthy results.
-- Check whether "Plop" is available as a name. Pitch hand-raise and stats need a teammate to re-open the research.md links.
+- Check whether "Plop" is available as a name (renamed from Gut Check on 2026-11-08; decisions.md keeps the old name in historical lines). Pitch hand-raise and stats need a teammate to re-open the research.md links.
 - Points, friends league, global leaderboard and gentle day were decided on 2026-11-07 (see architecture.md and decisions.md). Starter habits need a source link each, and ideally a clinician's read, before the demo. The habit-photo bonus on food photos carries a nudge-to-food-logging risk; mitigations are in decisions.md.
 - Ask organizers: how many superlative prizes can a team opt into (rules.md says one, the user was told several may be allowed, no source found), is judging by peers or a panel, and when must the opt-in be declared. Then update rules.md.
 - Prize opt-in is open: Gemini (recommended) or Auth0. Entire (a projector) is a third option only if the team wants to build a measured token-savings story, which is not planned. Decide by about hour 3.

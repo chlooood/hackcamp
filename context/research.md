@@ -26,7 +26,7 @@ We did not interview anyone. Say so in the pitch. Every line below is from a pub
 ## Outage data
 - BC Hydro publishes RSS feeds by region and municipality (about every 15 minutes, with time off, estimated restoration, customers affected, approximate area). An undocumented outage-map JSON exists and may change without notice. Not relied on. Found in an earlier session, re-check the feed page before building.
 
-## Gut health (Gut Check, added 2026-11-07; the Wave sections above are shelved)
+## Gut health (Plop, added 2026-11-07; the Wave sections above are shelved)
 Desk research only. No interviews. Re-open each link before quoting a number on stage. Secondary sources are marked.
 
 ### Why track
