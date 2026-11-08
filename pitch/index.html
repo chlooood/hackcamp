@@ -315,10 +315,10 @@
       html: '<h1>And we really don’t want to talk about it.</h1>' +
         '<div class="chart card">' +
           '<div class="hbar"><span class="n">71%</span><div><div class="lab">would rather do something unpleasant than talk about poop socially</div><div class="track"><div class="fill" style="--w:71%"></div><span class="rider" style="--w:71%">' + pl('caramel', 'oh') + '</span></div></div></div>' +
-          '<div class="hbar"><span class="n">35%</span><div><div class="lab">google it because they’re too embarrassed to ask anyone</div><div class="track"><div class="fill" style="--w:35%"></div><span class="rider" style="--w:35%">' + pl('sage', 'curious') + '</span></div></div></div>' +
+          '<div class="hbar"><span class="n">35%</span><div><div class="lab">often look it up online, too embarrassed to ask a doctor</div><div class="track"><div class="fill" style="--w:35%"></div><span class="rider" style="--w:35%">' + pl('sage', 'curious') + '</span></div></div></div>' +
           '<div class="hbar"><span class="n">25%</span><div><div class="lab">put off seeing a doctor out of embarrassment</div><div class="track"><div class="fill alt" style="--w:25%"></div><span class="rider" style="--w:25%">' + pl('honey', 'oh') + '</span></div></div></div>' +
         '</div>' +
-        '<span class="src"><span class="tag">Secondary</span>71% and 35%: Oshi Health / Harris Poll, 2026 (vendor survey). 25%: BUPA survey, n = 1,245. Surveys show association, not cause.</span>',
+        '<span class="src"><span class="tag">Secondary</span>71% and 35%: Oshi Health / Harris Poll, US adults, n = 2,091, Jan 2026 (vendor survey). 25%: BUPA, UK, n = 1,245, 2019, any embarrassing symptom. Surveys show association, not cause.</span>',
       notes: 'Read the top number, let the bars land. Optional hand-raise here: "Who has googled their poop instead of asking someone?" Count the hands out loud. If asked: these are surveys, two from companies, and embarrassment is one barrier among several. Re-open the links in research.md before saying them on stage.' },
     { secs: 10, route: 'home',
       html: '<h1>“I plopped” should sound as normal as “I ran 5k”.</h1><p>That’s the whole mission.</p>',
@@ -327,8 +327,8 @@
       html: '<h1>Meet Plop.</h1><p>A gut diary built like a game. Streaks, daily quests, and Ploopy, who gets excited when you show up.</p>',
       notes: 'Point at the streak and the three quests. This is the real app running, not a video.' },
     { secs: 25, route: 'scan', ring: ['#shutter', 'tap to scan'],
-      html: '<h1>Snap it.</h1><p>Gemini reads shape and colour. The photo is scored, then deleted. Nobody sees it.</p><span class="src">Stage demo uses Play-Doh. Cached run, so the venue wifi can’t hurt us.</span>',
-      notes: 'Tap the shutter yourself, or press Space and it fires. Say "Play-Doh" out loud before anyone asks. We do not store photos. Google’s retention terms for our Gemini tier are still unchecked: say "we don’t store it", not "nobody ever has it".',
+      html: '<h1>Snap it.</h1><p>Gemini reads shape and colour. We never store the photo.</p><span class="src">Stage demo uses Play-Doh. Cached run, so the venue wifi can’t hurt us.</span>',
+      notes: 'Tap the shutter yourself, or press Space and it fires. Say "Play-Doh" out loud before anyone asks. We do not store photos. Say "we never store it", never "nobody ever sees it". On Gemini\'s paid tier Google does not train on it but logs it briefly for abuse checks; on the free tier Google may use it and humans may review it. Only demo on a billed key.',
       action: async function () { if (!el('#shutter')) { go('scan'); await until('#shutter'); } click('#shutter'); await until('.score-card', 5000); } },
     { secs: 25, route: null, ring: ['.score-card', 'your private result'],
       html: '<h1>You see the result. Only you.</h1><p>It never says “no blood”. It says “possible blood” or “can’t tell from a photo”, and it is not a diagnosis.</p>',
@@ -348,15 +348,15 @@
         '<div class="timeline card" style="position:relative;padding-top:clamp(28px,4vh,48px)"><svg viewBox="0 0 1000 230" role="img" aria-label="Timeline: first symptom, then over two months of putting it off, then the appointment">' +
           '<path d="M90 120 C 150 40, 210 200, 270 120 S 390 40, 450 120 S 570 200, 630 120 S 750 40, 810 120" fill="none" stroke="#F97316" stroke-width="12" stroke-linecap="round" stroke-dasharray="1 24"/>' +
           '<line x1="810" y1="120" x2="900" y2="120" stroke="#0D9488" stroke-width="12" stroke-linecap="round"/>' +
-          '<text x="450" y="34" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="36" fill="#C2410C">2+ months of “it’s probably nothing”</text>' +
+          '<text x="450" y="34" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="36" fill="#C2410C">~10 weeks of “it’s probably nothing”</text>' +
           '<text x="90" y="222" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="26" fill="#1F2424">First symptom</text>' +
           '<text x="910" y="222" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="26" fill="#1F2424">“Since when?”</text>' +
         '</svg>' +
           '<div class="pop" style="position:absolute;left:3%;top:34%;width:10%;animation-delay:.1s">' + pl('caramel', 'oh') + '</div>' +
           '<div class="pop" style="position:absolute;right:3%;top:30%;width:10%;animation-delay:.7s">' + pl('caramel', 'focused') + '</div>' +
         '</div>' +
-        '<p>1 in 4 put it off out of embarrassment, and the average delay is over two months.</p>' +
-        '<span class="src"><span class="tag">Secondary</span>BUPA survey, n = 1,245. Self-reported. Not a diagnosis statistic.</span>',
+        '<p>1 in 4 put off the doctor out of embarrassment. For bowel and bladder symptoms, the wait averaged nearly 10 weeks.</p>' +
+        '<span class="src"><span class="tag">Secondary</span>BUPA survey, UK, n = 1,245, 2019. Self-reported. Not a diagnosis statistic.</span>',
       notes: 'Set up the record. "Then the doctor asks how often and since when, and you guess." Do not mention cancer unless asked. If asked, we are a diary, not a detector.' },
     { secs: 25, route: 'record', ring: ['[data-act="pdf"]', 'doctor summary'],
       html: '<h1>Thirty days, one page.</h1><p>When you finally see a doctor, you bring a dated record instead of “uh, sometimes?”.</p>',
