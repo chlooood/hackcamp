@@ -48,9 +48,10 @@
   .seg button { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; font-size: 14px; font-weight: 800; background: transparent; color: var(--muted); }
   .seg button[aria-pressed="true"] { background: #FFFFFF; color: var(--ink); box-shadow: 0 1px 4px rgba(16,24,40,0.12); }
   .seg.small button { min-height: 32px; padding: 0 10px; font-size: 12px; }
-  .toggle { width: 52px; height: 32px; border-radius: 999px; border: 0; padding: 3px; display: flex; flex-shrink: 0; background: #D3D9D9; justify-content: flex-start; transition: background .15s; }
-  .toggle span { width: 26px; height: 26px; border-radius: 999px; background: #FFFFFF; display: block; }
-  .toggle[aria-pressed="true"] { background: var(--teal); justify-content: flex-end; }
+  .toggle { width: 52px; height: 32px; border-radius: 999px; border: 0; padding: 3px; display: flex; flex-shrink: 0; background: #D3D9D9; justify-content: flex-start; transition: background .18s; }
+  .toggle span { width: 26px; height: 26px; border-radius: 999px; background: #FFFFFF; display: block; transition: transform .18s cubic-bezier(.2,.8,.2,1); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+  .toggle[aria-pressed="true"] { background: var(--teal); }
+  .toggle[aria-pressed="true"] span { transform: translateX(20px); }
   .toggle.indigo[aria-pressed="true"] { background: var(--indigo); }
   .toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); background: #1E1E1E; color: #FFFFFF; font-size: 14px; font-weight: 800; padding: 10px 16px; border-radius: 14px; z-index: 50; max-width: calc(100% - 40px); text-align: center; }
 
@@ -91,7 +92,43 @@
     @keyframes bob { from { transform: translateY(0) } to { transform: translateY(-8px) } }
     .pop { animation: pop .35s ease-out; }
     @keyframes pop { from { transform: scale(.92); opacity: .3 } to { transform: none; opacity: 1 } }
+    /* tap feedback */
+    button, a { transition: transform .09s ease-out; }
+    button:active:not(:disabled), a:active { transform: scale(.96); }
+    /* screen entrance: children of a screen rise in, staggered from JS */
+    .rise { animation: rise .42s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+    /* selection pop on chips, types, comfort, blood */
+    .pop-sm { animation: popsm .28s cubic-bezier(.3,1.6,.5,1); }
+    @keyframes popsm { 0% { transform: scale(.9) } 100% { transform: scale(1) } }
+    /* bars */
+    .grow { transform-origin: bottom; animation: growY .6s cubic-bezier(.2,.8,.2,1) both; }
+    .grow-down { transform-origin: top; animation: growY .6s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes growY { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+    .cell-in { animation: cellin .35s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes cellin { from { opacity: 0; transform: scale(.6) } to { opacity: 1; transform: none } }
+    /* mascot */
+    .wiggle { animation: wiggle .6s ease-in-out; transform-origin: 50% 90%; }
+    @keyframes wiggle { 0%,100% { transform: rotate(0) } 20% { transform: rotate(-9deg) scale(1.05) } 45% { transform: rotate(7deg) } 70% { transform: rotate(-4deg) } }
+    .hop { animation: hop .7s cubic-bezier(.3,1.5,.5,1) both; }
+    @keyframes hop { 0% { transform: translateY(30px) scale(.7); opacity: 0 } 60% { transform: translateY(-10px) scale(1.04); opacity: 1 } 100% { transform: none } }
+    /* rank emblems */
+    .drop { animation: drop .8s cubic-bezier(.3,1.4,.5,1) .15s both; }
+    @keyframes drop { 0% { transform: translateY(-60px) rotate(-12deg) scale(.6); opacity: 0 } 100% { transform: none; opacity: 1 } }
+    .shake { animation: shake .55s ease-in-out .3s both; }
+    @keyframes shake { 0%,100% { transform: none } 20% { transform: translateX(-8px) rotate(-3deg) } 40% { transform: translateX(7px) rotate(2deg) } 60% { transform: translateX(-5px) } 80% { transform: translateX(3px) } }
+    .glow { animation: glow 2.4s ease-in-out infinite; }
+    @keyframes glow { 0%,100% { filter: drop-shadow(0 0 0 rgba(242,183,5,0)) } 50% { filter: drop-shadow(0 0 18px rgba(242,183,5,.55)) } }
+    /* scanning */
+    .sweep { position: absolute; left: 8%; right: 8%; height: 3px; border-radius: 3px; background: #5EEAD4; box-shadow: 0 0 16px 4px rgba(94,234,212,.6); animation: sweep 1.4s ease-in-out infinite alternate; top: 12%; }
+    @keyframes sweep { from { top: 12% } to { top: 86% } }
+    .flash { position: absolute; inset: 0; background: #FFFFFF; z-index: 4; pointer-events: none; animation: flash .35s ease-out forwards; }
+    @keyframes flash { from { opacity: .9 } to { opacity: 0 } }
   }
+  .mascot-btn { position: relative; background: none; border: 0; padding: 0; flex-shrink: 0; border-radius: 20px; }
+  .bubble { position: absolute; right: 70%; top: -18px; background: #FFFFFF; color: var(--ink); font-size: 13px; font-weight: 800; padding: 6px 10px; border-radius: 12px; white-space: nowrap; box-shadow: 0 4px 14px rgba(16,24,40,.14); opacity: 0; transform: translateY(6px) scale(.9); transition: opacity .18s, transform .18s; pointer-events: none; z-index: 2; }
+  .bubble.show { opacity: 1; transform: none; }
+  .fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
 
   /* result */
   .score-card { position: relative; background: var(--teal); border-radius: 28px; padding: 20px 18px 18px; color: #FFFFFF; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
@@ -327,21 +364,120 @@
   var BODY_CLASS = { scan: 'dark', promoted: 'night', deranked: 'slip' };
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else render(); }
   function current() { return (location.hash || '#home').slice(1).split('?')[0]; }
-  window.addEventListener('hashchange', render);
+  window.addEventListener('hashchange', function () { render(); });
 
-  function render() {
+  var lastScreen = null;
+  // pop: optional selector for an element to give a small "selected" bounce after re-render
+  function render(pop) {
     var name = current();
     if (!SCREENS[name]) name = 'home';
     if ((name === 'result' || name === 'checked') && !draft && !lastCheckin) name = 'home';
     if (name !== 'scan') stopCamera();
+    var entering = name !== lastScreen;
+    lastScreen = name;
     document.body.className = BODY_CLASS[name] || '';
     document.title = state.privacy.discreet ? 'Daily' : 'Plop';
     var app = document.getElementById('app');
     app.innerHTML = SCREENS[name]();
     renderNav(name);
-    window.scrollTo(0, 0);
-    if (AFTER[name]) AFTER[name]();
+    if (entering) {
+      window.scrollTo(0, 0);
+      stagger(app.querySelector('main'));
+      runFills(app, true);
+      runCounts(app);
+    } else {
+      runFills(app, false);
+    }
+    if (AFTER[name]) AFTER[name](entering);
+    if (typeof pop === 'string' && motionOK()) { var el = app.querySelector(pop); if (el) el.classList.add('pop-sm'); }
   }
+
+  // ---------- motion helpers ----------
+  function motionOK() { return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch (e) {} }
+  function stagger(root) {
+    if (!root || !motionOK()) return;
+    Array.prototype.slice.call(root.children).forEach(function (el, i) {
+      if (el.classList.contains('sticky-bottom')) return;
+      el.classList.add('rise');
+      el.style.animationDelay = Math.min(i, 10) * 40 + 'ms';
+    });
+  }
+  // [data-count="N"] counts up from 0 (or data-from) when a screen opens
+  function runCounts(root) {
+    root.querySelectorAll('[data-count]').forEach(function (el) {
+      var to = Number(el.dataset.count), from = Number(el.dataset.from || 0);
+      if (!motionOK() || to === from) { el.textContent = to; return; }
+      var dur = Number(el.dataset.dur || 900), start = null, delay = Number(el.dataset.delay || 150);
+      el.textContent = from;
+      // Safety net: frames can pause (background tab, low power), so always land on the real number.
+      var finished = false;
+      setTimeout(function () { finished = true; el.textContent = to; }, delay + dur + 80);
+      setTimeout(function () {
+        function step(t) {
+          if (finished) return;
+          if (!start) start = t;
+          var p = Math.min(1, (t - start) / dur), e = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(from + (to - from) * e);
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }, delay);
+    });
+  }
+  // [data-fill="N"] bars animate width from data-from% (default 0) when a screen opens
+  function runFills(root, entering) {
+    root.querySelectorAll('[data-fill]').forEach(function (el) {
+      var to = el.dataset.fill + '%';
+      if (!entering || !motionOK()) { el.style.width = to; return; }
+      el.style.transition = 'none';
+      el.style.width = (el.dataset.from || 0) + '%';
+      void el.offsetWidth;
+      el.style.transition = 'width 1s cubic-bezier(.2,.8,.2,1) ' + (el.dataset.delay || 250) + 'ms';
+      el.style.width = to;
+    });
+  }
+  function fxLayer() {
+    var l = document.createElement('div'); l.className = 'fx-layer'; l.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(l); return l;
+  }
+  var CONFETTI = ['#2DD4BF', '#6366F1', '#F97316', '#FFC800', '#FB7185', '#0D9488', '#A5A1FF'];
+  function confetti(count, originY) {
+    if (!motionOK() || !document.body.animate) return;
+    var layer = fxLayer(), W = window.innerWidth, H = window.innerHeight, done = 0;
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('i'), w = 6 + Math.random() * 6;
+      p.style.cssText = 'position:absolute;left:' + (W / 2) + 'px;top:' + (H * (originY || 0.3)) + 'px;width:' + w + 'px;height:' + (w * 1.6) + 'px;border-radius:2px;background:' + CONFETTI[i % CONFETTI.length];
+      layer.appendChild(p);
+      var ang = Math.random() * Math.PI * 2, dist = 120 + Math.random() * 220;
+      var dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist * 0.7 - 120;
+      var a = p.animate([
+        { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (Math.random() * 360) + 'deg)', opacity: 1, offset: 0.45 },
+        { transform: 'translate(' + (dx * 1.2) + 'px,' + (dy + H * 0.6) + 'px) rotate(' + (360 + Math.random() * 360) + 'deg)', opacity: 0 }
+      ], { duration: 1600 + Math.random() * 900, easing: 'cubic-bezier(.2,.6,.4,1)', delay: Math.random() * 120 });
+      a.onfinish = function () { if (++done >= count) layer.remove(); };
+    }
+  }
+  // little emoji or text that floats up from an element
+  function floatFrom(rect, items, opts) {
+    if (!motionOK() || !document.body.animate || !rect) return;
+    var layer = fxLayer(), done = 0;
+    items.forEach(function (txt, i) {
+      var s = document.createElement('span');
+      s.textContent = txt;
+      s.style.cssText = 'position:absolute;left:' + (rect.left + rect.width / 2) + 'px;top:' + (rect.top + rect.height / 2) + 'px;font-size:' + ((opts && opts.size) || 22) + 'px;font-weight:900;color:' + ((opts && opts.color) || '#0B6E64') + ';transform:translate(-50%,-50%)';
+      layer.appendChild(s);
+      var spread = items.length > 1 ? (i - (items.length - 1) / 2) * 26 + (Math.random() * 14 - 7) : 0;
+      var a = s.animate([
+        { transform: 'translate(-50%,-50%) scale(.6)', opacity: 0 },
+        { transform: 'translate(calc(-50% + ' + spread * 0.5 + 'px), calc(-50% - 24px)) scale(1.15)', opacity: 1, offset: 0.25 },
+        { transform: 'translate(calc(-50% + ' + spread + 'px), calc(-50% - 90px)) scale(1)', opacity: 0 }
+      ], { duration: 1000 + Math.random() * 300, easing: 'cubic-bezier(.2,.7,.3,1)', delay: i * 50 });
+      a.onfinish = function () { if (++done >= items.length) layer.remove(); };
+    });
+  }
+  function rectOf(el) { return el ? el.getBoundingClientRect() : null; }
   function renderNav(name) {
     var nav = document.getElementById('nav');
     if (!NAV_SCREENS[name]) { nav.classList.add('hidden'); return; }
@@ -378,7 +514,7 @@
       else if (e) { bar = 'width:100%;height:10px;border-radius:8px;background:#C9D2D2'; val = 'logged'; }
       else if (isToday) { bar = 'width:100%;height:20px;border-radius:8px;border:2px dashed #14B8A6'; val = 'today'; }
       else { bar = 'width:100%;height:6px;border-radius:8px;background:#E3E8E8'; }
-      week.push('<div><span style="font-size:11px;font-weight:900;color:var(--muted)">' + val + '</span><div style="' + bar + '"></div><span style="font-size:12px;font-weight:800;color:' + (isToday ? '#0D9488' : 'var(--muted)') + '">' + DOW[addDays(monday, i).getDay()] + '</span></div>');
+      week.push('<div><span style="font-size:11px;font-weight:900;color:var(--muted)">' + val + '</span><div class="' + (e ? 'grow' : '') + '" style="' + bar + ';animation-delay:' + (200 + i * 60) + 'ms"></div><span style="font-size:12px;font-weight:800;color:' + (isToday ? '#0D9488' : 'var(--muted)') + '">' + DOW[addDays(monday, i).getDay()] + '</span></div>');
       if (future) continue;
     }
     var topType = Object.keys(typeCount).sort(function (a, b) { return typeCount[b] - typeCount[a]; })[0];
@@ -400,7 +536,7 @@
       '<section class="hero"><div class="row" style="gap:8px"><div class="col" style="flex:1;gap:4px">' +
         '<span style="font-size:40px;font-weight:900;line-height:1;color:#0B6E64">Day ' + n + '</span>' +
         '<span style="font-size:15px;font-weight:700;color:#3F5F5B;line-height:1.35">' + sub + '</span></div>' +
-        mascot(done ? 'cheer' : 'hello', 104, 'style="flex-shrink:0"') + '</div>' +
+        '<button class="mascot-btn" data-act="poke" aria-label="Poke Ploopy"><span class="bubble" id="bubble" role="status"></span><span id="ploopy" style="display:block">' + mascot(done ? 'cheer' : 'hello', 104) + '</span></button></div>' +
         (done ? '<a href="#record" class="btn btn-outline" style="min-height:54px">See your record</a>'
               : '<a href="#scan" class="btn btn-teal">' + ICON.camera(22) + '<span>Take photo</span></a>') +
       '</section>' +
@@ -426,7 +562,7 @@
       '<div class="viewfinder" id="vf"><video id="video" playsinline muted autoplay class="hidden"></video>' +
         '<span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>' +
         '<span id="vf-msg" style="position:relative;z-index:1">Camera preview<br>(demo: Play-Doh only)</span>' +
-        '<div class="reading hidden" id="reading">' + mascot('curious', 96, 'class="bob"') + '<span>Reading it…</span><span style="font-size:13px;font-weight:700;color:#B5C0C0">Takes a few seconds.</span></div>' +
+        '<div class="reading hidden" id="reading"><span class="sweep"></span>' + mascot('curious', 96, 'class="bob"') + '<span>Reading it…</span><span style="font-size:13px;font-weight:700;color:#B5C0C0">Takes a few seconds.</span></div>' +
       '</div>' +
       '<p style="margin:0;text-align:center;font-size:15px;font-weight:700;color:#D0D6D6;line-height:1.45">Your photo gets scored, then deleted.<br>Nobody ever sees it. Not even us.</p>' +
       '<button class="shutter" id="shutter" aria-label="Take the photo"><span></span></button>' +
@@ -449,15 +585,15 @@
       (state.scanMode === 'cached' ? '<span class="pill" style="align-self:flex-start;background:#FEF3C7;color:#5C3D00;margin-top:-12px">Cached demo run</span>' : '') +
       '<section class="score-card pop"><div class="blob"></div>' +
         '<div class="between" style="position:relative;align-items:flex-end"><div class="col" style="gap:2px">' +
-          '<span style="font-size:72px;font-weight:900;line-height:0.9">' + score + '<span style="font-size:22px;font-weight:800;color:#CCF5EF">/100</span></span>' +
+          '<span style="font-size:72px;font-weight:900;line-height:0.9"><span data-count="' + score + '" data-dur="1100">' + score + '</span><span style="font-size:22px;font-weight:800;color:#CCF5EF">/100</span></span>' +
           '<span style="font-size:22px;font-weight:900;margin-top:4px">' + headline(score) + '</span>' +
           '<span style="font-size:14px;font-weight:700;color:#CCF5EF">Type ' + g.bristol + ', ' + sureWord(g.confidence) + ' (' + Math.round(g.confidence * 100) + '%)</span></div>' +
           mascot(score >= 60 ? 'cheer' : 'gotthis', 116, 'style="flex-shrink:0;margin-bottom:4px"') + '</div>' +
-        '<div class="col" style="position:relative;gap:6px"><div style="height:14px;background:#0B7D73;border-radius:999px;overflow:hidden"><div style="height:100%;background:#FFF;border-radius:999px;width:' + score + '%"></div></div>' +
+        '<div class="col" style="position:relative;gap:6px"><div style="height:14px;background:#0B7D73;border-radius:999px;overflow:hidden"><div data-fill="' + score + '" style="height:100%;background:#FFF;border-radius:999px;width:' + score + '%"></div></div>' +
           '<div style="position:relative;height:14px;font-size:11px;font-weight:800;color:#CCF5EF"><span style="position:absolute;left:0">0</span><span style="position:absolute;left:40%;transform:translateX(-50%)">40</span><span style="position:absolute;left:60%;transform:translateX(-50%)">60</span><span style="position:absolute;left:85%;transform:translateX(-50%)">85</span><span style="position:absolute;right:0">100</span></div></div>' +
       '</section>' +
       '<section class="col" style="gap:16px">' + parts.map(function (p) {
-        return '<div class="row" style="align-items:flex-start;gap:14px"><span style="font-size:22px;font-weight:900;color:' + p.c + ';width:44px;flex-shrink:0;line-height:1.1">' + p.got + '<span style="font-size:12px;font-weight:800;color:#9AA5A5">/' + p.max + '</span></span>' +
+        return '<div class="row" style="align-items:flex-start;gap:14px"><span style="font-size:22px;font-weight:900;color:' + p.c + ';width:44px;flex-shrink:0;line-height:1.1"><span data-count="' + p.got + '" data-delay="450">' + p.got + '</span><span style="font-size:12px;font-weight:800;color:#9AA5A5">/' + p.max + '</span></span>' +
           '<div class="col" style="gap:2px"><span style="font-size:15px;font-weight:900">' + p.label + '</span><span style="font-size:14px;font-weight:600;color:#5A5A5A;line-height:1.4">' + p.why + '</span></div></div>';
       }).join('') + '</section>' +
       '<div class="hr"></div>' +
@@ -506,14 +642,14 @@
     var t = TIERS[c.tierAfter[0]];
     var pct = Math.max(0, Math.min(100, c.barPct));
     return '<main class="screen" style="gap:16px;align-items:stretch">' +
-      '<div class="col pop" style="align-items:center;gap:4px;margin-top:12px">' + mascot('cheer', 150) +
-        '<span style="font-size:56px;font-weight:900;color:#0B6E64;line-height:1.1">' + (c.total >= 0 ? '+' : '−') + Math.abs(c.total) + ' GP</span>' +
+      '<div class="col pop" style="align-items:center;gap:4px;margin-top:12px">' + mascot('cheer', 150, 'class="hop"') +
+        '<span style="font-size:56px;font-weight:900;color:#0B6E64;line-height:1.1">' + (c.total >= 0 ? '+' : '−') + '<span data-count="' + Math.abs(c.total) + '" data-dur="1000" data-delay="300">' + Math.abs(c.total) + '</span> GP</span>' +
         '<span style="font-size:17px;font-weight:800;color:var(--muted)">Day ' + streak() + ' done. Ploopy approves.</span></div>' +
       (c.lines.length ? '<section class="col" style="gap:8px;font-size:16px;font-weight:800">' + c.lines.map(function (l) {
         return '<div class="between"><span>' + l[0] + '</span><span style="font-weight:900">' + (l[1] >= 0 ? '+' : '−') + Math.abs(l[1]) + '</span></div>';
       }).join('') + '</section>' : '<p class="sub" style="margin:0;text-align:center;font-size:15px">No-photo days keep your streak but don\'t touch GP.</p>') +
       '<div class="row" style="gap:10px">' + shield(TIERS[c.tierBefore[0]], 26) +
-        '<div style="flex:1;height:10px;background:var(--teal);border-radius:999px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:#E8BC3D;border-radius:999px"></div></div>' +
+        '<div style="flex:1;height:10px;background:var(--teal);border-radius:999px;overflow:hidden"><div data-fill="' + pct + '" data-from="' + (c.fromPct || 0) + '" data-delay="500" style="height:100%;width:' + pct + '%;background:#E8BC3D;border-radius:999px"></div></div>' +
         '<span style="font-size:14px;font-weight:900;color:#0B6E64">' + (c.promoted ? rankName(c.tierAfter[0], c.tierAfter[1]) + '!' : (100 - state.gp) + ' to go') + '</span></div>' +
       '<div class="hr"></div>' +
       '<section class="col" style="gap:12px"><div class="col" style="gap:2px"><h2 style="font-size:20px">Two things for today</h2><span class="sub">Snap a pic when you\'ve done one. +4 GP each.</span></div>' +
@@ -533,7 +669,7 @@
     return '<main class="screen" style="color:#FFF;align-items:center;min-height:100dvh;position:relative;overflow:hidden">' +
       '<svg width="390" height="420" viewBox="0 0 390 420" aria-hidden="true" style="position:absolute;left:50%;transform:translateX(-50%);top:40px"><circle cx="195" cy="210" r="170" fill="#F2B705" opacity="0.07"/><circle cx="195" cy="210" r="115" fill="#F2B705" opacity="0.09"/><rect x="62" y="96" width="9" height="15" rx="2" fill="#2DD4BF" transform="rotate(25 66 103)"/><rect x="312" y="120" width="9" height="15" rx="2" fill="#6366F1" transform="rotate(-30 316 127)"/><rect x="90" y="300" width="8" height="13" rx="2" fill="#FFC800" transform="rotate(-20 94 306)"/></svg>' +
       '<div class="col pop" style="align-items:center;gap:6px;position:relative;margin-top:40px">' + mascot('proud', 96) +
-        '<span style="font-size:17px;font-weight:800;color:#C9D4EC">You made it to</span>' + bigShield(200, r + ' emblem') +
+        '<span style="font-size:17px;font-weight:800;color:#C9D4EC">You made it to</span><span class="drop" style="display:block"><span class="glow" style="display:block">' + bigShield(200, r + ' emblem') + '</span></span>' +
         '<span style="font-size:52px;font-weight:900;color:#FFD84D;line-height:1.1">' + r + '</span>' +
         '<span style="font-size:16px;font-weight:700;color:#C9D4EC">Zan\'s still ahead. Just saying.</span></div>' +
       '<div style="flex:1"></div>' +
@@ -547,7 +683,7 @@
     var r = rankName(s.to[0], s.to[1]);
     return '<main class="screen" style="color:#FFF;align-items:center;text-align:center;min-height:100dvh">' +
       '<span style="font-size:17px;font-weight:800;color:#C9D4EC;margin-top:40px">' + (s.dropped === false ? 'You held on to' : 'You slipped to') + '</span>' +
-      '<div style="position:relative">' + bigShield(180, r + ' emblem', true) +
+      '<div style="position:relative" class="' + (s.dropped === false ? '' : 'shake') + '">' + bigShield(180, r + ' emblem', true) +
         '<span style="position:absolute;right:-8px;bottom:22px;width:56px;height:56px;border-radius:999px;background:#EF5350;border:4px solid #252B3B;display:flex;align-items:center;justify-content:center">' + ICON.down + '</span></div>' +
       '<span style="font-size:52px;font-weight:900;color:#E8C766;line-height:1.1">' + r + '</span>' +
       '<span style="font-size:17px;font-weight:800;color:#DDE3F0;line-height:1.4">Missed ' + s.day + ' (−' + s.miss + ')' + (s.streak ? ' and lost the streak (−' + s.streak + ')' : '') + '.<br>' + (s.dropped === false ? 'Still in ' + r + '. A good day tomorrow makes it up.' : 'Three good days gets it back.') + '</span>' +
@@ -568,11 +704,12 @@
         '<div style="align-self:center;margin-top:20px">' + mascot('hello', 140) + '</div></main>';
     }
     var days = lastNDays(14), maxAbs = 30, scale = 55 / maxAbs, total = 0;
-    var bars = days.map(function (d) {
+    var bars = days.map(function (d, bi) {
       var c = state.gpLog[d]; if (c == null) c = null; if (c) total += c;
-      var up = c > 0 ? '<div style="width:100%;height:' + Math.min(64, Math.round(c * scale)) + 'px;background:#2DD4BF;border-radius:5px 5px 2px 2px"></div>'
+      var dly = 'animation-delay:' + (150 + bi * 35) + 'ms;';
+      var up = c > 0 ? '<div class="grow" style="' + dly + 'width:100%;height:' + Math.min(64, Math.round(c * scale)) + 'px;background:#2DD4BF;border-radius:5px 5px 2px 2px"></div>'
         : (c === 0 ? '<div style="width:12px;height:12px;border-radius:999px;background:#6366F1;margin-bottom:-6px;position:relative;z-index:1"></div>' : '');
-      var down = c < 0 ? '<div style="width:100%;height:' + Math.min(52, Math.round(-c * scale)) + 'px;background:#FF6B6B;border-radius:2px 2px 5px 5px"></div><span style="font-size:10px;font-weight:800;line-height:14px;color:#B3261E">' + c + '</span>' : '';
+      var down = c < 0 ? '<div class="grow-down" style="' + dly + 'width:100%;height:' + Math.min(52, Math.round(-c * scale)) + 'px;background:#FF6B6B;border-radius:2px 2px 5px 5px"></div><span style="font-size:10px;font-weight:800;line-height:14px;color:#B3261E">' + c + '</span>' : '';
       return '<div class="col" style="height:140px"><div class="col" style="height:70px;justify-content:flex-end;align-items:center">' + up + '</div><div class="col" style="height:70px;align-items:center">' + down + '</div></div>';
     }).join('');
     var dayLabels = days.map(function (d) { return '<span>' + DOW[new Date(d + 'T12:00').getDay()] + '</span>'; }).join('');
@@ -582,7 +719,7 @@
     return '<main class="screen with-nav" style="gap:22px">' + head +
       '<div style="background:var(--night);border-radius:24px;padding:18px;display:flex;align-items:center;gap:14px;color:#FFF">' + bigShield(96, curRank() + ' emblem') +
         '<div class="col" style="flex:1;gap:6px"><span style="font-size:34px;font-weight:900;line-height:1;color:#FFD84D">' + curRank() + '</span>' +
-        '<div style="height:10px;background:#34405E;border-radius:999px;overflow:hidden"><div style="width:' + state.gp + '%;height:100%;background:#FFC800;border-radius:999px"></div></div>' +
+        '<div style="height:10px;background:#34405E;border-radius:999px;overflow:hidden"><div data-fill="' + state.gp + '" style="width:' + state.gp + '%;height:100%;background:#FFC800;border-radius:999px"></div></div>' +
         '<span style="font-size:13px;font-weight:700;color:#C9D4EC">' + state.gp + ' / 100 · act ends Dec 1</span></div></div>' +
       '<section class="col" style="gap:10px"><div class="between" style="align-items:baseline"><h2>Last two weeks</h2><span style="font-size:14px;font-weight:900;color:#0B6E64">' + (total >= 0 ? '+' : '') + total + '</span></div>' +
         '<div role="img" aria-label="Daily GP change for the last 14 days" style="position:relative;height:140px;display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:5px"><div style="position:absolute;left:0;right:0;top:69px;border-top:2px solid #E3E8E8"></div>' + bars + '</div>' +
@@ -631,7 +768,7 @@
         ? '<section style="background:var(--indigo);border-radius:24px;padding:18px;color:#FFF;display:flex;flex-direction:column;gap:10px">' +
             '<div class="between" style="align-items:flex-start"><div class="col"><span style="font-size:14px;font-weight:800;color:#C7C4FF">You\'re placed</span><span style="font-size:48px;font-weight:900;line-height:1.05">#4,812</span><span style="font-size:15px;font-weight:800;color:#E0DEFF">as QuietOtter42 · ' + curRank() + '</span></div>' +
             '<span class="pill" style="background:#FBBF24;color:#3C2A00;font-size:15px;padding:6px 14px">Top 8%</span></div>' +
-            '<div class="col" style="gap:6px"><div style="position:relative;height:12px;background:#6D66F0;border-radius:999px"><div style="width:92%;height:100%;background:#FFF;border-radius:999px"></div><div style="position:absolute;left:92%;top:-5px;width:22px;height:22px;margin-left:-11px;border-radius:999px;background:#FBBF24;border:3px solid #4F46E5"></div></div>' +
+            '<div class="col" style="gap:6px"><div style="position:relative;height:12px;background:#6D66F0;border-radius:999px"><div data-fill="92" style="width:92%;height:100%;background:#FFF;border-radius:999px"></div><div style="position:absolute;left:92%;top:-5px;width:22px;height:22px;margin-left:-11px;border-radius:999px;background:#FBBF24;border:3px solid #4F46E5"></div></div>' +
             '<div class="between" style="font-size:11px;font-weight:800;color:#C7C4FF"><span>everyone</span><span>top 100</span></div></div>' +
             '<span style="font-size:14px;font-weight:700;color:#E0DEFF">12 more GP passes about 300 people.</span></section>'
         : '<section class="card"><h2>You\'re hidden</h2><span class="sub">Turn the switch on below to get a made-up name and a place on the board.</span></section>') +
@@ -725,7 +862,7 @@
       else fill = comfortColors[e.comfort || 0];
       if (fill === '#FBBF24' || fill === '#F59E0B') txt = '#5C3D00';
       var period = e && e.chips && e.chips.indexOf('On my period') >= 0;
-      cells.push('<div style="background:' + fill + ';color:' + txt + ';' + extra + (period ? 'box-shadow:inset 0 -4px 0 #FB7185;' : '') + '">' + new Date(d + 'T12:00').getDate() +
+      cells.push('<div class="cell-in" style="animation-delay:' + (cells.length * 14) + 'ms;background:' + fill + ';color:' + txt + ';' + extra + (period ? 'box-shadow:inset 0 -4px 0 #FB7185;' : '') + '">' + new Date(d + 'T12:00').getDate() +
         (e && e.blood ? '<span style="position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:999px;background:#E11D48;border:1.5px solid #FFF"></span>' : '') + '</div>');
     });
     var sw = function (c) { return '<span style="width:12px;height:12px;border-radius:4px;background:' + c + '"></span>'; };
@@ -751,7 +888,7 @@
       '<section class="col" style="gap:8px"><div class="between" style="align-items:baseline"><h2>Score over 30 days</h2><span style="font-size:12px;font-weight:800;color:var(--muted)">gaps = no photo</span></div>' +
         '<svg viewBox="0 0 350 150" width="100%" role="img" aria-label="' + chartLabel + '"><rect x="0" y="0" width="350" height="27" fill="#D5F5F0" opacity="0.6"/><rect x="0" y="27" width="350" height="36" fill="#FEF3C7" opacity="0.6"/><rect x="0" y="63" width="350" height="87" fill="#FFEDD5" opacity="0.5"/>' +
         '<text x="346" y="15" text-anchor="end" font-size="10" font-weight="800" fill="#0B6E64">85+</text><text x="346" y="52" text-anchor="end" font-size="10" font-weight="800" fill="#92400E">60–84</text>' +
-        '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#0D9488" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>' + dots.join('') + '</svg>' +
+        '<polyline id="trend" points="' + pts.join(' ') + '" fill="none" stroke="#0D9488" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>' + dots.join('') + '</svg>' +
         '<div class="between" style="font-size:12px;font-weight:800;color:#9AA5A5">' + xl + '</div></section>' +
       '<section class="col" style="gap:10px"><div class="between"><h2>Calendar</h2><div class="seg small" role="group" aria-label="Calendar colours">' +
         [['score', 'Score'], ['type', 'Type'], ['comfort', 'Comfort']].map(function (x) { return '<button data-cal="' + x[0] + '" aria-pressed="' + (mode === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
@@ -773,7 +910,26 @@
     '</main>';
   };
   var recordMode = 'score';
-  AFTER.record = function () {
+  AFTER.checked = function (entering) {
+    if (!entering) return;
+    buzz([12, 40, 12]);
+    if (lastCheckin && lastCheckin.total > 0) setTimeout(function () { confetti(46, 0.18); }, 250);
+  };
+  AFTER.promoted = function (entering) {
+    if (!entering) return;
+    buzz([20, 60, 20, 60, 40]);
+    setTimeout(function () { confetti(90, 0.35); }, 450);
+  };
+  AFTER.deranked = function (entering) { if (entering) buzz(60); };
+  AFTER.record = function (entering) {
+    var line = document.getElementById('trend');
+    if (entering && line && motionOK() && line.getTotalLength) {
+      var len = line.getTotalLength();
+      line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+      void line.getBoundingClientRect();
+      line.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1) .2s';
+      line.style.strokeDashoffset = 0;
+    }
     var n = document.getElementById('notes');
     if (n) n.addEventListener('input', function () { state.notes = n.value; save(); });
   };
@@ -890,7 +1046,7 @@
     }
     var res = applyGp(total);
     state.gpLog[d] = (state.gpLog[d] || 0) + total;
-    lastCheckin = { lines: lines, total: total, promoted: res.promoted, tierBefore: res.before, tierAfter: [state.tier, state.div], barPct: res.promoted ? 100 : state.gp };
+    lastCheckin = { fromPct: gpBefore, lines: lines, total: total, promoted: res.promoted, tierBefore: res.before, tierAfter: [state.tier, state.div], barPct: res.promoted ? 100 : state.gp };
     void gpBefore;
     save();
     draft = null;
@@ -904,14 +1060,28 @@
     var ds = el.dataset;
     if (ds.go) { ev.preventDefault(); go(ds.go); return; }
     if (ds.back) { ev.preventDefault(); go(ds.back); return; }
-    if (ds.chip) { var i = draft.chips.indexOf(ds.chip); if (i >= 0) draft.chips.splice(i, 1); else draft.chips.push(ds.chip); render(); return; }
-    if (ds.comfort) { draft.comfort = Number(ds.comfort); render(); return; }
-    if (ds.type) { draft.type = Number(ds.type); var y = window.scrollY; render(); window.scrollTo(0, y); return; }
-    if (ds.tip) { var k = today() + ds.tip; if (state.tipsDone[k]) { delete state.tipsDone[k]; applyGp(-4); } else { state.tipsDone[k] = true; applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; } save(); var y2 = window.scrollY; render(); window.scrollTo(0, y2); return; }
-    if (ds.cheer) { var ck = today() + ds.cheer; if (state.cheered[ck]) delete state.cheered[ck]; else { state.cheered[ck] = true; toast(ds.cheer + ' gets a 🎉'); } save(); render(); return; }
+    if (ds.chip) { var i = draft.chips.indexOf(ds.chip); if (i >= 0) draft.chips.splice(i, 1); else draft.chips.push(ds.chip); buzz(6); render('[data-chip="' + ds.chip + '"]'); return; }
+    if (ds.comfort) { draft.comfort = Number(ds.comfort); buzz(6); render('[data-comfort="' + ds.comfort + '"]'); return; }
+    if (ds.type) { draft.type = Number(ds.type); buzz(6); render('[data-type="' + ds.type + '"]'); return; }
+    if (ds.tip) {
+      var k = today() + ds.tip, tipRect = rectOf(el);
+      if (state.tipsDone[k]) { delete state.tipsDone[k]; applyGp(-4); state.gpLog[today()] = (state.gpLog[today()] || 0) - 4; }
+      else { state.tipsDone[k] = true; applyGp(4); state.gpLog[today()] = (state.gpLog[today()] || 0) + 4; buzz(12); floatFrom(tipRect, ['+4 GP'], { size: 18 }); }
+      save(); render('[data-tip="' + ds.tip + '"]'); return;
+    }
+    if (ds.cheer) {
+      var ck = today() + ds.cheer, cheerRect = rectOf(el);
+      if (state.cheered[ck]) delete state.cheered[ck];
+      else { state.cheered[ck] = true; buzz(15); floatFrom(cheerRect, ['🎉', '👏', '💩', '🙌', '✨'], { size: 24 }); toast(ds.cheer + ' gets a cheer'); }
+      save(); render('[data-cheer="' + ds.cheer + '"]'); return;
+    }
     if (ds.mode) { state.mode = ds.mode; save(); render(); return; }
     if (ds.cal) { recordMode = ds.cal; var y3 = window.scrollY; render(); window.scrollTo(0, y3); return; }
-    if (ds.priv) { state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); render(); return; }
+    if (ds.priv) {
+      state.privacy[ds.priv] = !state.privacy[ds.priv]; save(); buzz(6);
+      el.setAttribute('aria-pressed', String(state.privacy[ds.priv])); // slide the knob, then re-render
+      setTimeout(function () { render(); }, motionOK() ? 200 : 0); return;
+    }
     if (ds.remove) {
       if (confirm('Remove ' + ds.remove + '? They won\'t be told.')) { state.removed[ds.remove] = true; save(); toast(ds.remove + ' removed'); render(); }
       return;
@@ -922,7 +1092,8 @@
       case 'skip': draft = { source: 'pick', chips: [], comfort: 0, type: 0 }; go('pick'); break;
       case 'cancel': draft = null; go('home'); break;
       case 'plain': state.plain = !state.plain; save(); render(); break;
-      case 'blood': draft.blood = !draft.blood; draft.bloodByUser = draft.blood; render(); break;
+      case 'blood': draft.blood = !draft.blood; draft.bloodByUser = draft.blood; buzz(10); render('[data-act="blood"]'); break;
+      case 'poke': poke(); break;
       case 'checkin':
         commit({ date: today(), kind: 'scan', score: draft.score, type: draft.guess.bristol, colour: draft.guess.colour, confidence: draft.guess.confidence, comfort: draft.comfort, chips: draft.chips.slice(), blood: !!draft.blood });
         break;
@@ -939,7 +1110,11 @@
         var link = location.origin + location.pathname + '?invite=demo';
         if (navigator.share) navigator.share({ title: 'Plop', text: 'Did you plop today? Join my circle.', url: link }).catch(function () {}); else { copy(link); toast('Invite link copied'); }
         break;
-      case 'global': state.globalOn = !state.globalOn; save(); render(); break;
+      case 'global':
+        state.globalOn = !state.globalOn; save(); buzz(6);
+        el.setAttribute('aria-pressed', String(state.globalOn));
+        setTimeout(function () { render(); }, motionOK() ? 200 : 0);
+        break;
       case 'showall': toast('Full board comes with the real backend'); break;
       case 'pause': state.paused = !state.paused; save(); toast(state.paused ? 'Break on. Buddies see nothing new.' : 'Welcome back'); render(); break;
       case 'remove': document.getElementById('remove-list').classList.toggle('hidden'); break;
@@ -965,11 +1140,31 @@
     if (!f) return;
     try { runScan(await fileToJpeg(f)); } catch (err) { draft = { source: 'failed', reason: "Couldn't open that photo.", chips: [], comfort: 0, type: 0 }; go('pick'); }
   });
+  function shutterFlash() {
+    buzz(20);
+    var vf = document.getElementById('vf');
+    if (!vf || !motionOK()) return;
+    var f = document.createElement('div'); f.className = 'flash'; vf.appendChild(f);
+    setTimeout(function () { f.remove(); }, 400);
+  }
   function onShutter() {
-    if (state.scanMode === 'cached' || state.forceUnclear) { runScan(null); return; }
+    if (state.scanMode === 'cached' || state.forceUnclear) { shutterFlash(); runScan(null); return; }
     var b64 = grabFrame();
-    if (b64) { runScan(b64); return; }
+    if (b64) { shutterFlash(); runScan(b64); return; }
     document.getElementById('file').click();
+  }
+  var POKES = ['Hey, that tickles.', 'Everybody plops.', 'No judgement here.', 'Ready when you are.', 'Psst. Zan checked in.', 'Photo time?', 'Still here. Still round.'];
+  var pokeIdx = 0, bubbleTimer = null;
+  function poke() {
+    var p = document.getElementById('ploopy'), b = document.getElementById('bubble');
+    if (!p || !b) return;
+    buzz(10);
+    p.classList.remove('wiggle'); void p.offsetWidth; p.classList.add('wiggle');
+    b.textContent = loggedToday() && pokeIdx % 3 === 0 ? 'Day ' + streak() + '. Nice.' : POKES[pokeIdx % POKES.length];
+    pokeIdx++;
+    b.classList.add('show');
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(function () { b.classList.remove('show'); }, 1800);
   }
   function simulateSlip() {
     var yest = dayStr(addDays(new Date(), -1));
